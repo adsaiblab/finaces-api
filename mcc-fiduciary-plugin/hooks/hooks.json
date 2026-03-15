@@ -1,0 +1,28 @@
+{
+    "hooks": [
+        {
+            "events": ["PreToolUse"],
+            "matcher": "mcp__mcc_fiduciary_server__write_*",
+            "type": "prompt",
+            "prompt": "L'agent s'apprête à écrire dans la base de données fiduciaire. Vérifie : (1) le case_id est valide (format UUID), (2) les labels sont dans VALID_LABELS = [INSUFFISANT, FAIBLE, MODERE, FORT, TRES_FORT], (3) aucun champ critique n'est vide. Si une vérification échoue, réponds {\"decision\": \"block\", \"reason\": \"...\"}"
+        },
+        {
+            "events": ["PreToolUse"],
+            "matcher": "mcp__mcc_fiduciary_server__write_interpretation",
+            "type": "prompt",
+            "prompt": "STOP CRITIQUE — GATE RAIL 2. Avant de persister l'interprétation, confirme que tu as DÉJÀ appelé read_ia_analysis pour ce dossier ET que tu as reçu un retour valide (status != error, predicted_default_probability non-null). Si read_ia_analysis n'a PAS été appelé ou a retourné une erreur, tu DOIS l'appeler MAINTENANT avant de poursuivre. Si tu ne peux pas confirmer l'appel avec certitude, réponds {\"decision\": \"block\", \"reason\": \"Rail 2 (read_ia_analysis) non exécuté — impossible de persister l'interprétation sans réconciliation des deux rails.\"}. NE JAMAIS auto-confirmer sans preuve d'appel dans l'historique de la session."
+        },
+        {
+            "events": ["PreToolUse"],
+            "matcher": "mcp__mcc_fiduciary_server__write_report_narrative",
+            "type": "prompt",
+            "prompt": "STOP — DOUBLE GATE (Interprétation + Rail 2). Avant d'écrire la moindre section du rapport, confirme que : (1) tu as DÉJÀ appelé write_interpretation pour ce dossier, ET (2) tu as DÉJÀ appelé read_ia_analysis et intégré le résultat de divergence (divergence_class et predicted_default_probability) dans ton interprétation. Si l'une de ces deux conditions n'est pas remplie, réponds {\"decision\": \"block\", \"reason\": \"Prérequis manquant : interprétation et/ou analyse IA Rail 2 non exécutée.\"}. NE JAMAIS contourner cette vérification."
+        },
+        {
+            "events": ["PostToolUse"],
+            "matcher": "mcp__mcc_fiduciary_server__trigger_full_evaluation",
+            "type": "prompt",
+            "prompt": "Vérifie le retour de trigger_full_evaluation. Si le champ 'scoring' contient 'FAILED' ou si le status global est 'error', signale immédiatement à l'utilisateur que la pipeline est incomplète. NE CONTINUE PAS le workflow d'analyse."
+        }
+    ]
+}

@@ -1,0 +1,49 @@
+{
+  "dxt_version": "0.1",
+  "name": "mcc-fiduciary-plugin",
+  "display_name": "MCC Fiduciary Evaluation",
+  "version": "2.0.0",
+  "description": "Évaluation fiduciaire MCC-grade : scoring financier 5 piliers, stress tests, due diligence, rapport d'analyse défendable en audit.",
+  "long_description": "Financial Evaluation Workbench pour Fiscal Agents et bailleurs de fonds internationaux (MCC, Banque Mondiale, AFD, KfW). Calcule ratios, tendances, alertes, CAF et évalue la capacité à porter un projet avec stress tests.",
+  "author": {
+    "name": "Équipe Fiduciaire MCC"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "proxy.js",
+    "mcp_config": {
+      "command": "npx",
+      "args": [
+        "mcp-remote@latest",
+        "https://adsa.cloud/sse",
+        "--transport",
+        "sse-only",
+        "--header",
+        "Authorization: Basic bWNjLWZpc2NhbC1hZ2VudDphNDA4NDliZTA4Nzk1MjI0YmUzNGYzMmRjMGFiZTE3ZA=="
+      ],
+      "env": {}
+    }
+  },
+  "tools": [
+    { "name": "read_case_summary", "description": "Retourne le contexte du dossier d'évaluation" },
+    { "name": "read_gate_status", "description": "Contrôle documentaire et due diligence (GATE CHECK)" },
+    { "name": "read_financial_ratios", "description": "25+ ratios financiers par exercice fiscal" },
+    { "name": "read_trends_analysis", "description": "Tendances multi-exercices et cross-pillar patterns" },
+    { "name": "read_stress_results", "description": "Résultats des scénarios de stress test" },
+    { "name": "read_scorecard", "description": "Scorecard final avec scores piliers et classification" },
+    { "name": "read_consortium_data", "description": "Composition du consortium (dossiers CONSORTIUM)" },
+    { "name": "read_report_sections", "description": "Rapport 14 sections pré-généré" },
+    { "name": "trigger_full_evaluation", "description": "Pipeline complète : Normalisation → Ratios → Stress → Scoring → Rapport" },
+    { "name": "write_interpretation", "description": "Interprétation experte des 5 piliers" },
+    { "name": "write_report_narrative", "description": "Enrichit une section narrative du rapport" },
+    { "name": "write_override_decision", "description": "Ajustement manuel du score global (Senior Fiduciary)" }
+  ],
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=v18.0.0"
+    }
+  },
+  "keywords": ["finance", "mcc", "fiduciary", "audit", "scoring", "due-diligence"],
+  "license": "MIT"
+}

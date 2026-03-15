@@ -1,0 +1,134 @@
+import enum
+
+class JVType(enum.Enum):
+    JOINT_AND_SEVERAL = "JOINT_AND_SEVERAL"
+    JOINT = "JOINT"
+    SEPARATE = "SEPARATE"
+
+class ConsortiumRole(enum.Enum):
+    LEADER = "LEADER"
+    MEMBER = "MEMBER"
+
+class LiabilityType(enum.Enum):
+    JOINT_AND_SEVERAL = "JOINT_AND_SEVERAL"
+    JOINT = "JOINT"
+
+class CaseType(enum.Enum):
+    SINGLE = "SINGLE"
+    CONSORTIUM = "CONSORTIUM"
+
+class CaseStatus(enum.Enum):
+    DRAFT = "DRAFT"
+    IN_ANALYSIS = "IN_ANALYSIS"
+    SCORING = "SCORING"
+    COMPLETED = "COMPLETED"
+    ARCHIVED = "ARCHIVED"
+
+class Recommendation(enum.Enum):
+    ACCEPT = "ACCEPT"
+    CONDITIONAL_ACCEPT = "CONDITIONAL_ACCEPT"
+    REJECT_RECOMMENDED = "REJECT_RECOMMENDED"
+
+class DocType(enum.Enum):
+    FINANCIAL_STATEMENTS = "FINANCIAL_STATEMENTS"
+    AUDITOR_OPINION = "AUDITOR_OPINION"
+    ANNEXES = "ANNEXES"
+    CA_DECLARATION = "CA_DECLARATION"
+    BANK_REFERENCES = "BANK_REFERENCES"
+    OTHER = "OTHER"
+
+class DocStatus(enum.Enum):
+    PRESENT = "PRESENT"
+    MISSING = "MISSING"
+    INCOMPLETE = "INCOMPLETE"
+    REJECTED = "REJECTED"
+
+class ReliabilityLevel(enum.Enum):
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+    UNAUDITED = "UNAUDITED"
+
+class AuditorOpinion(enum.Enum):
+    UNQUALIFIED = "UNQUALIFIED"
+    QUALIFIED = "QUALIFIED"
+    ADVERSE = "ADVERSE"
+    DISCLAIMER = "DISCLAIMER"
+
+class DDVerdict(enum.Enum):
+    OK = "OK"
+    RESERVE = "RESERVE"
+    BLOCKING = "BLOCKING"
+
+class Referentiel(enum.Enum):
+    PCG = "PCG"
+    CGNC = "CGNC"
+    OHADA = "OHADA"
+    IFRS = "IFRS"
+    OTHER = "OTHER"
+
+class AdjustmentType(enum.Enum):
+    RECLASS = "RECLASS"
+    CORRECTION = "CORRECTION"
+    ESTIMATE = "ESTIMATE"
+    CURRENCY = "CURRENCY"
+    OTHER = "OTHER"
+
+class AdjustmentMode(enum.Enum):
+    add = "add"
+    replace = "replace"
+
+class RiskClass(enum.Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+class OverrideType(enum.Enum):
+    MANUAL_UPGRADE = "MANUAL_UPGRADE"
+    MANUAL_DOWNGRADE = "MANUAL_DOWNGRADE"
+    AUTO_FLAG = "AUTO_FLAG"
+
+class OverrideStatus(enum.Enum):
+    ACTIVE = "ACTIVE"
+    SUPERSEDED = "SUPERSEDED"
+    CANCELLED = "CANCELLED"
+
+class StressResult(enum.Enum):
+    SOLVENT = "SOLVENT"
+    LIMIT = "LIMIT"
+    INSOLVENT = "INSOLVENT"
+
+class ReportStatus(enum.Enum):
+    DRAFT = "DRAFT"
+    FINAL = "FINAL"
+    ARCHIVED = "ARCHIVED"
+
+class InterpretationLabel(enum.Enum):
+    INADEQUATE = "INADEQUATE"
+    WEAK = "WEAK"
+    MODERATE = "MODERATE"
+    STRONG = "STRONG"
+    VERY_STRONG = "VERY_STRONG"
+
+class UserRole(enum.Enum):
+    ADMIN = "ADMIN"
+    ANALYST = "ANALYST"
+    AUDITOR = "AUDITOR"
+
+class AuditEventType(enum.Enum):
+    CASE_CREATED = "CASE_CREATED"
+    GATE_COMPUTED = "GATE_COMPUTED"
+    NORMALIZATION_SAVED = "NORMALIZATION_SAVED"
+    RATIO_COMPUTED = "RATIO_COMPUTED"
+    INTERPRETATION_SAVED = "INTERPRETATION_SAVED"
+    STRESS_TEST_COMPUTED = "STRESS_TEST_COMPUTED"
+    SCORECARD_COMPUTED = "SCORECARD_COMPUTED"
+    OVERRIDE_ADDED = "OVERRIDE_ADDED"
+    REPORT_GENERATED = "REPORT_GENERATED"
+    REPORT_EXPORTED = "REPORT_EXPORTED"
+    REPORT_SECTION_UPDATED = "REPORT_SECTION_UPDATED"
+    STATUS_CHANGED = "STATUS_CHANGED"
+    POLICY_LOADED = "POLICY_LOADED"
+    SYSTEM_ERROR = "SYSTEM_ERROR"
+    DATA_IMPORT = "DATA_IMPORT"

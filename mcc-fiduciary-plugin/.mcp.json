@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "mcc_fiduciary_server": {
+      "command": "python",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/../mcp_server.py"],
+      "env": {
+        "DATABASE_URL": "sqlite:///data/few_solo.db",
+        "PYTHONPATH": "${CLAUDE_PLUGIN_ROOT}/.."
+      },
+      "transport": "stdio"
+    }
+  }
+}

@@ -1,0 +1,155 @@
+# ============================================================================
+# FinaCES AI - Model Training Configuration
+# XGBoost & LightGBM Hyperparameters
+# ============================================================================
+
+model_training:
+  version: "1.0.0"
+  
+  # Active model type
+  default_model: "xgboost"  # xgboost, lightgbm, ensemble
+  
+  # Target variable
+  target:
+    column: "default"        # 1 = default, 0 = no default
+    positive_class: 1
+  
+  # Data split
+  data_split:
+    test_size: 0.2
+    validation_size: 0.1     # From remaining after test split
+    random_state: 42
+    stratify: true           # Stratify by target to preserve class distribution
+  
+  # Class imbalance handling
+  imbalance_handling:
+    method: "smote"          # smote, class_weight, hybrid
+    smote_sampling_strategy: 0.5  # Minority class / Majority class ratio after SMOTE
+    k_neighbors: 5
+    random_state: 42
+  
+  # XGBoost configuration
+  xgboost:
+    model_type: "xgbclassifier"
+    
+    hyperparameters:
+      n_estimators: 200
+      max_depth: 6
+      learning_rate: 0.05
+      subsample: 0.8
+      colsample_bytree: 0.8
+      min_child_weight: 3
+      gamma: 0.1
+      reg_alpha: 0.1          # L1 regularization
+      reg_lambda: 1.0          # L2 regularization
+      scale_pos_weight: 3.0   # For imbalanced classes
+      objective: "binary:logistic"
+      eval_metric: "auc"
+      random_state: 42
+      n_jobs: -1
+      verbosity: 1
+    
+    # Early stopping
+    early_stopping:
+      enabled: true
+      rounds: 20
+      metric: "auc"
+      maximize: true
+  
+  # LightGBM configuration
+  lightgbm:
+    model_type: "lgbmclassifier"
+    
+    hyperparameters:
+      n_estimators: 200
+      max_depth: 6
+      learning_rate: 0.05
+      num_leaves: 31
+      subsample: 0.8
+      colsample_bytree: 0.8
+      min_child_samples: 20
+      reg_alpha: 0.1
+      reg_lambda: 1.0
+      scale_pos_weight: 3.0
+      objective: "binary"
+      metric: "auc"
+      random_state: 42
+      n_jobs: -1
+      verbose: -1
+    
+    early_stopping:
+      enabled: true
+      rounds: 20
+  
+  # Cross-validation
+  cross_validation:
+    enabled: true
+    n_folds: 5
+    stratified: true
+    random_state: 42
+  
+  # Feature selection
+  feature_selection:
+    enabled: false           # Enable after first baseline model
+    method: "shap"           # shap, permutation, recursive
+    n_features_to_select: 30
+    threshold: 0.01
+  
+  # Model evaluation metrics
+  evaluation_metrics:
+    primary: "roc_auc"
+    secondary:
+      - "precision"
+      - "recall"
+      - "f1_score"
+      - "accuracy"
+      - "log_loss"
+    
+    # Threshold optimization
+    threshold_optimization:
+      enabled: true
+      metric: "f1_score"     # Optimize threshold to maximize this
+      search_range: [0.3, 0.7]
+      n_points: 40
+  
+  # Risk thresholds (for classification) aligned with MCC standard
+  risk_thresholds:
+    low:
+      max_probability: 0.05
+    moderate:
+      max_probability: 0.15
+    high:
+      max_probability: 0.30
+    critical:
+      min_probability: 0.30
+  
+  # Model persistence
+  model_storage:
+    directory: "ml/models"
+    format: "joblib"         # joblib, pickle
+    versioning: true
+    include_metadata: true
+    
+    metadata_fields:
+      - "training_date"
+      - "model_type"
+      - "feature_count"
+      - "training_samples"
+      - "cv_scores"
+      - "hyperparameters"
+      - "evaluation_metrics"
+  
+  # SHAP explanations
+  shap_config:
+    enabled: true
+    explainer_type: "tree"   # tree, kernel, deep
+    max_display_features: 15
+    compute_interactions: false
+    save_plots: true
+    plots_directory: "ml/outputs/shap"
+
+  # Monitoring thresholds
+  monitoring:
+    performance_degradation_threshold: 0.05  # Alert if AUC drops by 5%
+    data_drift_threshold: 0.1                # PSI threshold
+    prediction_drift_threshold: 0.1

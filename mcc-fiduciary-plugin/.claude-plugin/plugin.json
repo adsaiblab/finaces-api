@@ -1,0 +1,13 @@
+{
+  "name": "mcc-fiduciary-plugin",
+  "version": "2.0.0",
+  "description": "Évaluation fiduciaire MCC-grade : scoring financier 5 piliers, stress tests, due diligence, rapport d'analyse défendable en audit — pour Fiscal Agents et bailleurs de fonds internationaux.",
+  "author": {
+    "name": "Équipe Fiduciaire MCC"
+  },
+  "keywords": ["finance", "mcc", "fiduciary", "audit", "scoring", "due-diligence"],
+  "skills": ["analyze-bidder"],
+  "commands": ["evaluer"],
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json"
+}

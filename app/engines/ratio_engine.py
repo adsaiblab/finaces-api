@@ -1,0 +1,336 @@
+import uuid
+from decimal import Decimal, ROUND_HALF_UP
+from typing import List, Dict, Optional, Any
+
+from app.schemas.normalization_schema import FinancialStatementNormalizedSchema
+from app.schemas.ratio_schema import RatioSetSchema, AlertSchema
+from app.schemas.policy_schema import PolicyConfigurationSchema
+
+# ════════════════════════════════════════════════════════════════
+# PURE SECURE ARITHMETIC HELPERS
+# ════════════════════════════════════════════════════════════════
+
+def _safe_divide(numerator: Optional[Decimal], denominator: Optional[Decimal], pct: bool = False) -> Optional[Decimal]:
+    """
+    CRITICAL: Secure division to prevent ZeroDivisionError.
+    """
+    if numerator is None or denominator is None or denominator == Decimal("0.0"):
+        return None
+    result = numerator / denominator
+    return result * Decimal("100.0") if pct else result
+
+
+def _safe_sub(a: Optional[Decimal], b: Optional[Decimal]) -> Optional[Decimal]:
+    if a is None or b is None:
+        return None
+    return a - b
+
+
+def _safe_sum(*values: Optional[Decimal], strict: bool = False) -> Optional[Decimal]:
+    total = Decimal("0.0")
+    has_data = False
+    for v in values:
+        if v is not None:
+            total += v
+            has_data = True
+        elif strict:
+            return None
+    return total if has_data else None
+
+
+# ════════════════════════════════════════════════════════════════
+# ENGINE CALCULATION RATIOS (PURE FUNCTION)
+# ════════════════════════════════════════════════════════════════
+
+def compute_ratios(norm: FinancialStatementNormalizedSchema, case_id: uuid.UUID, policy: PolicyConfigurationSchema) -> RatioSetSchema:
+    """
+    Pure Function: Computes all financial ratios from a Pydantic normalized statement.
+    Totally decoupled from SQLAlchemy and FastAPI.
+    """
+    # Shortcuts
+    ac = norm.current_assets
+    al = norm.liquid_assets
+    ai = norm.non_current_assets
+    at = norm.total_assets
+    pct_val = norm.current_liabilities
+    plt = norm.non_current_liabilities
+    ptot = norm.total_liabilities_and_equity
+    cp = norm.equity
+    ca = norm.revenue
+    rn = norm.net_income
+    ebitda = norm.ebitda
+    cfo = norm.operating_cash_flow
+    year = norm.fiscal_year
+
+    # Shortcuts from the normalized layer
+    stocks = norm.inventory
+    creances = norm.accounts_receivable
+    fourniss = norm.accounts_payable
+    achats = norm.cost_of_goods_sold
+    charges_f = norm.financial_expenses
+    ebit = norm.operating_income
+    dap = norm.depreciation_and_amortization
+    df_lt = norm.long_term_debt
+    df_ct = norm.short_term_debt
+
+    # ── LIQUIDITY ─────────────────────────────────────────────
+    current_ratio = _safe_divide(ac, pct_val)
+    quick_ratio = _safe_divide(_safe_sub(ac, stocks), pct_val)
+    cash_ratio = _safe_divide(al, pct_val)
+    fdr = _safe_sub(ac, pct_val)
+
+    # ── SOLVENCY ───────────────────────────────────────────
+    dettes_fin = _safe_sum(df_lt, df_ct, strict=True)
+    
+    net_debt = None
+    if dettes_fin is not None:
+        if al is None:
+            net_debt = None
+        else:
+            net_debt = dettes_fin - al
+        
+    dte = _safe_divide(dettes_fin, cp)
+    autonomie = _safe_divide(cp, at)
+    gearing = _safe_divide(net_debt, cp)
+
+    interest_cov = None
+    if ebit is not None and charges_f is not None and charges_f > Decimal("0.0"):
+        interest_cov = _safe_divide(ebit, charges_f)
+
+    # ── PROFITABILITY ───────────────────────────────────────────
+    net_margin = _safe_divide(rn, ca, pct=True)
+    ebitda_margin = _safe_divide(ebitda, ca, pct=True)
+    op_margin = _safe_divide(ebit, ca, pct=True)
+    roa = _safe_divide(rn, at, pct=True)
+    
+    roe = None
+    if cp is not None:
+        if cp < Decimal("0.0"):
+            roe = None
+        elif cp > Decimal("0.0"):
+            roe = _safe_divide(rn, cp, pct=True)
+
+    # ── ACTIVITY ──────────────────────────────────────────────
+    dso = None
+    dpo = None
+    dio = None
+    working_capital_requirement = None
+
+    if creances is not None and ca is not None and ca > Decimal("0.0"):
+        dso = _safe_divide(creances * Decimal("365"), ca)
+
+    if fourniss is not None and achats is not None and achats > Decimal("0.0"):
+        dpo = _safe_divide(fourniss * Decimal("365"), achats)
+
+    if stocks is not None and achats is not None and achats > Decimal("0.0"):
+        dio = _safe_divide(stocks * Decimal("365"), achats)
+
+    if creances is not None and stocks is not None and fourniss is not None:
+        working_capital_requirement = creances + stocks - fourniss
+
+    working_capital_requirement_pct_revenue = _safe_divide(working_capital_requirement, ca, pct=True)
+
+    ccc = None
+    if dso is not None and dio is not None and dpo is not None:
+        ccc = dso + dio - dpo
+
+    # ── CASH FLOW GENERATION ───────────────────────────────────────
+    cash_flow_capacity = None
+    if rn is not None and dap is not None:
+        cash_flow_capacity = rn + dap
+    elif cfo is not None:
+        cash_flow_capacity = cfo
+
+    caf_margin = _safe_divide(cash_flow_capacity, ca, pct=True)
+
+    debt_repayment = None
+    if cash_flow_capacity is not None and cash_flow_capacity > Decimal("0.0") and dettes_fin is not None:
+        debt_repayment = _safe_divide(dettes_fin, cash_flow_capacity)
+
+    # ── AUTOMATIC FLAGS ────────────────────────────────────
+    cap_neg = 1 if (cp is not None and cp < Decimal("0.0")) else 0
+    cfo_neg = 1 if (cfo is not None and cfo < Decimal("0.0")) else 0
+
+    # ── CONSISTENCY ALERTS ──────────────────────────────────
+    coherence_alerts = []
+    if at is not None and ptot is not None:
+        diff = abs(at - ptot)
+        mx = max(at, ptot)
+        diff_pct = _safe_divide(diff, mx)
+        if diff_pct and diff_pct > policy.ratio.balance_sheet_tolerance_pct: # <-- FIX
+            coherence_alerts.append({
+                "code": "UNBALANCED_BALANCE_SHEET",
+                "message": f"Unbalanced balance sheet: gap {float(diff_pct):.1%}",
+            })
+
+    if current_ratio is not None and current_ratio < policy.ratio.very_low_current_ratio: # <-- FIX
+        coherence_alerts.append({
+            "code": "VERY_LOW_CURRENT_RATIO",
+            "message": f"Very low Current Ratio: {float(current_ratio):.3f}",
+        })
+
+    if cp is not None and cp < Decimal("0.0"):
+        coherence_alerts.append({
+            "code": "NEGATIVE_EQUITY",
+            "message": "Negative equity — critical financial situation",
+        })
+
+    # ── FINANCIAL INTELLIGENCE: ALTMAN Z-SCORE (EM) ─────────
+    z_score_altman = None
+    z_score_zone = None
+    z_limits = {
+        "safe": policy.ratio.z_score_safe_threshold,
+        "grey": policy.ratio.z_score_grey_threshold
+    } if (at and at > Decimal("0.0") and ptot and ptot > Decimal("0.0") and 
+        ebit is not None and cp is not None and ac is not None and 
+        pct_val is not None and rn is not None) else None
+    
+    if z_limits: # Only proceed if z_limits could be calculated
+        dettes_totales = ptot - cp
+        if dettes_totales > Decimal("0.0"):
+            x1 = _safe_divide((ac - pct_val), at)
+            x2 = _safe_divide(rn, at)
+            x3 = _safe_divide(ebit, at)
+            x4 = _safe_divide(cp, dettes_totales)
+            
+            if x1 is not None and x2 is not None and x3 is not None and x4 is not None:
+                # P1-HARDCODE-01 Fixed
+                c = policy.ratio.z_score_coefficients
+                if not c:
+                    from app.exceptions.finaces_exceptions import PolicyNotLoadedError
+                    raise PolicyNotLoadedError("Missing Z-Score coefficients in policy")
+                    
+                z = (c["x1"] * x1) + (c["x2"] * x2) + (c["x3"] * x3) + (c["x4"] * x4)
+                z_score_altman = z.quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
+                
+                if z_score_altman > z_limits["safe"]:
+                    z_score_zone = "SAFE"
+                elif z_score_altman >= z_limits["grey"]:
+                    z_score_zone = "GREY"
+                else:
+                    z_score_zone = "DISTRESS"
+
+    return RatioSetSchema(
+        id=uuid.uuid4(),
+        case_id=case_id,
+        fiscal_year=year,
+        normalized_statement_id=norm.id,
+        current_ratio=current_ratio,
+        quick_ratio=quick_ratio,
+        cash_ratio=cash_ratio,
+        working_capital=fdr,
+        debt_to_equity=dte,
+        financial_autonomy=autonomie,
+        gearing=gearing,
+        interest_coverage=interest_cov,
+        net_margin=net_margin,
+        ebitda_margin=ebitda_margin,
+        operating_margin=op_margin,
+        roa=roa,
+        roe=roe,
+        dso_days=dso,
+        dpo_days=dpo,
+        dio_days=dio,
+        cash_conversion_cycle=ccc,
+        working_capital_requirement=working_capital_requirement,
+        working_capital_requirement_pct_revenue=working_capital_requirement_pct_revenue,
+        cash_flow_capacity=cash_flow_capacity,
+        cash_flow_capacity_margin_pct=caf_margin,
+        debt_repayment_years=debt_repayment,
+        negative_equity=cap_neg,
+        negative_operating_cash_flow=cfo_neg,
+        z_score_altman=z_score_altman,
+        z_score_zone=z_score_zone,
+        coherence_alerts_json=coherence_alerts
+    )
+
+# ════════════════════════════════════════════════════════════════
+# PURE ALERTS GENERATION
+# ════════════════════════════════════════════════════════════════
+
+def generate_alerts(ratio_set: RatioSetSchema, policy: PolicyConfigurationSchema) -> List[AlertSchema]:
+    """
+    Pure Function generating alerts from a ratio set,
+    validated against a strict PolicyConfigurationSchema.
+    """
+    alerts = []
+    year = ratio_set.fiscal_year
+    
+    alert_labels = policy.alert_labels
+
+    def _add(key: str, value: Optional[Decimal], severity: str, note: str = ""):
+        alerts.append(AlertSchema(
+            key=key,
+            label=alert_labels.get(key, key),
+            year=year,
+            value=value,
+            severity=severity,
+            note=note
+        ))
+
+    if ratio_set.negative_equity:
+        _add("negative_equity", None, "CRITICAL")
+
+    if ratio_set.negative_operating_cash_flow:
+        _add("negative_operating_cash_flow", ratio_set.cash_flow_capacity, "HIGH")
+
+    rs_dict = ratio_set.model_dump()
+    for field, t in policy.alert_thresholds.items():
+        value = rs_dict.get(field)
+        if value is None:
+            continue
+
+        min_val = t.min
+        max_val = t.max
+        warn_val = t.warn
+
+        if min_val is not None:
+            if value < min_val:
+                _add(field, value, "HIGH", f"Value {float(value):.3f} < minimum threshold {float(min_val)}")
+            elif warn_val is not None and value < warn_val:
+                _add(field, value, "MEDIUM", f"Value {float(value):.3f} < warning threshold {float(warn_val)}")
+
+        if max_val is not None:
+            if value > max_val:
+                _add(field, value, "HIGH", f"Value {float(value):.3f} > maximum threshold {float(max_val)}")
+            elif warn_val is not None and value > warn_val:
+                _add(field, value, "MEDIUM", f"Value {float(value):.3f} > warning threshold {float(warn_val)}")
+
+    return alerts
+
+def generate_cross_pillar_patterns(ratio_sets: List[RatioSetSchema], policy: PolicyConfigurationSchema) -> List[AlertSchema]: # <-- UPDATE SIGNATURE
+    """Pure Function detecting cross-period patterns."""
+    alerts = []
+    if not ratio_sets:
+        return alerts
+        
+    latest = max(ratio_sets, key=lambda x: x.fiscal_year)
+    th = policy.cross_pillar # <-- LOAD THRESHOLDS
+    
+    cr = latest.current_ratio
+    qr = latest.quick_ratio
+    if cr and cr > th.false_liquidity_cr_min and qr and qr < th.false_liquidity_qr_max:
+        alerts.append(AlertSchema(pattern="FALSE_LIQUIDITY", description="High Current Ratio but very low Quick/Cash Ratio (Liquidity locked in inventory)."))
+        
+    roe = latest.roe
+    dte = latest.debt_to_equity
+    if roe and roe >= th.overleverage_roe_min and dte and dte > th.overleverage_dte_min:
+        alerts.append(AlertSchema(pattern="HIDDEN_OVERLEVERAGE", description="High financial profitability (ROE) artificially driven by excessive debt."))
+        
+    bfr_pct = latest.working_capital_requirement_pct_revenue
+    cfo = latest.negative_operating_cash_flow
+    if bfr_pct and bfr_pct > th.toxic_wcr_pct_min and cfo == 1:
+        alerts.append(AlertSchema(pattern="TOXIC_WCR", description="Critical WCR weight (>30% of revenue) destroying operating cash flow."))
+        
+    if len(ratio_sets) >= 2:
+        first = min(ratio_sets, key=lambda x: x.fiscal_year)
+        eb_latest = latest.ebitda_margin
+        eb_first = first.ebitda_margin
+        bfr_latest = latest.working_capital_requirement_pct_revenue
+        bfr_first = first.working_capital_requirement_pct_revenue
+        
+        if eb_latest is not None and eb_first is not None and bfr_latest is not None and bfr_first is not None:
+            if eb_latest < (eb_first - th.scissors_margin_drop) and bfr_latest > (bfr_first + th.scissors_wcr_rise):
+                alerts.append(AlertSchema(pattern="SCISSORS_EFFECT", description="Simultaneous margin degradation and WCR increase blocking cash flow."))
+                
+    return alerts

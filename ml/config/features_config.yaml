@@ -1,0 +1,179 @@
+# ============================================================================
+# FinaCES AI - Feature Engineering Configuration
+# Based on: Bloc-1.md specifications
+# Cohérent avec: FinancialStatementNormalized model columns
+# ============================================================================
+
+feature_engineering:
+  version: "1.0.0"
+  
+  # Data source mapping (colonnes du modèle FinancialStatementNormalized)
+  source_columns:
+    # Balance Sheet - Assets
+    total_assets: "totalassets"
+    current_assets: "currentassets"
+    liquid_assets: "liquidassets"
+    inventory: "inventory"
+    accounts_receivable: "accountsreceivable"
+    other_current_assets: "othercurrentassets"
+    noncurrent_assets: "noncurrentassets"
+    intangible_assets: "intangibleassets"
+    tangible_assets: "tangibleassets"
+    financial_assets: "financialassets"
+    
+    # Balance Sheet - Liabilities & Equity
+    total_liabilities_and_equity: "totalliabilitiesandequity"
+    equity: "equity"
+    share_capital: "sharecapital"
+    reserves: "reserves"
+    retained_earnings_prior: "retainedearningsprior"
+    current_year_earnings: "currentyearearnings"
+    noncurrent_liabilities: "noncurrentliabilities"
+    long_term_debt: "longtermdebt"
+    long_term_provisions: "longtermprovisions"
+    current_liabilities: "currentliabilities"
+    short_term_debt: "shorttermdebt"
+    accounts_payable: "accountspayable"
+    tax_and_social_liabilities: "taxandsocialliabilities"
+    other_current_liabilities: "othercurrentliabilities"
+    
+    # Income Statement
+    revenue: "revenue"
+    sold_production: "soldproduction"
+    other_operating_revenue: "otheroperatingrevenue"
+    cost_of_goods_sold: "costofgoodssold"
+    external_expenses: "externalexpenses"
+    personnel_expenses: "personnelexpenses"
+    taxes_and_duties: "taxesandduties"
+    depreciation_and_amortization: "depreciationandamortization"
+    other_operating_expenses: "otheroperatingexpenses"
+    operating_income: "operatingincome"
+    financial_revenue: "financialrevenue"
+    financial_expenses: "financialexpenses"
+    financial_income: "financialincome"
+    income_before_tax: "incomebeforetax"
+    extraordinary_income: "extraordinaryincome"
+    income_tax: "incometax"
+    net_income: "netincome"
+    ebitda: "ebitda"
+    
+    # Cash Flows
+    operating_cash_flow: "operatingcashflow"
+    investing_cash_flow: "investingcashflow"
+    financing_cash_flow: "financingcashflow"
+    change_in_cash: "changeincash"
+    beginning_cash: "beginningcash"
+    ending_cash: "endingcash"
+    
+    # Operational
+    headcount: "headcount"
+    backlog_value: "backlogvalue"
+    capex: "capex"
+
+  # Feature groups (40+ features comme spécifié dans Bloc-1.md)
+  feature_groups:
+    
+    # Groupe 1: Liquidity (10 features)
+    liquidity:
+      - current_ratio              # AC / PCT
+      - quick_ratio                # (AC - Stocks) / PCT
+      - cash_ratio                 # Liquidités / PCT
+      - working_capital            # AC - PCT
+      - working_capital_pct_assets # (AC - PCT) / Total Assets
+      - cash_to_assets             # Liquidités / Total Assets
+      - inventory_to_current_assets # Stocks / AC
+      - receivables_to_current_assets # Créances / AC
+      - liquid_assets_coverage     # Liquidités / PCT
+      - defensive_interval_days    # Liquidités / (Charges d'exploitation / 365)
+    
+    # Groupe 2: Solvency (10 features)
+    solvency:
+      - debt_to_equity             # (PLT + PCT) / CP
+      - financial_autonomy         # CP / Total Assets
+      - gearing                    # Dette nette / CP
+      - long_term_debt_ratio       # PLT / Total Assets
+      - current_debt_ratio         # PCT / Total Assets
+      - equity_ratio               # CP / (PLT + PCT)
+      - debt_service_coverage      # EBITDA / (Interest + Principal)
+      - liabilities_to_assets      # (PLT + PCT) / Total Assets
+      - equity_multiplier          # Total Assets / CP
+      - capitalization_ratio       # PLT / (PLT + CP)
+    
+    # Groupe 3: Profitability (8 features)
+    profitability:
+      - net_margin                 # Net Income / Revenue (%)
+      - ebitda_margin              # EBITDA / Revenue (%)
+      - operating_margin           # Operating Income / Revenue (%)
+      - roa                        # Net Income / Total Assets (%)
+      - roe                        # Net Income / Equity (%)
+      - roic                       # EBIT(1-t) / (Equity + Debt)
+      - gross_profit_margin        # (Revenue - COGS) / Revenue
+      - return_on_sales            # EBIT / Revenue
+    
+    # Groupe 4: Contractual Capacity (6 features)
+    capacity:
+      - cashflow_capacity          # Net Income + D&A
+      - cashflow_margin_pct        # (Net Income + D&A) / Revenue (%)
+      - debt_repayment_years       # Total Debt / Cashflow Capacity
+      - interest_coverage          # EBIT / Interest Expenses
+      - cash_debt_coverage         # Operating CF / Total Debt
+      - working_capital_requirement_pct # WCR / Revenue (%)
+    
+    # Groupe 5: Quality/Reliability (6 features)
+    quality:
+      - negative_equity_flag       # 1 if Equity < 0, else 0
+      - negative_cashflow_flag     # 1 if Operating CF < 0, else 0
+      - z_score_altman             # Altman Z-Score
+      - balance_sheet_balance_check # |Total Assets - Total L&E| / max(...)
+      - audit_quality_score        # Derived from documents.reliabilitylevel
+      - data_completeness_score    # % of non-null critical fields
+    
+    # Groupe 6: Trend Analysis (multi-year, computed on 2-3 years)
+    trends:
+      - revenue_growth_rate        # (Revenue_t - Revenue_t-1) / Revenue_t-1
+      - equity_growth_rate         # (Equity_t - Equity_t-1) / Equity_t-1
+      - debt_growth_rate           # (Debt_t - Debt_t-1) / Debt_t-1
+      - profitability_trend        # Net Margin evolution
+      - liquidity_trend            # Current Ratio evolution
+      - cashflow_trend             # CF Capacity evolution
+
+  # Missing value handling
+  missing_value_strategy:
+    numeric_features: "median"     # median, mean, zero
+    categorical_features: "mode"   # mode, constant
+    allow_nulls_for:
+      - "z_score_altman"           # Can be null if data insufficient
+      - "interest_coverage"        # Can be null if interest = 0
+
+  # Outlier detection
+  outlier_detection:
+    enabled: true
+    method: "iqr"                  # iqr, zscore, isolation_forest
+    iqr_multiplier: 3.0
+    zscore_threshold: 4.0
+
+  # Feature scaling (applied before model training)
+  scaling:
+    method: "robust"               # standard, minmax, robust
+    features_to_scale:
+      - "revenue"
+      - "total_assets"
+      - "equity"
+      - "ebitda"
+      - "cashflow_capacity"
+
+  # Feature validation rules
+  validation:
+    current_ratio:
+      min: 0.0
+      max: 50.0
+      warn_below: 0.5
+    
+    debt_to_equity:
+      min: 0.0
+      max: 100.0
+      warn_above: 10.0
+    
+    roe:
+      min: -500.0
+      max: 500.0
