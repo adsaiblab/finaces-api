@@ -23,11 +23,25 @@ class IARiskClass(str, Enum):
 class IAFeatureContribution(BaseModel):
     """Individual feature contribution to prediction."""
     model_config = ConfigDict(from_attributes=True)
-    
+
     feature_name: str
     feature_value: Optional[float] = None
     shap_value: float
     impact: str  # "increases_risk" or "decreases_risk"
+    direction: str = "POSITIVE"  # POSITIVE | NEGATIVE
+    magnitude: str = "LOW"  # LOW | MEDIUM | HIGH
+
+    @classmethod
+    def from_raw(cls, feature_name: str, feature_value: float, shap_value: float):
+        abs_val = abs(shap_value)
+        return cls(
+            feature_name=feature_name,
+            feature_value=feature_value,
+            shap_value=shap_value,
+            impact="increases_risk" if shap_value >= 0 else "decreases_risk",
+            direction="POSITIVE" if shap_value >= 0 else "NEGATIVE",
+            magnitude="HIGH" if abs_val > 0.3 else "MEDIUM" if abs_val > 0.1 else "LOW",
+        )
 
 
 class IAExplanation(BaseModel):
@@ -51,6 +65,19 @@ class IAPredictionResult(BaseModel):
     predicted_at: datetime
     explanations: Optional[IAExplanation] = None
     threshold_info: Dict[str, float]
+
+
+class WhatIfInput(BaseModel):
+    scenario_name: str
+    parameter_overrides: dict[str, float] = {}
+
+
+class WhatIfResult(BaseModel):
+    scenario_name: str
+    predicted_score_if: float = 0.0
+    predicted_class_if: str = "MODERATE"
+    delta_score: float = 0.0
+    feature_impacts: list[IAFeatureContribution] = []
 
 
 class IAFeaturesResponse(BaseModel):

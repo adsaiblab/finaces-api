@@ -392,9 +392,14 @@ class FinancialStatementRaw(Base):
     net_income: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     ebitda: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
 
+    gross_profit: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    extraordinary_expenses: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    other_noncurrent_assets: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+
     operating_cash_flow: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     investing_cash_flow: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     financing_cash_flow: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    free_cash_flow: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     change_in_cash: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     beginning_cash: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     ending_cash: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
@@ -877,6 +882,19 @@ class ExpertReview(Base):
     analyst_id: Mapped[str] = mapped_column(String, nullable=False)
     qualitative_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     manual_risk_override: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    # Per-pillar comments (T12)
+    liquidity_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    solvability_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    profitability_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    capacity_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    quality_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    dynamic_analysis_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    mitigating_factors: Mapped[list | dict | None] = mapped_column(JSONB, nullable=True, default=[])
+    risk_factors: Mapped[list | dict | None] = mapped_column(JSONB, nullable=True, default=[])
+    override_recommendation: Mapped[str | None] = mapped_column(String(50), nullable=True, default="NONE")
+
     final_decision: Mapped[str] = mapped_column(
         String,
         CheckConstraint("final_decision IN ('APPROVED', 'REJECTED', 'ESCALATED')", name='ck_expert_final_decision'),

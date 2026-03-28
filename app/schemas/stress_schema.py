@@ -74,3 +74,38 @@ class StressResultSchema(BaseModel):
     data_alerts: List[str]
     
     model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# T14: Macro Shock schemas
+# ============================================================================
+
+class MacroShockInput(BaseModel):
+    mode: str = "MACRO_SHOCK"
+    scenario_name: str
+    revenue_shock: float = 0.0
+    cost_inflation: float = 0.0
+    receivables_days_increase: int = 0
+    payment_delays_days: int = 0
+    interest_rate_increase: float = 0.0
+    capex_reduction: float = 0.0
+
+
+class CashFlowPoint(BaseModel):
+    month: int
+    cash_position: Decimal
+    revenue: Decimal
+    costs: Decimal
+
+
+class MacroShockResult(BaseModel):
+    scenario_name: str
+    solvency_status: StressDecision
+    minimum_cash_position: Decimal
+    minimum_cash_date: str = ""
+    days_to_default: Optional[int] = None
+    flows: list[CashFlowPoint] = []
+    liquidity_coverage_ratio: Decimal = Decimal("0.0")
+    debt_service_coverage_ratio: Decimal = Decimal("0.0")
+
+    model_config = ConfigDict(from_attributes=True)

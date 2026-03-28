@@ -76,7 +76,7 @@ def build_section_04(
     gate_v = "PASS" if gate_decision and gate_decision.is_passed else "FAILED"
     stress_status = stress.capacity_conclusion if stress else "N/A"
     
-    risk_icons = {"LOW": "🟢", "MEDIUM": "🟡", "HIGH": "🟠", "CRITICAL": "🔴"}
+    risk_icons = {"LOW": "🟢", "MODERATE": "🟡", "HIGH": "🟠", "CRITICAL": "🔴"}
     icon = risk_icons.get(risk_class, "⚪")
 
     return (

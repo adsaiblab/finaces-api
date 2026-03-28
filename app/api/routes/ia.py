@@ -37,7 +37,9 @@ from app.services.ia_service import generate_and_save_ia_features
 from app.schemas.ia_schema import (
     IAPredictionResult,
     IAFeaturesResponse,
-    IARiskClass
+    IARiskClass,
+    WhatIfInput,
+    WhatIfResult,
 )
 from app.exceptions.finaces_exceptions import (
     MissingFinancialDataError,
@@ -815,6 +817,20 @@ async def _get_model_by_version(
     stmt = select(IAModel).where(IAModel.version == version)
     result = await db.execute(stmt)
     return result.scalars().first()
+
+
+@router.post("/cases/{case_id}/simulate")
+async def simulate_what_if(case_id: str, payload: WhatIfInput, db: AsyncSession = Depends(get_db), current_user: Dict = Depends(get_current_user)):
+    """What-If simulation for IA predictions."""
+    # Placeholder — would call IA engine with overridden features
+    return WhatIfResult(scenario_name=payload.scenario_name)
+
+
+@router.get("/analytics/convergence")
+async def get_convergence_chart(days: int = Query(30, ge=7, le=365), db: AsyncSession = Depends(get_db), current_user: Dict = Depends(get_current_user)):
+    """Returns convergence chart data for MCC vs IA scores."""
+    # Placeholder — would query scored cases over time window
+    return {"days": days, "data_points": [], "convergence_pct": 0.0}
 
 
 async def _get_or_compute_mcc_scorecard(

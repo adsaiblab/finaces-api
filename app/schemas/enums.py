@@ -16,12 +16,18 @@ class LiabilityType(enum.Enum):
 class CaseType(enum.Enum):
     SINGLE = "SINGLE"
     CONSORTIUM = "CONSORTIUM"
+    LOTS = "LOTS"
 
 class CaseStatus(enum.Enum):
     DRAFT = "DRAFT"
-    IN_ANALYSIS = "IN_ANALYSIS"
-    SCORING = "SCORING"
-    COMPLETED = "COMPLETED"
+    PENDING_GATE = "PENDING_GATE"
+    FINANCIAL_INPUT = "FINANCIAL_INPUT"
+    NORMALIZATION_DONE = "NORMALIZATION_DONE"
+    RATIOS_COMPUTED = "RATIOS_COMPUTED"
+    SCORING_DONE = "SCORING_DONE"
+    STRESS_DONE = "STRESS_DONE"
+    EXPERT_REVIEWED = "EXPERT_REVIEWED"
+    CLOSED = "CLOSED"
     ARCHIVED = "ARCHIVED"
 
 class Recommendation(enum.Enum):
@@ -80,7 +86,7 @@ class AdjustmentMode(enum.Enum):
 
 class RiskClass(enum.Enum):
     LOW = "LOW"
-    MEDIUM = "MEDIUM"
+    MODERATE = "MODERATE"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
@@ -132,3 +138,39 @@ class AuditEventType(enum.Enum):
     POLICY_LOADED = "POLICY_LOADED"
     SYSTEM_ERROR = "SYSTEM_ERROR"
     DATA_IMPORT = "DATA_IMPORT"
+
+class RiskProfile(enum.Enum):
+    BALANCED = "BALANCED"
+    ASYMMETRICAL = "ASYMMETRICAL"
+    AGGRESSIVE = "AGGRESSIVE"
+    DEFENSIVE = "DEFENSIVE"
+    CLASSIC = "CLASSIC"
+
+class OverrideRecommendation(enum.Enum):
+    NONE = "NONE"
+    UPGRADE = "UPGRADE"
+    DOWNGRADE = "DOWNGRADE"
+
+class FinalDecision(enum.Enum):
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    ESCALATED = "ESCALATED"
+
+class StressMode(enum.Enum):
+    CONTRACT = "CONTRACT"
+    MACRO_SHOCK = "MACRO_SHOCK"
+
+class ShapDirection(enum.Enum):
+    POSITIVE = "POSITIVE"
+    NEGATIVE = "NEGATIVE"
+
+class ShapMagnitude(enum.Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+class RatioStatus(enum.Enum):
+    GREEN = "GREEN"
+    YELLOW = "YELLOW"
+    ORANGE = "ORANGE"
+    RED = "RED"

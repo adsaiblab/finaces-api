@@ -36,6 +36,22 @@ class DashboardStatsResponse(BaseModel):
     recent_events: List[RecentEventSchema]
     recent_cases: List[RecentCaseSchema]
 
+
+class DashboardStatsOut(BaseModel):
+    total_cases: int = 0
+    by_status: dict[str, int] = {}
+    risk_distribution: dict[str, int] = {}
+    recent_events: list[dict] = []
+    recent_cases: list[dict] = []
+    total_active_cases: int = 0
+    cases_pending_gate: int = 0
+    cases_with_tension_alert: int = 0
+    convergence_percentage: float = 0.0
+    avg_mcc_score_7days: float = 0.0
+    avg_ia_score_7days: float = 0.0
+    divergences_count_7days: int = 0
+    last_updated: str = ""
+
 @router.get("/dashboard/stats", response_model=DashboardStatsResponse)
 async def get_dashboard_stats(db: AsyncSession = Depends(get_db), current_user: dict = Depends(get_current_user)):
     """Returns the overall dashboard KPIs."""

@@ -1,5 +1,5 @@
 from app.core.security import get_current_user
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from typing import List
@@ -37,3 +37,12 @@ async def api_compute_ratios(case_id: UUID, db: AsyncSession = Depends(get_db), 
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred during ratio computation."
         )
+
+
+@router.get("/ratios/benchmarks")
+async def get_benchmarks(sector: str = Query("DEFAULT"), db: AsyncSession = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    """Returns benchmark ranges by sector."""
+    from app.services.policy_service import get_active_policy
+    policy = await get_active_policy(db)
+    benchmarks = policy.sector_benchmarks.get(sector, policy.sector_benchmarks.get("DEFAULT", {}))
+    return benchmarks

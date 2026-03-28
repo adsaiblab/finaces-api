@@ -18,7 +18,7 @@ def get_risk_band(score: Decimal, policy: PolicyConfigurationSchema) -> RiskClas
     if score >= Decimal(str(thresholds.get("safe", "4.0"))):
         return RiskClass.LOW
     elif score >= Decimal(str(thresholds.get("medium", "3.0"))):
-        return RiskClass.MEDIUM
+        return RiskClass.MODERATE
     elif score >= Decimal(str(thresholds.get("high", "2.0"))):
         return RiskClass.HIGH
         

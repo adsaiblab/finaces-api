@@ -47,7 +47,7 @@ SECTION_TITLES = {
 
 RISK_COLORS_HEX = {
     "LOW":      "#27AE60",
-    "MEDIUM":   "#F39C12",
+    "MODERATE":   "#F39C12",
     "HIGH":     "#E67E22",
     "CRITICAL": "#E74C3C",
 }
@@ -261,7 +261,7 @@ def _add_cover_page(doc, report: dict) -> None:
         # Map hex to RGBColor
         _RISK_RGB = {
             "LOW":      RGBColor(0x27, 0xAE, 0x60),
-            "MEDIUM":   RGBColor(0xF3, 0x9C, 0x12),
+            "MODERATE":   RGBColor(0xF3, 0x9C, 0x12),
             "HIGH":     RGBColor(0xE6, 0x7E, 0x22),
             "CRITICAL": RGBColor(0xE7, 0x4C, 0x3C),
         }
@@ -634,7 +634,7 @@ def _pdf_css() -> str:
 
 def _extract_risk_class(report: dict) -> str:
     section_10 = report.get("section_10_scoring", "")
-    for risk in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
+    for risk in ["CRITICAL", "HIGH", "MODERATE", "LOW"]:
         if risk in (section_10 or ""):
             return risk
     return "N/A"

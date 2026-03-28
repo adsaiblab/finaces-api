@@ -56,7 +56,7 @@ def _suggest_mitigations(weak_link_triggered: bool, leader_blocking: bool, final
     if final_risk_class in ("HIGH", "CRITICAL"):
         m.append("Payment retention (5-10%) releasable upon completion of each contractual milestone.")
         m.append("Requirement for a performance bond (10% of the market value).")
-    if final_risk_class == "MEDIUM":
+    if final_risk_class == "MODERATE":
         m.append("Enhanced monitoring: quarterly financial reports during the contract duration.")
     if not m:
         m.append("No specific mitigation measures required.")

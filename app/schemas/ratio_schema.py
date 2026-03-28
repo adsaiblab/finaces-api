@@ -70,3 +70,80 @@ class RatioSetSchema(BaseModel):
         return self
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# T09: RatioValue enrichment schemas
+# ============================================================================
+
+from app.schemas.enums import RatioStatus
+
+
+class TrendPoint(BaseModel):
+    fiscal_year: int
+    value: float
+
+
+class RatioValue(BaseModel):
+    current: float
+    trend: list[TrendPoint] = []
+    benchmark_min: float = 0.0
+    benchmark_max: float = 0.0
+    status: str = "GREEN"  # GREEN|YELLOW|ORANGE|RED
+    unit: str = "x"
+    variation_pct: float = 0.0
+    analyst_note: str | None = None
+
+
+class LiquidityGroup(BaseModel):
+    current_ratio: RatioValue
+    quick_ratio: RatioValue
+    cash_ratio: RatioValue
+    dio_days: RatioValue
+    cash_conversion_cycle: RatioValue
+
+
+class SolvencyGroup(BaseModel):
+    debt_to_equity: RatioValue
+    debt_to_assets: RatioValue
+    interest_coverage: RatioValue
+    negative_equity: bool = False
+    negative_operating_cash_flow: bool = False
+
+
+class ProfitabilityGroup(BaseModel):
+    gross_margin: RatioValue
+    operating_margin: RatioValue
+    net_margin: RatioValue
+    return_on_assets: RatioValue
+    return_on_equity: RatioValue
+    ebitda_margin: RatioValue
+
+
+class CapacityGroup(BaseModel):
+    debt_service_coverage: RatioValue
+    free_cash_flow_to_debt: RatioValue
+    capex_to_revenue: RatioValue
+
+
+class ZScoreGroup(BaseModel):
+    z_score_altman: RatioValue
+    z_score_zone: str = "GREY"
+
+
+class RatioSetEnrichedOut(BaseModel):
+    id: str
+    case_id: str
+    sector_code: str | None = None
+    coherence_status: str | None = None
+    liquidity: LiquidityGroup
+    solvency: SolvencyGroup
+    profitability: ProfitabilityGroup
+    capacity: CapacityGroup
+    z_score: ZScoreGroup
+    created_at: datetime
+
+
+class BenchmarkRange(BaseModel):
+    min: float
+    max: float

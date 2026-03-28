@@ -37,19 +37,29 @@ logger = logging.getLogger(__name__)
 # ════════════════════════════════════════════════════════════════
 
 VALID_TRANSITIONS: dict[str, list[str]] = {
-    "DRAFT":       ["IN_ANALYSIS"],
-    "IN_ANALYSIS": ["SCORING"],
-    "SCORING":     ["COMPLETED"],
-    "COMPLETED":   ["ARCHIVED"],
-    "ARCHIVED":    [],          # terminal state
+    "DRAFT":              ["PENDING_GATE", "ARCHIVED"],
+    "PENDING_GATE":       ["FINANCIAL_INPUT", "ARCHIVED"],
+    "FINANCIAL_INPUT":    ["NORMALIZATION_DONE"],
+    "NORMALIZATION_DONE": ["RATIOS_COMPUTED"],
+    "RATIOS_COMPUTED":    ["SCORING_DONE"],
+    "SCORING_DONE":       ["STRESS_DONE"],
+    "STRESS_DONE":        ["EXPERT_REVIEWED"],
+    "EXPERT_REVIEWED":    ["CLOSED"],
+    "CLOSED":             ["ARCHIVED"],
+    "ARCHIVED":           [],
 }
 
 STATUS_LABELS: dict[str, str] = {
-    "DRAFT":       "🗒️ Draft",
-    "IN_ANALYSIS": "🔍 In Analysis",
-    "SCORING":     "📊 Scoring Phase",
-    "COMPLETED":   "✅ Completed",
-    "ARCHIVED":    "📦 Archived",
+    "DRAFT":              "Draft",
+    "PENDING_GATE":       "Pending Gate",
+    "FINANCIAL_INPUT":    "Financial Input",
+    "NORMALIZATION_DONE": "Normalization Done",
+    "RATIOS_COMPUTED":    "Ratios Computed",
+    "SCORING_DONE":       "Scoring Done",
+    "STRESS_DONE":        "Stress Done",
+    "EXPERT_REVIEWED":    "Expert Reviewed",
+    "CLOSED":             "Closed",
+    "ARCHIVED":           "Archived",
 }
 
 RECOMMENDATION_LABELS: dict[str, str] = {
@@ -352,10 +362,63 @@ async def create_evaluation_case(
 
         return str(new_case.id)
 
+    # ── LOTS ────────────────────────────────────────────────────
+    elif case_type == "LOTS":
+        if not consortium_name:
+            raise HTTPException(status_code=400, detail="Consortium name required for LOTS cases.")
+
+        new_consortium = Consortium(
+            name=consortium_name.strip(),
+            jv_type=jv_type,
+            market_reference=market_reference.strip(),
+        )
+        db.add(new_consortium)
+        await db.flush()
+
+        if members:
+            for m in members:
+                db.add(ConsortiumMember(
+                    consortium_id=new_consortium.id,
+                    bidder_id=uuid.UUID(m.bidder_id) if m.bidder_id else None,
+                    individual_case_id=uuid.UUID(m.case_id) if m.case_id else None,
+                    role=m.role,
+                    participation_pct=Decimal(str(m.participation_pct)),
+                ))
+        await db.flush()
+
+        new_case = EvaluationCase(
+            case_type="LOTS",
+            market_reference=market_reference,
+            market_object=market_label,
+            contract_value=Decimal(str(contract_value)) if contract_value > 0 else None,
+            contract_currency=contract_currency,
+            contract_duration_months=contract_duration_months,
+            consortium_id=new_consortium.id,
+            analyst_notes=notes or None,
+        )
+        db.add(new_case)
+        await db.commit()
+        await db.refresh(new_case)
+
+        logger.info(f"Case LOTS created: {new_case.id} (consortium={new_consortium.id})")
+
+        await log_event(
+            db=db,
+            event_type="CASE_CREATED",
+            entity_type="EvaluationCase",
+            entity_id=str(new_case.id),
+            case_id=str(new_case.id),
+            description=f"LOTS case created — market reference: {market_reference}",
+            new_value={"status": "DRAFT", "case_type": "LOTS", "consortium_id": str(new_consortium.id)},
+            user_id=user_id,
+        )
+
+        return str(new_case.id)
+
     else:
         raise HTTPException(
             status_code=400,
-            detail="Invalid case_type. Accepted values: SINGLE | CONSORTIUM",
+            detail="Invalid case_type. Accepted values: SINGLE | CONSORTIUM | LOTS",
         )
 
 # ════════════════════════════════════════════════════════════════
@@ -374,7 +437,7 @@ async def update_recommendation(
         raise HTTPException(status_code=404, detail="Case not found")
 
     # <-- AJOUT P0 (State Machine Guard)
-    if str(case.status) in ["COMPLETED", "ARCHIVED"]:
+    if str(case.status) in ["CLOSED", "ARCHIVED"]:
         raise HTTPException(
             status_code=400, 
             detail=f"Operation forbidden. Case is locked in status: {case.status}"
@@ -408,7 +471,7 @@ async def update_conclusion(
         raise HTTPException(status_code=404, detail="Case not found")
 
     # <-- AJOUT P0 (State Machine Guard)
-    if str(case.status) in ["COMPLETED", "ARCHIVED"]:
+    if str(case.status) in ["CLOSED", "ARCHIVED"]:
         raise HTTPException(
             status_code=400, 
             detail=f"Operation forbidden. Case is locked in status: {case.status}"

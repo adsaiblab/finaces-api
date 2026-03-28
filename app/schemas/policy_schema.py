@@ -102,7 +102,7 @@ class PolicyConfigurationSchema(BaseModel):
     alert_labels: dict[str, str] = {}
     
     stale_data_months_limit: int = 18
-    max_score_if_missing_pillar: str = "MEDIUM" # Default mapped fallback RiskClass string
+    max_score_if_missing_pillar: str = "MODERATE" # Default mapped fallback RiskClass string
     
     # Benchmarks & Comparisons
     sector_benchmarks: dict[str, dict[str, dict[str, Decimal | str]]] = Field(
@@ -137,7 +137,7 @@ class PolicyConfigurationSchema(BaseModel):
     risk_priority_map: dict[str, int] = Field(
         default_factory=lambda: {
             "LOW": 4,
-            "MEDIUM": 3,
+            "MODERATE": 3,
             "HIGH": 2,
             "CRITICAL": 1,
             "NOT_EVALUATED": 0

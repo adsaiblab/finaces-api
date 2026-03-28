@@ -187,11 +187,11 @@ def get_risk_class(score: float, policy: dict) -> str:
     Maps a global score (0.0 – 5.0) to a risk class.
     Uses policy["risk_thresholds"] if available,
     otherwise falls back to standard IFRS bands.
-    Evaluation order: LOW → MEDIUM → HIGH → CRITICAL.
+    Evaluation order: LOW → MODERATE → HIGH → CRITICAL.
     """
     thresholds = policy.get("risk_thresholds", {})
 
-    for risk_class in ["LOW", "MEDIUM", "HIGH", "CRITICAL"]:
+    for risk_class in ["LOW", "MODERATE", "HIGH", "CRITICAL"]:
         band = thresholds.get(risk_class, {})
         band_min = float(band.get("min", 0))
         band_max = float(band.get("max", 5))
@@ -202,7 +202,7 @@ def get_risk_class(score: float, policy: dict) -> str:
     if score >= 4.0:
         return "LOW"
     elif score >= 3.0:
-        return "MEDIUM"
+        return "MODERATE"
     elif score >= 2.0:
         return "HIGH"
     else:

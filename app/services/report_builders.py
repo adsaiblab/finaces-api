@@ -80,7 +80,7 @@ def _build_section_04(case, scorecard, gate, capacity, sections, consortium_data
     coverage    = capacity.get("coverage_status", "N/A")
     stress_60   = capacity.get("stress_60d_result", "N/A")
 
-    risk_icons  = {"LOW": "🟢", "MEDIUM": "🟡", "HIGH": "🟠", "CRITICAL": "🔴"}
+    risk_icons  = {"LOW": "🟢", "MODERATE": "🟡", "HIGH": "🟠", "CRITICAL": "🔴"}
     icon        = risk_icons.get(risk_class, "⚪")
 
     alerts      = scorecard.get("overrides_applied", [])
@@ -335,7 +335,7 @@ def _build_section_11(scorecard: dict) -> str:
     score = float(scorecard.get("score_global") or 0)
     escalade_map = {
         "LOW":      "🟢 **Low Risk** — Standard validation. Financial capacity is deemed satisfactory. No specific contractual protection measures are required.",
-        "MEDIUM":   "🟡 **Moderate Risk** — Acceptance possible with documented mitigation measures. Standard contractual guarantees (performance bonds) are recommended.",
+        "MODERATE":   "🟡 **Moderate Risk** — Acceptance possible with documented mitigation measures. Standard contractual guarantees (performance bonds) are recommended.",
         "HIGH":     "🟠 **High Risk** — Mandatory senior review. Reinforced contractual protections are required (first-demand bank guarantees, retention money, conditional payment milestones).",
         "CRITICAL": "🔴 **Critical Risk** — Rejection recommended. Fiduciary risk is incompatible with program requirements.",
     }

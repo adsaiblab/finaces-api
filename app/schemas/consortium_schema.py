@@ -52,3 +52,10 @@ class ConsortiumScorecardOutput(BaseModel):
     computed_at: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ConsortiumMemberCreate(BaseModel):
+    bidder_id: str
+    bidder_name: str = ""
+    role: str = "MEMBER"
+    participation_pct: float = 0.0

@@ -192,7 +192,8 @@ def upgrade() -> None:
     op.alter_column('mcc_grade_reports', 'policy_version_id',
                existing_type=sa.VARCHAR(),
                type_=sa.UUID(),
-               existing_nullable=True)
+               existing_nullable=True,
+               postgresql_using='policy_version_id::uuid')
     op.create_foreign_key(None, 'mcc_grade_reports', 'policy_versions', ['policy_version_id'], ['id'], ondelete='SET NULL')
     op.drop_column('mcc_grade_reports', 'section_04_synthese')
     op.drop_column('mcc_grade_reports', 'section_07_capacite')
@@ -226,7 +227,8 @@ def downgrade() -> None:
     op.alter_column('mcc_grade_reports', 'policy_version_id',
                existing_type=sa.UUID(),
                type_=sa.VARCHAR(),
-               existing_nullable=True)
+               existing_nullable=True,
+               postgresql_using='policy_version_id::varchar')
     op.drop_column('mcc_grade_reports', 'section_13_limitations')
     op.drop_column('mcc_grade_reports', 'section_12_recommendation')
     op.drop_column('mcc_grade_reports', 'section_11_assessment')
