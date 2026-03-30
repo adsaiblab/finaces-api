@@ -14,21 +14,33 @@ from typing import Optional
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from passlib.context import CryptContext
+import bcrypt
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 # ── Crypto helpers ─────────────────────────────────────────────────────────────
-# Strict setup: bcrypt only to avoid passlib deprecation warnings on Python 3.12+
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# We use bcrypt directly to avoid passlib (deprecated) compatibility issues
+# with bcrypt 4.0+ and Python 3.12/3.13/3.14.
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verifies a plain password against a bcrypt hash."""
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"), 
+            hashed_password.encode("utf-8")
+        )
+    except Exception as e:
+        logger.error(f"Password verification error: {e}")
+        return False
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    """Generates a bcrypt hash for a plain password."""
+    # Salt generation with default rounds (12)
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()

@@ -57,7 +57,7 @@ def create_app() -> FastAPI:
     # 1. Configure middleware (CORS) - Secure (P2-04)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "http://localhost:8000"],  # WARNING: To be restricted in staging/production
+        allow_origins=["http://localhost:3000", "http://localhost:4200", "http://localhost:8000"],  # WARNING: To be restricted in staging/production
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], # <-- FIXED: wild card removed
         allow_headers=["Authorization", "Content-Type", "Accept"],          # <-- FIXED: limited to what is strictly necessary (JWT, JSON)
