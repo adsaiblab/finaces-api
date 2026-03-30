@@ -1,0 +1,102 @@
+INFO:     Started server process [79410]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:63756 - "GET /api/v1/ia/dashboard/data HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64529 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64665 - "POST /auth/login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65223 - "GET /api/v1/ia/dashboard/data HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:65300 - "OPTIONS /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65302 - "OPTIONS /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65304 - "OPTIONS /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65306 - "OPTIONS /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/.venv/lib/python3.14/site-packages/jwt/api_jwt.py:371: InsecureKeyLengthWarning: The HMAC key is 30 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+  decoded = self.decode_complete(
+WARNING:app.core.security:Expired JWT token rejected.
+WARNING:app.core.security:Expired JWT token rejected.
+WARNING:app.core.security:Expired JWT token rejected.
+INFO:     127.0.0.1:65300 - "GET /api/v1/dashboard/stats HTTP/1.1" 401 Unauthorized
+WARNING:app.core.security:Expired JWT token rejected.
+INFO:     127.0.0.1:65302 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:65304 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:65308 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49256 - "OPTIONS /api/v1/auth/token HTTP/1.1" 200 OK
+/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/.venv/lib/python3.14/site-packages/jwt/api_jwt.py:153: InsecureKeyLengthWarning: The HMAC key is 30 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+  return self._jws.encode(
+INFO:     127.0.0.1:49256 - "POST /api/v1/auth/token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49270 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49258 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49268 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49256 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49323 - "OPTIONS /api/v1/cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49323 - "GET /api/v1/cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49323 - "OPTIONS /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49325 - "GET /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49325 - "OPTIONS /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49323 - "GET /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49323 - "GET /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49363 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49362 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49325 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49323 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49720 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49718 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49719 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "GET /api/v1/cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "GET /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "GET /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "OPTIONS /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09/gate/evaluate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "POST /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09/gate/evaluate HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:49716 - "GET /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "GET /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "GET /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "GET /api/v1/cases/02084708-3f8c-4a93-99c9-b65a7cf99b09/documents HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49797 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49796 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49762 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49797 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49762 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49796 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51617 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51616 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51614 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51613 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51671 - "GET /api/v1/cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51687 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51686 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51685 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51671 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51671 - "GET /api/v1/cases HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51740 - "OPTIONS /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51742 - "OPTIONS /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51743 - "OPTIONS /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51744 - "OPTIONS /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51743 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51742 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51746 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51740 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51875 - "OPTIONS /api/v1/ia/dashboard/data HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51878 - "GET /api/v1/ia/dashboard/data HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52116 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52115 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52113 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52111 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52230 - "OPTIONS /api/v1/auth/token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52230 - "POST /api/v1/auth/token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52239 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52238 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52232 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52230 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52921 - "POST /api/v1/auth/token HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52933 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52929 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52931 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52921 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52973 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52971 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52970 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52969 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53181 - "GET /api/v1/ia/dashboard/data HTTP/1.1" 404 Not Found
