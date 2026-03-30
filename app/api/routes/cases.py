@@ -82,21 +82,25 @@ class CaseStatusResponse(BaseModel):
 
 
 class EvaluationCaseOut(BaseModel):
-    id: str
+    id: uuid.UUID
     case_type: str
     market_reference: Optional[str] = None
     status: str
+    bidder_name: Optional[str] = None
+    contract_value: Optional[float] = None
+    contract_currency: Optional[str] = None
     recommendation: Optional[str] = None
     created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class EvaluationCaseDetailOut(BaseModel):
-    id: str
+    id: uuid.UUID
     case_type: str
-    bidder_id: Optional[str] = None
-    consortium_id: Optional[str] = None
+    bidder_id: Optional[uuid.UUID] = None
+    consortium_id: Optional[uuid.UUID] = None
     market_reference: Optional[str] = None
     contract_value: Optional[float] = None
     contract_currency: Optional[str] = None
@@ -161,7 +165,7 @@ async def api_list_cases(
     current_user: dict = Depends(get_current_user),
 ):
     """Lists cases with optional filters."""
-    stmt = select(EvaluationCase)
+    stmt = select(EvaluationCase).options(selectinload(EvaluationCase.bidder))
     if status:
         stmt = stmt.where(EvaluationCase.status == status)
     if search:
