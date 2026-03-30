@@ -1864,3 +1864,8 @@ INFO:     127.0.0.1:55144 - "GET /api/v1/cases?filter=divergence_level:MODERATE,
 INFO:     127.0.0.1:55145 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 401 Unauthorized
 WARNING:app.core.security:Expired JWT token rejected.
 INFO:     127.0.0.1:55149 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53987 - "POST /auth/login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54197 - "GET /api/v1/dashboard/stats HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54201 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54202 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54203 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 401 Unauthorized
