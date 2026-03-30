@@ -2,17 +2,16 @@
 app/services/dashboard_service.py
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from app.db.models import EvaluationCase, Scorecard, AuditLog
 
 async def get_dashboard_statistics(db: AsyncSession) -> Dict[str, Any]:
     """Extract all statistics for the dashboard."""
-    total_cases = 0
     # 1. All cases
-    result_cases = await db.execute(select(func.count(EvaluationCase.id)))
+    cases_result = await db.execute(select(EvaluationCase))
     cases = cases_result.scalars().all()
     total = len(cases)
 
@@ -29,11 +28,10 @@ async def get_dashboard_statistics(db: AsyncSession) -> Dict[str, Any]:
     seen_cases: set = set()
     for sc in sorted(scorecards, key=lambda s: s.computed_at or datetime.min.replace(tzinfo=timezone.utc), reverse=True):
         rc = sc.risk_class.value if hasattr(sc.risk_class, "value") else str(sc.risk_class)
-        # Handle older french states if any mapped backwards
         if rc == "MODERE": rc = "MODERATE"
         if rc == "ELEVE": rc = "HIGH"
         if rc == "CRITIQUE": rc = "CRITICAL"
-        
+
         if sc.case_id not in seen_cases and rc in risk_counts:
             risk_counts[rc] += 1
             seen_cases.add(sc.case_id)
