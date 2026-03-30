@@ -1877,3 +1877,12 @@ INFO:     127.0.0.1:55520 - "GET /api/v1/dashboard/stats HTTP/1.1" 401 Unauthori
 INFO:     127.0.0.1:55522 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 401 Unauthorized
 INFO:     127.0.0.1:55524 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 401 Unauthorized
 INFO:     127.0.0.1:55525 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54337 - "GET /api/v1/dashboard/stats HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54340 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54341 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54343 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54341 - "GET /api/v1/dashboard/stats HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54340 - "GET /api/v1/cases?limit=5&sort=-updated_at HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54337 - "GET /api/v1/cases?filter=divergence_level:MODERATE,SEVERE HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54355 - "GET /api/v1/ia/analytics/convergence?days=30 HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54355 - "GET /api/v1/cases HTTP/1.1" 401 Unauthorized
