@@ -14,8 +14,10 @@ Language: 100% English
 
 from typing import List, Optional, Dict, Any
 from pathlib import Path
+from datetime import datetime
 import logging
 import uuid
+import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
@@ -31,13 +33,14 @@ from app.db.models import (
     Scorecard
 )
 from app.engines.ia.feature_engineering import FeatureEngineeringEngine
-from app.engines.ia.predictor import IAPredictor
+from app.engines.ia.predictor import IAPredictor, IARiskClassifier
 from app.engines.ia.tension_detector import TensionDetector
 from app.services.ia_service import generate_and_save_ia_features
 from app.schemas.ia_schema import (
     IAPredictionResult,
     IAFeaturesResponse,
     IARiskClass,
+    IAFeatureContribution,
     WhatIfInput,
     WhatIfResult,
 )
@@ -491,7 +494,7 @@ async def dual_scoring(
                 "probability_default": ia_result.ia_probability_default,
                 "risk_class": ia_result.ia_risk_class.value,
                 "model_version": ia_result.model_version,
-                "explanations": ia_result.explanations.dict() if ia_result.explanations else None
+                "explanations": ia_result.explanations.model_dump() if ia_result.explanations else None
             },
             "tension_analysis": tension_analysis.to_dict(),
             "metadata": {
@@ -771,6 +774,190 @@ async def get_prediction_stats(
 
 
 # ============================================================================
+# WHAT-IF SIMULATION ENDPOINT
+# ============================================================================
+
+@router.post(
+    "/cases/{case_id}/simulate",
+    response_model=WhatIfResult,
+    status_code=status.HTTP_200_OK,
+    summary="What-If simulation for IA prediction",
+    description=(
+        "Run a What-If scenario by overriding specific financial features "
+        "and observing the impact on the AI risk score without persisting any result. "
+        "Requires at least one parameter override."
+    )
+)
+async def simulate_what_if(
+    case_id: str,
+    payload: WhatIfInput,
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict = Depends(get_current_user)
+) -> WhatIfResult:
+    """
+    Execute a What-If simulation on AI features.
+
+    Pipeline:
+    1. Load baseline features from cache (or compute if absent)
+    2. Compute baseline prediction (probability + risk class) — no DB persist
+    3. Apply parameter_overrides on top of baseline features
+    4. Run model inference on the overridden features — no DB persist
+    5. Classify overridden result and compute delta
+    6. Build feature_impacts from SHAP values on overridden features
+
+    Nothing is written to the database: this is a simulation only.
+
+    Args:
+        case_id: Evaluation case identifier
+        payload: Scenario name + feature overrides (>= 1 required)
+        db: Database session
+        current_user: Authenticated user
+
+    Returns:
+        WhatIfResult with baseline, simulated scores, delta, and feature impacts
+
+    Raises:
+        404: Case not found or no active model
+        400: Insufficient data to compute features
+        500: Simulation engine error
+    """
+    logger.info(
+        f"What-If simulation '{payload.scenario_name}' requested for case {case_id} "
+        f"by user {current_user.get('email')} "
+        f"with {len(payload.parameter_overrides)} override(s)"
+    )
+
+    # 1. Verify case exists
+    await _get_case_or_404(case_id, db)
+
+    try:
+        # 2. Initialise predictor (no explanations on baseline to keep it fast)
+        predictor = IAPredictor(model_type="xgboost", enable_explanations=False)
+        await predictor._load_active_model(db)
+
+        # 3. Load baseline features (cache preferred, fallback to compute)
+        features_data = await predictor._get_or_compute_features(
+            case_id, db, use_cached=True
+        )
+        baseline_features: Dict[str, Any] = dict(features_data["features"])
+
+        # 4. Baseline probability and risk class (no persist)
+        baseline_probability = predictor.model_manager.predict_proba(baseline_features)
+        baseline_score = round(baseline_probability * 100, 2)
+        baseline_class = IARiskClassifier.classify(baseline_probability)
+
+        # 5. Apply overrides — only accept keys known to the model
+        known_features = set(predictor.model_manager.feature_names or [])
+        effective_overrides: Dict[str, float] = {
+            k: v
+            for k, v in payload.parameter_overrides.items()
+            if not known_features or k in known_features
+        }
+        overridden_features = dict(baseline_features)
+        overridden_features.update(effective_overrides)
+
+        # 6. Simulated probability and risk class (no persist)
+        sim_probability = predictor.model_manager.predict_proba(overridden_features)
+        sim_score = round(sim_probability * 100, 2)
+        sim_class = IARiskClassifier.classify(sim_probability)
+        delta_score = round(sim_score - baseline_score, 2)
+
+        # 7. Feature impacts via SHAP on overridden features (best-effort)
+        feature_impacts: List[IAFeatureContribution] = []
+        try:
+            import shap
+            if predictor.explainer is None:
+                predictor.explainer = shap.TreeExplainer(predictor.model_manager.model)
+
+            feature_names = predictor.model_manager.feature_names or list(overridden_features.keys())
+            feature_array = np.array(
+                [overridden_features.get(fname, 0.0) for fname in feature_names]
+            ).reshape(1, -1)
+            feature_array = np.nan_to_num(feature_array, nan=0.0)
+
+            if predictor.model_manager.scaler is not None:
+                feature_array = predictor.model_manager.scaler.transform(feature_array)
+
+            shap_values = predictor.explainer.shap_values(feature_array)
+            shap_abs = np.abs(shap_values[0])
+            top_indices = np.argsort(shap_abs)[-5:][::-1]  # top 5 contributors
+
+            for idx in top_indices:
+                fname = feature_names[idx]
+                fval = float(overridden_features.get(fname, 0.0))
+                sval = float(shap_values[0][idx])
+                feature_impacts.append(
+                    IAFeatureContribution.from_raw(fname, fval, round(sval, 4))
+                )
+        except Exception as shap_err:
+            logger.warning(
+                f"SHAP computation skipped for What-If simulation on case {case_id}: {shap_err}"
+            )
+            # feature_impacts stays empty — not a blocking error
+
+        logger.info(
+            f"What-If simulation completed for case {case_id}. "
+            f"Baseline: {baseline_class} ({baseline_score}), "
+            f"Simulated: {sim_class} ({sim_score}), Delta: {delta_score:+.2f}"
+        )
+
+        return WhatIfResult(
+            scenario_name=payload.scenario_name,
+            baseline_score=baseline_score,
+            baseline_class=baseline_class,
+            predicted_score_if=sim_score,
+            predicted_class_if=sim_class,
+            delta_score=delta_score,
+            feature_impacts=feature_impacts,
+            overridden_features=effective_overrides,
+        )
+
+    except InsufficientFiscalYearsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": "insufficient_data", "message": str(e)}
+        )
+
+    except MissingFinancialDataError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": "missing_financial_data", "message": str(e)}
+        )
+
+    except FileNotFoundError as e:
+        logger.error(f"Model file not found during simulation: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": "model_not_found",
+                "message": "No trained model available. Contact administrator.",
+            }
+        )
+
+    except Exception as e:
+        logger.exception(f"What-If simulation failed for case {case_id}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "simulation_failed", "message": str(e)}
+        )
+
+
+# ============================================================================
+# ANALYTICS ENDPOINT
+# ============================================================================
+
+@router.get("/analytics/convergence")
+async def get_convergence_chart(
+    days: int = Query(30, ge=7, le=365),
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict = Depends(get_current_user)
+):
+    """Returns convergence chart data for MCC vs IA scores."""
+    # Placeholder — would query scored cases over time window
+    return {"days": days, "data_points": [], "convergence_pct": 0.0}
+
+
+# ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
 
@@ -817,20 +1004,6 @@ async def _get_model_by_version(
     stmt = select(IAModel).where(IAModel.version == version)
     result = await db.execute(stmt)
     return result.scalars().first()
-
-
-@router.post("/cases/{case_id}/simulate")
-async def simulate_what_if(case_id: str, payload: WhatIfInput, db: AsyncSession = Depends(get_db), current_user: Dict = Depends(get_current_user)):
-    """What-If simulation for IA predictions."""
-    # Placeholder — would call IA engine with overridden features
-    return WhatIfResult(scenario_name=payload.scenario_name)
-
-
-@router.get("/analytics/convergence")
-async def get_convergence_chart(days: int = Query(30, ge=7, le=365), db: AsyncSession = Depends(get_db), current_user: Dict = Depends(get_current_user)):
-    """Returns convergence chart data for MCC vs IA scores."""
-    # Placeholder — would query scored cases over time window
-    return {"days": days, "data_points": [], "convergence_pct": 0.0}
 
 
 async def _get_or_compute_mcc_scorecard(
