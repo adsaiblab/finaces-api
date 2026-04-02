@@ -6,7 +6,7 @@ All schemas for IA prediction requests, responses, and related data structures.
 Language: 100% English
 """
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -68,16 +68,49 @@ class IAPredictionResult(BaseModel):
 
 
 class WhatIfInput(BaseModel):
-    scenario_name: str
-    parameter_overrides: dict[str, float] = {}
+    """Input schema for What-If simulation.
+
+    At least one parameter override is required to run a meaningful simulation.
+    Keys must be valid feature names known to the model; unknown keys are
+    silently ignored during scoring but returned in the result for traceability.
+    """
+    scenario_name: str = Field(..., min_length=1, description="Human-readable scenario label")
+    parameter_overrides: Dict[str, float] = Field(
+        default_factory=dict,
+        description="Feature overrides to apply on top of real computed features"
+    )
+
+    @model_validator(mode="after")
+    def require_at_least_one_override(self) -> "WhatIfInput":
+        if not self.parameter_overrides:
+            raise ValueError("parameter_overrides must contain at least one entry")
+        return self
 
 
 class WhatIfResult(BaseModel):
+    """Result schema for What-If simulation.
+
+    Returns both the baseline (real) and the simulated (overridden) assessment
+    so the frontend can display delta information clearly.
+    """
     scenario_name: str
-    predicted_score_if: float = 0.0
-    predicted_class_if: str = "MODERATE"
-    delta_score: float = 0.0
-    feature_impacts: list[IAFeatureContribution] = []
+    # Baseline — real prediction without overrides
+    baseline_score: float = Field(0.0, description="Real IA score (0-100) before overrides")
+    baseline_class: str = Field("MODERATE", description="Real risk class before overrides")
+    # Simulated — prediction with overrides applied
+    predicted_score_if: float = Field(0.0, description="Simulated IA score (0-100) with overrides")
+    predicted_class_if: str = Field("MODERATE", description="Simulated risk class with overrides")
+    # Delta
+    delta_score: float = Field(0.0, description="predicted_score_if - baseline_score")
+    # Explanations and traceability
+    feature_impacts: List[IAFeatureContribution] = Field(
+        default_factory=list,
+        description="Top SHAP contributions computed on the overridden features"
+    )
+    overridden_features: Dict[str, float] = Field(
+        default_factory=dict,
+        description="The effective overrides that were applied (subset of parameter_overrides)"
+    )
 
 
 class IAFeaturesResponse(BaseModel):
