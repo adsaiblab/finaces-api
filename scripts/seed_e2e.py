@@ -1,13 +1,22 @@
 """
 scripts/seed_e2e.py — E2E Test Data Seed
 =========================================
-Creates in the LOCAL database:
-  1. A test user :  e2e.analyst@finaces.test  / E2eFinaCES2026!  (role=ANALYST)
-  2. A PolicyVersion: "E2E-Test-Policy-v1" (active)
-  3. A Bidder       : "Société de Test E2E SA"
-  4. An EvaluationCase: market_reference="E2E-TEST-DOSSIER-001" (SINGLE, DRAFT)
+Crée dans la base locale dans l'ordre exact requis par les specs E2E :
 
-IDEMPOTENT — safe to run multiple times, never deletes existing data.
+  1.  User ANALYST         (e2e.analyst@finaces.test / E2eFinaCES2026!)
+  2.  PolicyVersion        (E2E-Test-Policy-v1, is_active=1)
+  3.  Bidder               (Société de Test E2E SA)
+  4.  EvaluationCase       (market_reference=E2E-TEST-DOSSIER-001, status=IN_ANALYSIS)
+  5.  FinancialStatementRaw x2  (fiscal_year 2022 + 2023)
+  6.  process_normalization()   → FinancialStatementNormalized x2
+  7.  process_ratios()          → RatioSet x2
+  8.  GateResult               (is_gate_blocking=False, reliability_score=4.0)
+  9.  process_scoring()         → Scorecard
+  10. IAPrediction             (ia_score=72.5, ia_risk_class=MODERATE)
+  11. IAModel                  (model_name=XGBoost Risk Classifier, is_active=True)
+
+IDEMPOTENT — sûr à relancer plusieurs fois, ne supprime pas les données existantes.
+À la fin, loggue :  E2E_CASE_ID=<uuid>  pour que global-setup.ts puisse le lire.
 
 Usage:
     cd finaces-api
@@ -17,6 +26,8 @@ Usage:
 import asyncio
 import logging
 import sys
+from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 from uuid import uuid4
 
@@ -27,11 +38,32 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy import select
 
-from app.db.models import User, Bidder, EvaluationCase, PolicyVersion
+from app.db.models import (
+    User,
+    Bidder,
+    EvaluationCase,
+    PolicyVersion,
+    FinancialStatementRaw,
+    GateResult,
+    IAPrediction,
+)
 from app.schemas.enums import UserRole, CaseType, CaseStatus
 from app.schemas.policy_schema import PolicyConfigurationSchema
 from app.core.security import get_password_hash
 from app.core.config import settings
+
+# IAModel peut ne pas encore être migré — import défensif
+try:
+    from app.db.models import IAModel
+    _IAMODEL_AVAILABLE = True
+except ImportError:
+    _IAMODEL_AVAILABLE = False
+    IAModel = None  # type: ignore
+
+# Services de pipeline
+from app.services.normalization_service import process_normalization
+from app.services.ratio_service import process_ratios
+from app.services.scoring_service import ScoringService
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -40,7 +72,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ── E2E Constants — MUST match e2e/fixtures/test-data.ts ─────────────────────
+
+# ══════════════════════════════════════════════════════════════════════════════
+# E2E CONSTANTS — doivent correspondre exactement à e2e/fixtures/test-data.ts
+# ══════════════════════════════════════════════════════════════════════════════
+
 E2E_USER_EMAIL = "e2e.analyst@finaces.test"
 E2E_USER_PASSWORD = "E2eFinaCES2026!"
 E2E_USER_FIRST_NAME = "E2E"
@@ -55,9 +91,15 @@ E2E_BIDDER_SECTOR = "BTP"
 
 E2E_CASE_REFERENCE = "E2E-TEST-DOSSIER-001"
 E2E_CASE_LABEL = "E2E Integration Test Case"
-E2E_CASE_CONTRACT_VALUE = 5_000_000.0
+E2E_CASE_CONTRACT_VALUE = Decimal("5000000.00")
 E2E_CASE_CURRENCY = "USD"
 E2E_CASE_DURATION_MONTHS = 24
+
+# IA stub
+E2E_IA_MODEL_VERSION = "e2e-stub-v1.0"
+E2E_IA_SCORE = 72.5
+E2E_IA_PROBA = 0.18
+E2E_IA_RISK_CLASS = "MODERATE"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -65,15 +107,10 @@ E2E_CASE_DURATION_MONTHS = 24
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _get_db_url() -> str:
-    """
-    Returns the database URL.
-    Uses DATABASE_URL from settings (which reads from .env or env vars).
-    NEVER uses a test-only DB — this seed targets the local dev database.
-    """
     url = settings.DATABASE_URL
     if not url:
         raise RuntimeError("DATABASE_URL is not configured. Check your .env file.")
-    logger.info(f"Target database: {url.split('@')[-1]}")  # Log host+db only, not credentials
+    logger.info(f"Target database: {url.split('@')[-1]}")
     return url
 
 
@@ -83,11 +120,10 @@ def _create_session_factory() -> async_sessionmaker[AsyncSession]:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SEED FUNCTIONS (each is idempotent)
+# STEP 1 — USER
 # ══════════════════════════════════════════════════════════════════════════════
 
 async def seed_user(session: AsyncSession) -> User:
-    """Create the E2E ANALYST user if not already present."""
     result = await session.execute(
         select(User).where(User.email == E2E_USER_EMAIL)
     )
@@ -112,13 +148,11 @@ async def seed_user(session: AsyncSession) -> User:
     return user
 
 
-async def seed_policy(session: AsyncSession) -> PolicyVersion:
-    """
-    Create and activate an E2E PolicyVersion if not already present.
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 2 — POLICY VERSION
+# ══════════════════════════════════════════════════════════════════════════════
 
-    The config_json is built from PolicyConfigurationSchema defaults —
-    this produces a fully valid policy without any hardcoding.
-    """
+async def seed_policy(session: AsyncSession) -> PolicyVersion:
     result = await session.execute(
         select(PolicyVersion).where(PolicyVersion.version_label == E2E_POLICY_LABEL)
     )
@@ -126,25 +160,22 @@ async def seed_policy(session: AsyncSession) -> PolicyVersion:
 
     if existing:
         logger.info(f"✓ Policy already exists: '{E2E_POLICY_LABEL}' (id={str(existing.id)[:8]}...)")
-        # Ensure it is still active
         if not existing.is_active:
             existing.is_active = 1
             logger.info("  → Re-activated.")
         return existing
 
-    # Build a valid policy config from all Pydantic defaults
     policy_version_id = f"e2e-policy-{uuid4().hex[:8]}"
     config = PolicyConfigurationSchema(
         version_id=policy_version_id,
         version_label=E2E_POLICY_LABEL,
     ).model_dump(mode="json")
 
-    # Deactivate any previously active policy
+    # Désactiver toute policy précédemment active
     active_result = await session.execute(
         select(PolicyVersion).where(PolicyVersion.is_active == 1)
     )
-    active_policies = active_result.scalars().all()
-    for p in active_policies:
+    for p in active_result.scalars().all():
         p.is_active = 0
         logger.info(f"  → Deactivated previous policy: {p.version_label}")
 
@@ -163,8 +194,11 @@ async def seed_policy(session: AsyncSession) -> PolicyVersion:
     return policy
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 3 — BIDDER
+# ══════════════════════════════════════════════════════════════════════════════
+
 async def seed_bidder(session: AsyncSession) -> Bidder:
-    """Create the E2E test bidder if not already present."""
     result = await session.execute(
         select(Bidder).where(Bidder.name == E2E_BIDDER_NAME)
     )
@@ -188,10 +222,19 @@ async def seed_bidder(session: AsyncSession) -> Bidder:
     return bidder
 
 
-async def seed_case(session: AsyncSession, bidder: Bidder, policy: PolicyVersion) -> EvaluationCase:
-    """Create the E2E test evaluation case if not already present."""
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 4 — EVALUATION CASE  (status = IN_ANALYSIS, pas DRAFT)
+# ══════════════════════════════════════════════════════════════════════════════
+
+async def seed_case(
+    session: AsyncSession,
+    bidder: Bidder,
+    policy: PolicyVersion,
+) -> EvaluationCase:
     result = await session.execute(
-        select(EvaluationCase).where(EvaluationCase.market_reference == E2E_CASE_REFERENCE)
+        select(EvaluationCase).where(
+            EvaluationCase.market_reference == E2E_CASE_REFERENCE
+        )
     )
     existing = result.scalar_one_or_none()
 
@@ -200,6 +243,10 @@ async def seed_case(session: AsyncSession, bidder: Bidder, policy: PolicyVersion
             f"✓ Case already exists: '{E2E_CASE_REFERENCE}' "
             f"(id={str(existing.id)[:8]}..., status={existing.status})"
         )
+        # S'assurer que le statut est IN_ANALYSIS pour que les routes soient accessibles
+        if existing.status == CaseStatus.DRAFT:
+            existing.status = CaseStatus.IN_ANALYSIS
+            logger.info("  → Status upgraded: DRAFT → IN_ANALYSIS")
         return existing
 
     case = EvaluationCase(
@@ -212,52 +259,353 @@ async def seed_case(session: AsyncSession, bidder: Bidder, policy: PolicyVersion
         contract_value=E2E_CASE_CONTRACT_VALUE,
         contract_currency=E2E_CASE_CURRENCY,
         contract_duration_months=E2E_CASE_DURATION_MONTHS,
-        status=CaseStatus.DRAFT,
+        status=CaseStatus.IN_ANALYSIS,   # ← IN_ANALYSIS, pas DRAFT
     )
     session.add(case)
     await session.flush()
     logger.info(
-        f"✅ Case created: '{E2E_CASE_REFERENCE}' (id={str(case.id)[:8]}..., status=DRAFT)"
+        f"✅ Case created: '{E2E_CASE_REFERENCE}' "
+        f"(id={str(case.id)[:8]}..., status=IN_ANALYSIS)"
     )
     return case
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MAIN ENTRY POINT
+# STEP 5 — FINANCIAL STATEMENTS RAW (2022 + 2023)
+# ══════════════════════════════════════════════════════════════════════════════
+
+_FINANCIAL_DATA = {
+    2022: dict(
+        total_assets=Decimal("12_500_000.00"),
+        current_assets=Decimal("4_800_000.00"),
+        liquid_assets=Decimal("1_200_000.00"),
+        inventory=Decimal("1_600_000.00"),
+        accounts_receivable=Decimal("2_000_000.00"),
+        non_current_assets=Decimal("7_700_000.00"),
+        tangible_assets=Decimal("6_500_000.00"),
+        intangible_assets=Decimal("1_200_000.00"),
+        total_liabilities_and_equity=Decimal("12_500_000.00"),
+        equity=Decimal("5_000_000.00"),
+        share_capital=Decimal("3_000_000.00"),
+        reserves=Decimal("1_200_000.00"),
+        current_year_earnings=Decimal("800_000.00"),
+        non_current_liabilities=Decimal("3_500_000.00"),
+        long_term_debt=Decimal("3_000_000.00"),
+        current_liabilities=Decimal("4_000_000.00"),
+        short_term_debt=Decimal("1_000_000.00"),
+        accounts_payable=Decimal("1_800_000.00"),
+        revenue=Decimal("9_500_000.00"),
+        cost_of_goods_sold=Decimal("6_200_000.00"),
+        personnel_expenses=Decimal("1_500_000.00"),
+        depreciation_and_amortization=Decimal("400_000.00"),
+        operating_income=Decimal("1_400_000.00"),
+        financial_expenses=Decimal("300_000.00"),
+        income_before_tax=Decimal("1_100_000.00"),
+        income_tax=Decimal("300_000.00"),
+        net_income=Decimal("800_000.00"),
+        ebitda=Decimal("1_800_000.00"),
+        operating_cash_flow=Decimal("1_200_000.00"),
+        investing_cash_flow=Decimal("-600_000.00"),
+        financing_cash_flow=Decimal("-300_000.00"),
+    ),
+    2023: dict(
+        total_assets=Decimal("14_200_000.00"),
+        current_assets=Decimal("5_500_000.00"),
+        liquid_assets=Decimal("1_500_000.00"),
+        inventory=Decimal("1_800_000.00"),
+        accounts_receivable=Decimal("2_200_000.00"),
+        non_current_assets=Decimal("8_700_000.00"),
+        tangible_assets=Decimal("7_300_000.00"),
+        intangible_assets=Decimal("1_400_000.00"),
+        total_liabilities_and_equity=Decimal("14_200_000.00"),
+        equity=Decimal("5_900_000.00"),
+        share_capital=Decimal("3_000_000.00"),
+        reserves=Decimal("1_600_000.00"),
+        current_year_earnings=Decimal("1_300_000.00"),
+        non_current_liabilities=Decimal("3_800_000.00"),
+        long_term_debt=Decimal("3_200_000.00"),
+        current_liabilities=Decimal("4_500_000.00"),
+        short_term_debt=Decimal("1_200_000.00"),
+        accounts_payable=Decimal("2_000_000.00"),
+        revenue=Decimal("11_200_000.00"),
+        cost_of_goods_sold=Decimal("7_100_000.00"),
+        personnel_expenses=Decimal("1_700_000.00"),
+        depreciation_and_amortization=Decimal("450_000.00"),
+        operating_income=Decimal("1_950_000.00"),
+        financial_expenses=Decimal("320_000.00"),
+        income_before_tax=Decimal("1_630_000.00"),
+        income_tax=Decimal("330_000.00"),
+        net_income=Decimal("1_300_000.00"),
+        ebitda=Decimal("2_400_000.00"),
+        operating_cash_flow=Decimal("1_700_000.00"),
+        investing_cash_flow=Decimal("-800_000.00"),
+        financing_cash_flow=Decimal("-400_000.00"),
+    ),
+}
+
+
+async def seed_financials(
+    session: AsyncSession,
+    case: EvaluationCase,
+) -> list[FinancialStatementRaw]:
+    """Insère FinancialStatementRaw pour 2022 et 2023 (idempotent par UniqueConstraint)."""
+    raws: list[FinancialStatementRaw] = []
+
+    for year, data in _FINANCIAL_DATA.items():
+        result = await session.execute(
+            select(FinancialStatementRaw).where(
+                FinancialStatementRaw.case_id == case.id,
+                FinancialStatementRaw.fiscal_year == year,
+            )
+        )
+        existing = result.scalar_one_or_none()
+
+        if existing:
+            logger.info(f"✓ FinancialStatementRaw already exists: year={year}")
+            raws.append(existing)
+            continue
+
+        raw = FinancialStatementRaw(
+            id=uuid4(),
+            case_id=case.id,
+            fiscal_year=year,
+            currency_original="USD",
+            exchange_rate_to_usd=Decimal("1.0"),
+            **data,
+        )
+        session.add(raw)
+        await session.flush()
+        logger.info(f"✅ FinancialStatementRaw created: year={year} (id={str(raw.id)[:8]}...)")
+        raws.append(raw)
+
+    return raws
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 8 — GATE RESULT (inséré directement, sans appel de service)
+# ══════════════════════════════════════════════════════════════════════════════
+
+async def seed_gate_result(
+    session: AsyncSession,
+    case: EvaluationCase,
+) -> GateResult:
+    result = await session.execute(
+        select(GateResult).where(GateResult.case_id == case.id)
+    )
+    existing = result.scalar_one_or_none()
+
+    if existing:
+        logger.info(f"✓ GateResult already exists for case {str(case.id)[:8]}...")
+        return existing
+
+    gate = GateResult(
+        id=uuid4(),
+        case_id=case.id,
+        is_gate_blocking=False,
+        blocking_reasons_json=[],
+        is_passed=True,
+        verdict="PASS",
+        reliability_level="HIGH",
+        reliability_score=Decimal("4.0"),
+        missing_mandatory_json=[],
+        missing_optional_json=[],
+        reserve_flags_json=[],
+    )
+    session.add(gate)
+    await session.flush()
+    logger.info(f"✅ GateResult created: is_passed=True, reliability_score=4.0")
+    return gate
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 10 — IA PREDICTION (inséré directement en DB, pas via le service ML)
+# ══════════════════════════════════════════════════════════════════════════════
+
+async def seed_ia_prediction(
+    session: AsyncSession,
+    case: EvaluationCase,
+) -> IAPrediction:
+    result = await session.execute(
+        select(IAPrediction)
+        .where(IAPrediction.case_id == case.id)
+        .order_by(IAPrediction.created_at.desc())
+    )
+    existing = result.scalars().first()
+
+    if existing:
+        logger.info(
+            f"✓ IAPrediction already exists for case {str(case.id)[:8]}... "
+            f"(risk={existing.ia_risk_class}, score={existing.ia_score})"
+        )
+        return existing
+
+    prediction = IAPrediction(
+        id=uuid4(),
+        case_id=case.id,
+        ia_score=E2E_IA_SCORE,
+        ia_probability_default=E2E_IA_PROBA,
+        ia_risk_class=E2E_IA_RISK_CLASS,    # "MODERATE" — valeur valide de IARiskClass
+        model_version=E2E_IA_MODEL_VERSION,
+    )
+    session.add(prediction)
+    await session.flush()
+    logger.info(
+        f"✅ IAPrediction created: risk={E2E_IA_RISK_CLASS}, "
+        f"score={E2E_IA_SCORE}, proba={E2E_IA_PROBA} "
+        f"(id={str(prediction.id)[:8]}...)"
+    )
+    return prediction
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 11 — IA MODEL (stub — nécessaire pour GET /ia/models/active)
+# ══════════════════════════════════════════════════════════════════════════════
+
+async def seed_ia_model(session: AsyncSession) -> None:
+    if not _IAMODEL_AVAILABLE:
+        logger.warning(
+            "⚠️  IAModel not importable from app.db.models — "
+            "table may not be migrated yet. Skipping IAModel seed."
+        )
+        return
+
+    # Vérifier si un model actif existe déjà
+    result = await session.execute(
+        select(IAModel).where(IAModel.is_active == True)  # type: ignore[attr-defined]
+    )
+    existing = result.scalars().first()
+
+    if existing:
+        logger.info(
+            f"✓ IAModel already exists: '{existing.model_name}' v{existing.version} "
+            f"(id={str(existing.id)[:8]}...)"
+        )
+        return
+
+    model = IAModel(  # type: ignore[call-arg]
+        id=uuid4(),
+        model_name="XGBoost Risk Classifier",   # ← model_name, confirmé depuis ia.py handler
+        version=E2E_IA_MODEL_VERSION,
+        file_path="/dev/null",                   # stub — modèle ML non entraîné (hors scope E2E)
+        metrics={
+            "auc_roc": 0.89,
+            "accuracy": 0.85,
+            "f1_score": 0.82,
+        },
+        is_active=True,
+    )
+    session.add(model)
+    await session.flush()
+    logger.info(
+        f"✅ IAModel (stub) created: 'XGBoost Risk Classifier' v{E2E_IA_MODEL_VERSION} "
+        f"(id={str(model.id)[:8]}...)"
+    )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MAIN — PIPELINE COMPLET DANS L'ORDRE EXACT
 # ══════════════════════════════════════════════════════════════════════════════
 
 async def run_seed() -> None:
-    logger.info("=" * 60)
-    logger.info("FinaCES — E2E Seed")
-    logger.info("=" * 60)
+    logger.info("=" * 70)
+    logger.info("FinaCES — E2E Seed (pipeline complet)")
+    logger.info("=" * 70)
 
     session_factory = _create_session_factory()
 
     async with session_factory() as session:
         try:
-            user = await seed_user(session)
-            policy = await seed_policy(session)
-            bidder = await seed_bidder(session)
-            _case = await seed_case(session, bidder, policy)
+            # ── 1-4 : Entités de base ─────────────────────────────────────────
+            _user = await seed_user(session)
+            _policy = await seed_policy(session)
+            _bidder = await seed_bidder(session)
+            _case = await seed_case(session, _bidder, _policy)
 
             await session.commit()
+            logger.info("── Étape 1-4 ✅ (user, policy, bidder, case)")
 
+            # ── 5 : Financial Statements Raw (2022 + 2023) ────────────────────
+            await seed_financials(session, _case)
+            await session.commit()
+            logger.info("── Étape 5 ✅ (financials raw ×2)")
+
+            # ── 6 : Normalisation ─────────────────────────────────────────────
+            # Vérifie si déjà normalisé pour rester idempotent
+            from app.db.models import FinancialStatementNormalized
+            from sqlalchemy import select as _select
+            norm_check = await session.execute(
+                _select(FinancialStatementNormalized)
+                .join(
+                    FinancialStatementRaw,
+                    FinancialStatementNormalized.raw_statement_id == FinancialStatementRaw.id,
+                )
+                .where(FinancialStatementRaw.case_id == _case.id)
+            )
+            if norm_check.scalars().first() is None:
+                await process_normalization(str(_case.id), session)
+                await session.commit()
+                logger.info("── Étape 6 ✅ (normalization done)")
+            else:
+                logger.info("── Étape 6 ✓ (normalization already done)")
+
+            # ── 7 : Ratios ────────────────────────────────────────────────────
+            from app.db.models import RatioSet
+            ratio_check = await session.execute(
+                _select(RatioSet).where(RatioSet.case_id == _case.id)
+            )
+            if ratio_check.scalars().first() is None:
+                await process_ratios(str(_case.id), session)
+                await session.commit()
+                logger.info("── Étape 7 ✅ (ratios done)")
+            else:
+                logger.info("── Étape 7 ✓ (ratios already done)")
+
+            # ── 8 : GateResult ────────────────────────────────────────────────
+            await seed_gate_result(session, _case)
+            await session.commit()
+            logger.info("── Étape 8 ✅ (gate result)")
+
+            # ── 9 : Scoring ───────────────────────────────────────────────────
+            from app.db.models import Scorecard
+            score_check = await session.execute(
+                _select(Scorecard).where(Scorecard.case_id == _case.id)
+            )
+            if score_check.scalars().first() is None:
+                scoring_service = ScoringService()
+                await scoring_service.compute_scorecard(str(_case.id), session)
+                await session.commit()
+                logger.info("── Étape 9 ✅ (scoring done)")
+            else:
+                logger.info("── Étape 9 ✓ (scoring already done)")
+
+            # ── 10 : IAPrediction ─────────────────────────────────────────────
+            await seed_ia_prediction(session, _case)
+            await session.commit()
+            logger.info("── Étape 10 ✅ (IA prediction)")
+
+            # ── 11 : IAModel (stub) ───────────────────────────────────────────
+            await seed_ia_model(session)
+            await session.commit()
+            logger.info("── Étape 11 ✅ (IA model stub)")
+
+            # ── Résumé final ──────────────────────────────────────────────────
             logger.info("")
-            logger.info("=" * 60)
+            logger.info("=" * 70)
             logger.info("✅ E2E seed completed successfully.")
             logger.info("")
-            logger.info("  Login credentials:")
+            logger.info("  Login credentials (global-setup.ts):")
             logger.info(f"    Email    : {E2E_USER_EMAIL}")
             logger.info(f"    Password : {E2E_USER_PASSWORD}")
             logger.info("")
             logger.info("  Test case:")
             logger.info(f"    Reference: {E2E_CASE_REFERENCE}")
-            logger.info(f"    Case ID  : {str(_case.id)}")
-            logger.info("=" * 60)
+            # Format exact attendu par global-setup.ts pour extraire le case_id
+            logger.info(f"    E2E_CASE_ID={str(_case.id)}")
+            logger.info("=" * 70)
 
         except Exception as exc:
             await session.rollback()
-            logger.error(f"❌ Seed failed: {exc}")
+            logger.error(f"❌ Seed failed at step: {exc}")
             raise
 
 
