@@ -6,7 +6,7 @@ Crée dans la base locale dans l'ordre exact requis par les specs E2E :
   1.  User ANALYST         (e2e.analyst@finaces.test / E2eFinaCES2026!)
   2.  PolicyVersion        (E2E-Test-Policy-v1, is_active=1)
   3.  Bidder               (Société de Test E2E SA)
-  4.  EvaluationCase       (market_reference=E2E-TEST-DOSSIER-001, status=IN_ANALYSIS)
+  4.  EvaluationCase       (market_reference=E2E-TEST-DOSSIER-001, status=SCORING_DONE)
   5.  FinancialStatementRaw x2  (fiscal_year 2022 + 2023)
   6.  process_normalization()   → FinancialStatementNormalized x2
   7.  process_ratios()          → RatioSet x2
@@ -215,7 +215,10 @@ async def seed_bidder(session: AsyncSession) -> Bidder:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# STEP 4 — EVALUATION CASE  (status = IN_ANALYSIS, pas DRAFT)
+# STEP 4 — EVALUATION CASE  (status = SCORING_DONE)
+# Tous les services du pipeline (normalization, ratios, scoring) ont été
+# exécutés — SCORING_DONE est le statut correct en sortie de seed.
+# CaseStatus.IN_ANALYSIS n'existe PAS dans enums.py.
 # ══════════════════════════════════════════════════════════════════════════════
 
 async def seed_case(
@@ -235,9 +238,11 @@ async def seed_case(
             f"✓ Case already exists: '{E2E_CASE_REFERENCE}' "
             f"(id={str(existing.id)[:8]}..., status={existing.status})"
         )
-        if existing.status == CaseStatus.DRAFT:
-            existing.status = CaseStatus.IN_ANALYSIS
-            logger.info("  → Status upgraded: DRAFT → IN_ANALYSIS")
+        # Mettre à jour le statut si le seed a progressé depuis la dernière exécution
+        if existing.status in (CaseStatus.DRAFT, CaseStatus.FINANCIAL_INPUT,
+                               CaseStatus.NORMALIZATION_DONE, CaseStatus.RATIOS_COMPUTED):
+            existing.status = CaseStatus.SCORING_DONE
+            logger.info(f"  → Status upgraded → SCORING_DONE")
         return existing
 
     case = EvaluationCase(
@@ -250,13 +255,13 @@ async def seed_case(
         contract_value=E2E_CASE_CONTRACT_VALUE,
         contract_currency=E2E_CASE_CURRENCY,
         contract_duration_months=E2E_CASE_DURATION_MONTHS,
-        status=CaseStatus.IN_ANALYSIS,
+        status=CaseStatus.SCORING_DONE,
     )
     session.add(case)
     await session.flush()
     logger.info(
         f"✅ Case created: '{E2E_CASE_REFERENCE}' "
-        f"(id={str(case.id)[:8]}..., status=IN_ANALYSIS)"
+        f"(id={str(case.id)[:8]}..., status=SCORING_DONE)"
     )
     return case
 
