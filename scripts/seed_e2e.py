@@ -26,7 +26,6 @@ Usage:
 import asyncio
 import logging
 import sys
-from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from uuid import uuid4
@@ -46,24 +45,17 @@ from app.db.models import (
     FinancialStatementRaw,
     GateResult,
     IAPrediction,
+    IAModel,  # Migration confirmée ✅ abe7f8b87247_add_ia_module_tables.py
 )
 from app.schemas.enums import UserRole, CaseType, CaseStatus
 from app.schemas.policy_schema import PolicyConfigurationSchema
 from app.core.security import get_password_hash
 from app.core.config import settings
 
-# IAModel peut ne pas encore être migré — import défensif
-try:
-    from app.db.models import IAModel
-    _IAMODEL_AVAILABLE = True
-except ImportError:
-    _IAMODEL_AVAILABLE = False
-    IAModel = None  # type: ignore
-
 # Services de pipeline
 from app.services.normalization_service import process_normalization
 from app.services.ratio_service import process_ratios
-from app.services.scoring_service import ScoringService
+from app.services.scoring_service import process_scoring
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -243,7 +235,6 @@ async def seed_case(
             f"✓ Case already exists: '{E2E_CASE_REFERENCE}' "
             f"(id={str(existing.id)[:8]}..., status={existing.status})"
         )
-        # S'assurer que le statut est IN_ANALYSIS pour que les routes soient accessibles
         if existing.status == CaseStatus.DRAFT:
             existing.status = CaseStatus.IN_ANALYSIS
             logger.info("  → Status upgraded: DRAFT → IN_ANALYSIS")
@@ -259,7 +250,7 @@ async def seed_case(
         contract_value=E2E_CASE_CONTRACT_VALUE,
         contract_currency=E2E_CASE_CURRENCY,
         contract_duration_months=E2E_CASE_DURATION_MONTHS,
-        status=CaseStatus.IN_ANALYSIS,   # ← IN_ANALYSIS, pas DRAFT
+        status=CaseStatus.IN_ANALYSIS,
     )
     session.add(case)
     await session.flush()
@@ -348,7 +339,6 @@ async def seed_financials(
     session: AsyncSession,
     case: EvaluationCase,
 ) -> list[FinancialStatementRaw]:
-    """Insère FinancialStatementRaw pour 2022 et 2023 (idempotent par UniqueConstraint)."""
     raws: list[FinancialStatementRaw] = []
 
     for year, data in _FINANCIAL_DATA.items():
@@ -382,7 +372,7 @@ async def seed_financials(
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# STEP 8 — GATE RESULT (inséré directement, sans appel de service)
+# STEP 8 — GATE RESULT
 # ══════════════════════════════════════════════════════════════════════════════
 
 async def seed_gate_result(
@@ -413,12 +403,12 @@ async def seed_gate_result(
     )
     session.add(gate)
     await session.flush()
-    logger.info(f"✅ GateResult created: is_passed=True, reliability_score=4.0")
+    logger.info("✅ GateResult created: is_passed=True, reliability_score=4.0")
     return gate
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# STEP 10 — IA PREDICTION (inséré directement en DB, pas via le service ML)
+# STEP 10 — IA PREDICTION
 # ══════════════════════════════════════════════════════════════════════════════
 
 async def seed_ia_prediction(
@@ -444,7 +434,7 @@ async def seed_ia_prediction(
         case_id=case.id,
         ia_score=E2E_IA_SCORE,
         ia_probability_default=E2E_IA_PROBA,
-        ia_risk_class=E2E_IA_RISK_CLASS,    # "MODERATE" — valeur valide de IARiskClass
+        ia_risk_class=E2E_IA_RISK_CLASS,
         model_version=E2E_IA_MODEL_VERSION,
     )
     session.add(prediction)
@@ -458,20 +448,12 @@ async def seed_ia_prediction(
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# STEP 11 — IA MODEL (stub — nécessaire pour GET /ia/models/active)
+# STEP 11 — IA MODEL (stub)
 # ══════════════════════════════════════════════════════════════════════════════
 
 async def seed_ia_model(session: AsyncSession) -> None:
-    if not _IAMODEL_AVAILABLE:
-        logger.warning(
-            "⚠️  IAModel not importable from app.db.models — "
-            "table may not be migrated yet. Skipping IAModel seed."
-        )
-        return
-
-    # Vérifier si un model actif existe déjà
     result = await session.execute(
-        select(IAModel).where(IAModel.is_active == True)  # type: ignore[attr-defined]
+        select(IAModel).where(IAModel.is_active == True)
     )
     existing = result.scalars().first()
 
@@ -482,11 +464,11 @@ async def seed_ia_model(session: AsyncSession) -> None:
         )
         return
 
-    model = IAModel(  # type: ignore[call-arg]
+    model = IAModel(
         id=uuid4(),
-        model_name="XGBoost Risk Classifier",   # ← model_name, confirmé depuis ia.py handler
+        model_name="XGBoost Risk Classifier",
         version=E2E_IA_MODEL_VERSION,
-        file_path="/dev/null",                   # stub — modèle ML non entraîné (hors scope E2E)
+        file_path="/dev/null",
         metrics={
             "auc_roc": 0.89,
             "accuracy": 0.85,
@@ -520,21 +502,20 @@ async def run_seed() -> None:
             _policy = await seed_policy(session)
             _bidder = await seed_bidder(session)
             _case = await seed_case(session, _bidder, _policy)
-
             await session.commit()
             logger.info("── Étape 1-4 ✅ (user, policy, bidder, case)")
 
-            # ── 5 : Financial Statements Raw (2022 + 2023) ────────────────────
+            # ── 5 : Financial Statements Raw ──────────────────────────────────
             await seed_financials(session, _case)
             await session.commit()
             logger.info("── Étape 5 ✅ (financials raw ×2)")
 
             # ── 6 : Normalisation ─────────────────────────────────────────────
-            # Vérifie si déjà normalisé pour rester idempotent
+            # process_normalization() attend UUID natif (signature: case_id: UUID)
+            # Il fait son propre commit en interne — pas de commit après.
             from app.db.models import FinancialStatementNormalized
-            from sqlalchemy import select as _select
             norm_check = await session.execute(
-                _select(FinancialStatementNormalized)
+                select(FinancialStatementNormalized)
                 .join(
                     FinancialStatementRaw,
                     FinancialStatementNormalized.raw_statement_id == FinancialStatementRaw.id,
@@ -542,38 +523,40 @@ async def run_seed() -> None:
                 .where(FinancialStatementRaw.case_id == _case.id)
             )
             if norm_check.scalars().first() is None:
-                await process_normalization(str(_case.id), session)
-                await session.commit()
+                await process_normalization(_case.id, session)  # ← UUID natif, pas str()
                 logger.info("── Étape 6 ✅ (normalization done)")
             else:
                 logger.info("── Étape 6 ✓ (normalization already done)")
 
             # ── 7 : Ratios ────────────────────────────────────────────────────
+            # process_ratios() attend UUID natif (signature: case_id: UUID)
+            # Il fait son propre commit en interne — pas de commit après.
             from app.db.models import RatioSet
             ratio_check = await session.execute(
-                _select(RatioSet).where(RatioSet.case_id == _case.id)
+                select(RatioSet).where(RatioSet.case_id == _case.id)
             )
             if ratio_check.scalars().first() is None:
-                await process_ratios(str(_case.id), session)
-                await session.commit()
+                await process_ratios(_case.id, session)  # ← UUID natif, pas str()
                 logger.info("── Étape 7 ✅ (ratios done)")
             else:
                 logger.info("── Étape 7 ✓ (ratios already done)")
 
             # ── 8 : GateResult ────────────────────────────────────────────────
+            # Commit obligatoire ICI : process_scoring lit GateResult via la même
+            # session — il doit être visible avant l'appel.
             await seed_gate_result(session, _case)
             await session.commit()
-            logger.info("── Étape 8 ✅ (gate result)")
+            logger.info("── Étape 8 ✅ (gate result committed)")
 
             # ── 9 : Scoring ───────────────────────────────────────────────────
+            # process_scoring() attend UUID natif (signature: case_id: UUID)
+            # Il fait son propre commit en interne — pas de commit après.
             from app.db.models import Scorecard
             score_check = await session.execute(
-                _select(Scorecard).where(Scorecard.case_id == _case.id)
+                select(Scorecard).where(Scorecard.case_id == _case.id)
             )
             if score_check.scalars().first() is None:
-                scoring_service = ScoringService()
-                await scoring_service.compute_scorecard(str(_case.id), session)
-                await session.commit()
+                await process_scoring(_case.id, session)  # ← UUID natif, pas str()
                 logger.info("── Étape 9 ✅ (scoring done)")
             else:
                 logger.info("── Étape 9 ✓ (scoring already done)")
@@ -599,7 +582,6 @@ async def run_seed() -> None:
             logger.info("")
             logger.info("  Test case:")
             logger.info(f"    Reference: {E2E_CASE_REFERENCE}")
-            # Format exact attendu par global-setup.ts pour extraire le case_id
             logger.info(f"    E2E_CASE_ID={str(_case.id)}")
             logger.info("=" * 70)
 
