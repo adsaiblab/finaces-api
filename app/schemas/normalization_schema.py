@@ -25,11 +25,11 @@ class FinancialStatementRawSchema(BaseModel):
     id: UUID
     case_id: UUID
     fiscal_year: int
-    statement_end_date: date
+    statement_end_date: Optional[date] = None  # Pas en DB → calculé via fiscal_year si absent
     currency_original: str
     exchange_rate_to_usd: Decimal = Field(ge=0)
-    referentiel: str
-    is_consolidated: bool
+    referentiel: Optional[str] = "IFRS"  # Défaut IFRS si NULL en DB
+    is_consolidated: bool = False
     
     # Raw values can potentially be None depending on the dataset
     liquid_assets: Optional[Decimal] = None

@@ -35,7 +35,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.db.models import (
     User,
@@ -47,7 +47,7 @@ from app.db.models import (
     IAPrediction,
     IAModel,  # Migration confirmée ✅ abe7f8b87247_add_ia_module_tables.py
 )
-from app.schemas.enums import UserRole, CaseType, CaseStatus
+from app.schemas.enums import UserRole, CaseType, CaseStatus, Referentiel
 from app.schemas.policy_schema import PolicyConfigurationSchema
 from app.core.security import get_password_hash
 from app.core.config import settings
@@ -158,9 +158,21 @@ async def seed_policy(session: AsyncSession) -> PolicyVersion:
         return existing
 
     policy_version_id = f"e2e-policy-{uuid4().hex[:8]}"
+    from app.schemas.policy_schema import AlertThresholdMinMaxSchema
+    e2e_thresholds = {
+        "current_ratio":                 AlertThresholdMinMaxSchema(min=Decimal("1.0"), warn=Decimal("1.5"), max=Decimal("3.0")),
+        "quick_ratio":                   AlertThresholdMinMaxSchema(min=Decimal("0.8"), warn=Decimal("1.0"), max=Decimal("2.0")),
+        "financial_autonomy":            AlertThresholdMinMaxSchema(min=Decimal("20.0"), warn=Decimal("35.0"), max=Decimal("60.0")),
+        "debt_to_equity":                AlertThresholdMinMaxSchema(min=Decimal("0.3"), warn=Decimal("1.0"), max=Decimal("2.0")),
+        "net_margin":                    AlertThresholdMinMaxSchema(min=Decimal("3.0"), warn=Decimal("8.0"), max=Decimal("20.0")),
+        "operating_margin":              AlertThresholdMinMaxSchema(min=Decimal("3.0"), warn=Decimal("8.0"), max=Decimal("20.0")),
+        "debt_repayment_years":          AlertThresholdMinMaxSchema(min=Decimal("3.0"), warn=Decimal("5.0"), max=Decimal("10.0")),
+        "cash_flow_capacity_margin_pct": AlertThresholdMinMaxSchema(min=Decimal("5.0"), warn=Decimal("10.0"), max=Decimal("25.0")),
+    }
     config = PolicyConfigurationSchema(
         version_id=policy_version_id,
         version_label=E2E_POLICY_LABEL,
+        alert_thresholds=e2e_thresholds,
     ).model_dump(mode="json")
 
     # Désactiver toute policy précédemment active
@@ -238,11 +250,24 @@ async def seed_case(
             f"✓ Case already exists: '{E2E_CASE_REFERENCE}' "
             f"(id={str(existing.id)[:8]}..., status={existing.status})"
         )
-        # Mettre à jour le statut si le seed a progressé depuis la dernière exécution
-        if existing.status in (CaseStatus.DRAFT, CaseStatus.FINANCIAL_INPUT,
-                               CaseStatus.NORMALIZATION_DONE, CaseStatus.RATIOS_COMPUTED):
-            existing.status = CaseStatus.SCORING_DONE
-            logger.info(f"  → Status upgraded → SCORING_DONE")
+        # Mettre à jour le statut si le seed a progressé depuis la dernière exécution.
+        # La contrainte ck_evaluation_case_status a été corrigée pour accepter
+        # toutes les valeurs de CaseStatus (ORM + valeurs legacy DB).
+        BELOW_SCORING = {
+            CaseStatus.DRAFT,
+            CaseStatus.PENDING_GATE,
+            CaseStatus.FINANCIAL_INPUT,
+            CaseStatus.NORMALIZATION_DONE,
+            CaseStatus.RATIOS_COMPUTED,
+        }
+        if existing.status in BELOW_SCORING:
+            # Utiliser SQL brut en cas de désynchronisation résiduelle enum/DB
+            await session.execute(
+                text("UPDATE evaluation_cases SET status='SCORING_DONE' WHERE id=:id"),
+                {"id": existing.id},
+            )
+            await session.flush()
+            logger.info("  → Status upgraded → SCORING_DONE")
         return existing
 
     case = EvaluationCase(
@@ -255,9 +280,15 @@ async def seed_case(
         contract_value=E2E_CASE_CONTRACT_VALUE,
         contract_currency=E2E_CASE_CURRENCY,
         contract_duration_months=E2E_CASE_DURATION_MONTHS,
-        status=CaseStatus.SCORING_DONE,
+        status=CaseStatus.DRAFT,
     )
     session.add(case)
+    await session.flush()
+    # Escalader vers SCORING_DONE via SQL direct (safe, enum désynchronisé)
+    await session.execute(
+        text("UPDATE evaluation_cases SET status='SCORING_DONE' WHERE id=:id"),
+        {"id": case.id},
+    )
     await session.flush()
     logger.info(
         f"✅ Case created: '{E2E_CASE_REFERENCE}' "
@@ -366,6 +397,7 @@ async def seed_financials(
             fiscal_year=year,
             currency_original="USD",
             exchange_rate_to_usd=Decimal("1.0"),
+            referentiel=Referentiel.IFRS,
             **data,
         )
         session.add(raw)

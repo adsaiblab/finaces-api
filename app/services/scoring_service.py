@@ -13,6 +13,9 @@ from app.engines.ratio_to_score_engine import convert_ratios_to_scores
 from app.exceptions.finaces_exceptions import MissingFinancialDataError
 from app.services.policy_service import get_active_policy
 from app.services.audit_service import log_event
+from app.schemas.policy_schema import PolicyConfigurationSchema
+
+logger = logging.getLogger(__name__)
 
 async def process_scoring(case_id: UUID, db: AsyncSession) -> ScorecardOutputSchema:
     """
@@ -58,7 +61,8 @@ async def process_scoring(case_id: UUID, db: AsyncSession) -> ScorecardOutputSch
         )
 
     # 2. P0-01: Build RatioSetSchema and convert raw ratios → normalized 0-5 scores
-    policy = await get_active_policy(db)
+    policy_dict = await get_active_policy(db)
+    policy = PolicyConfigurationSchema(**policy_dict)
 
     ratio_schema = RatioSetSchema(
         id=ratio_set_orm.id,
