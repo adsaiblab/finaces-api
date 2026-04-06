@@ -70,6 +70,12 @@ _SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 _COOKIE_NAME  = "XSRF-TOKEN"
 _HEADER_NAME  = "X-XSRF-TOKEN"
 
+# Routes publiques exemptées du check XSRF.
+# Logique : le XSRF protège les mutations authentifiées.
+# /auth/* est la route qui crée la session — le cookie n'existe pas encore.
+# /health est un endpoint de monitoring sans effet de bord.
+_XSRF_EXEMPT_PREFIXES = ("/auth/", "/health")
+
 
 class XSRFMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, secure: bool = False):
@@ -78,6 +84,11 @@ class XSRFMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next) -> Response:
         if request.method not in _SAFE_METHODS:
+            # Routes publiques exemptées — pas de session à protéger
+            path = request.url.path
+            if any(path.startswith(prefix) for prefix in _XSRF_EXEMPT_PREFIXES):
+                return await call_next(request)
+
             cookie_token = request.cookies.get(_COOKIE_NAME, "")
             header_token = request.headers.get(_HEADER_NAME, "")
             if not cookie_token or not secrets.compare_digest(cookie_token, header_token):

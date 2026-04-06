@@ -808,6 +808,64 @@ async def simulate_what_if(
 
 
 # ============================================================================
+# ANALYTICS ENDPOINTS (T43 — câblage complet en Phase 3)
+# ============================================================================
+
+@router.get(
+    "/analytics/convergence",
+    response_model=Dict[str, Any],
+    status_code=status.HTTP_200_OK,
+    summary="MCC vs IA convergence analytics",
+    description=(
+        "Returns convergence rate between MCC Rail 1 and IA Rail 2 over time. "
+        "⚠️ Stub — full implementation in Phase 3 (T43)."
+    ),
+)
+async def get_convergence_analytics(
+    days: int = Query(30, ge=1, le=365, description="Lookback period in days"),
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict = Depends(get_current_user),
+) -> Dict[str, Any]:
+    """
+    Convergence analytics between MCC (Rail 1) and IA (Rail 2).
+
+    Computes how often both rails agree on the risk classification
+    over the requested period.
+
+    TODO T43 (Phase 3): replace stub with real DB aggregation on IATension.
+    """
+    # Real query on IATension table — counts agreements vs total
+    from datetime import timedelta
+    from sqlalchemy import case as sa_case
+
+    since = datetime.utcnow() - timedelta(days=days)
+
+    stmt = select(
+        func.count(IATension.id).label("total"),
+        func.sum(
+            sa_case((IATension.tension_type == "NONE", 1), else_=0)
+        ).label("converged"),
+    ).where(IATension.created_at >= since)
+
+    result = await db.execute(stmt)
+    row = result.one()
+    total: int = row.total or 0
+    converged: int = row.converged or 0
+    rate = round((converged / total * 100), 1) if total > 0 else 0.0
+
+    return {
+        "period_days": days,
+        "total_analyses": total,
+        "converged": converged,
+        "diverged": total - converged,
+        "convergence_rate_pct": rate,
+        "computed_at": datetime.utcnow().isoformat(),
+        # T43 Phase 3 : ajouter séries temporelles jour par jour ici
+        "timeseries": [],
+    }
+
+
+# ============================================================================
 # PRIVATE HELPERS
 # ============================================================================
 
