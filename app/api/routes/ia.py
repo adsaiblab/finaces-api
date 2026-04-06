@@ -19,6 +19,7 @@ import logging
 import uuid
 import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
@@ -54,6 +55,10 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/ia", tags=["AI Scoring"])
 
+# Rate limit applied to all costly POST routes (ML inference, feature computation).
+# Keys on client IP — see NOTE in auth.py about reverse proxy X-Forwarded-For.
+_IA_RATE_LIMIT = [Depends(RateLimiter(times=20, seconds=60))]
+
 
 # ============================================================================
 # FEATURE ENGINEERING ENDPOINTS
@@ -67,7 +72,8 @@ router = APIRouter(prefix="/ia", tags=["AI Scoring"])
     description=(
         "Compute all 40+ financial features from normalized accounting data. "
         "Features are automatically cached in the database for future use."
-    )
+    ),
+    dependencies=_IA_RATE_LIMIT,
 )
 async def compute_features(
     case_id: str,
@@ -215,7 +221,8 @@ async def get_cached_features(
     description=(
         "Generate AI-based risk prediction using trained ML model. "
         "Returns probability of default, risk classification, and explanations."
-    )
+    ),
+    dependencies=_IA_RATE_LIMIT,
 )
 async def predict_risk(
     case_id: str,
@@ -402,7 +409,8 @@ async def get_latest_prediction(
     description=(
         "Execute both MCC and AI scoring, then perform tension analysis. "
         "This is the main endpoint for integrated risk assessment."
-    )
+    ),
+    dependencies=_IA_RATE_LIMIT,
 )
 async def dual_scoring(
     case_id: str,
@@ -540,20 +548,6 @@ async def get_tension_analysis(
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ) -> Dict[str, Any]:
-    """
-    Retrieve latest tension analysis for a case.
-    
-    Args:
-        case_id: Case identifier
-        db: Database session
-        current_user: Authenticated user
-        
-    Returns:
-        Latest tension analysis
-        
-    Raises:
-        404: No tension analysis found
-    """
     stmt = (
         select(IATension)
         .where(IATension.case_id == uuid.UUID(case_id))
@@ -596,24 +590,8 @@ async def get_tension_history(
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ) -> List[Dict[str, Any]]:
-    """
-    Retrieve tension analysis history for a case.
-    
-    Useful for tracking how assessments evolved over time,
-    especially if data or models were updated.
-    
-    Args:
-        case_id: Case identifier
-        limit: Maximum number of records
-        db: Database session
-        current_user: Authenticated user
-        
-    Returns:
-        List of historical tension analyses
-    """
     detector = TensionDetector()
     history = await detector.get_tension_history(case_id, db, limit)
-    
     return history
 
 
@@ -633,17 +611,6 @@ async def list_models(
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ) -> List[Dict[str, Any]]:
-    """
-    List available AI models.
-    
-    Args:
-        active_only: Filter to active models only
-        db: Database session
-        current_user: Authenticated user
-        
-    Returns:
-        List of model metadata
-    """
     stmt = select(IAModel).order_by(IAModel.created_at.desc())
     
     if active_only:
@@ -677,19 +644,6 @@ async def get_active_model(
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ) -> Dict[str, Any]:
-    """
-    Get currently active model.
-    
-    Args:
-        db: Database session
-        current_user: Authenticated user
-        
-    Returns:
-        Active model metadata
-        
-    Raises:
-        404: No active model found
-    """
     stmt = (
         select(IAModel)
         .where(IAModel.is_active == True)
@@ -732,19 +686,6 @@ async def get_prediction_stats(
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ) -> Dict[str, Any]:
-    """
-    Get aggregate prediction statistics.
-    
-    Returns distribution of risk classes, average scores,
-    and prediction counts.
-    
-    Args:
-        db: Database session
-        current_user: Authenticated user
-        
-    Returns:
-        Statistics dictionary
-    """
     # Total predictions
     total_stmt = select(func.count(IAPrediction.id))
     total_result = await db.execute(total_stmt)
@@ -786,7 +727,8 @@ async def get_prediction_stats(
         "Run a What-If scenario by overriding specific financial features "
         "and observing the impact on the AI risk score without persisting any result. "
         "Requires at least one parameter override."
-    )
+    ),
+    dependencies=_IA_RATE_LIMIT,
 )
 async def simulate_what_if(
     case_id: str,
@@ -806,20 +748,6 @@ async def simulate_what_if(
     6. Build feature_impacts from SHAP values on overridden features
 
     Nothing is written to the database: this is a simulation only.
-
-    Args:
-        case_id: Evaluation case identifier
-        payload: Scenario name + feature overrides (>= 1 required)
-        db: Database session
-        current_user: Authenticated user
-
-    Returns:
-        WhatIfResult with baseline, simulated scores, delta, and feature impacts
-
-    Raises:
-        404: Case not found or no active model
-        400: Insufficient data to compute features
-        500: Simulation engine error
     """
     logger.info(
         f"What-If simulation '{payload.scenario_name}' requested for case {case_id} "
@@ -827,26 +755,21 @@ async def simulate_what_if(
         f"with {len(payload.parameter_overrides)} override(s)"
     )
 
-    # 1. Verify case exists
     await _get_case_or_404(case_id, db)
 
     try:
-        # 2. Initialise predictor (no explanations on baseline to keep it fast)
         predictor = IAPredictor(model_type="xgboost", enable_explanations=False)
         await predictor._load_active_model(db)
 
-        # 3. Load baseline features (cache preferred, fallback to compute)
         features_data = await predictor._get_or_compute_features(
             case_id, db, use_cached=True
         )
         baseline_features: Dict[str, Any] = dict(features_data["features"])
 
-        # 4. Baseline probability and risk class (no persist)
         baseline_probability = predictor.model_manager.predict_proba(baseline_features)
         baseline_score = round(baseline_probability * 100, 2)
         baseline_class = IARiskClassifier.classify(baseline_probability)
 
-        # 5. Apply overrides — only accept keys known to the model
         known_features = set(predictor.model_manager.feature_names or [])
         effective_overrides: Dict[str, float] = {
             k: v
@@ -856,13 +779,11 @@ async def simulate_what_if(
         overridden_features = dict(baseline_features)
         overridden_features.update(effective_overrides)
 
-        # 6. Simulated probability and risk class (no persist)
         sim_probability = predictor.model_manager.predict_proba(overridden_features)
         sim_score = round(sim_probability * 100, 2)
         sim_class = IARiskClassifier.classify(sim_probability)
         delta_score = round(sim_score - baseline_score, 2)
 
-        # 7. Feature impacts via SHAP on overridden features (best-effort)
         feature_impacts: List[IAFeatureContribution] = []
         try:
             import shap
@@ -880,7 +801,7 @@ async def simulate_what_if(
 
             shap_values = predictor.explainer.shap_values(feature_array)
             shap_abs = np.abs(shap_values[0])
-            top_indices = np.argsort(shap_abs)[-5:][::-1]  # top 5 contributors
+            top_indices = np.argsort(shap_abs)[-5:][::-1]
 
             for idx in top_indices:
                 fname = feature_names[idx]
@@ -893,7 +814,6 @@ async def simulate_what_if(
             logger.warning(
                 f"SHAP computation skipped for What-If simulation on case {case_id}: {shap_err}"
             )
-            # feature_impacts stays empty — not a blocking error
 
         logger.info(
             f"What-If simulation completed for case {case_id}. "
@@ -953,7 +873,6 @@ async def get_convergence_chart(
     current_user: Dict = Depends(get_current_user)
 ):
     """Returns convergence chart data for MCC vs IA scores."""
-    # Placeholder — would query scored cases over time window
     return {"days": days, "data_points": [], "convergence_pct": 0.0}
 
 
@@ -1015,7 +934,6 @@ async def _get_or_compute_mcc_scorecard(
     from app.services.scoring_service import ScoringService
     
     if not force_recompute:
-        # Try to get cached
         stmt = (
             select(Scorecard)
             .where(Scorecard.case_id == uuid.UUID(case_id))
@@ -1025,10 +943,8 @@ async def _get_or_compute_mcc_scorecard(
         scorecard = result.scalars().first()
         
         if scorecard:
-            # Convert to response schema
             from app.schemas.scoring_schema import ScorecardOutputSchema
             return ScorecardOutputSchema.model_validate(scorecard)
     
-    # Compute fresh
     scoring_service = ScoringService()
     return await scoring_service.compute_scorecard(case_id, db)
