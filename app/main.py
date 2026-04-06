@@ -40,6 +40,9 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Configure dedicated audit logger (writes to logs/audit.log, JSON per line)
+    from app.core.logging_config import configure_audit_logger
+    configure_audit_logger()
     # Connecting to Redis at startup (uses docker-compose URL)
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     redis = Redis.from_url(redis_url, encoding="utf-8", decode_responses=True)
@@ -78,6 +81,12 @@ class XSRFMiddleware(BaseHTTPMiddleware):
             cookie_token = request.cookies.get(_COOKIE_NAME, "")
             header_token = request.headers.get(_HEADER_NAME, "")
             if not cookie_token or not secrets.compare_digest(cookie_token, header_token):
+                from app.core.audit import security_xsrf_blocked
+                security_xsrf_blocked(
+                    ip=request.client.host if request.client else "unknown",
+                    path=request.url.path,
+                    method=request.method,
+                )
                 return Response(
                     content='{"detail":"XSRF token missing or invalid."}',
                     status_code=403,
@@ -196,8 +205,8 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=["http://localhost:3000", "http://localhost:4200", "http://localhost:8000"],  # WARNING: To be restricted in staging/production
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],  # <-- FIXED: wild card removed
-        allow_headers=["Authorization", "Content-Type", "Accept", "X-XSRF-TOKEN"],  # <-- P2-05: X-XSRF-TOKEN added for XSRF protection
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "Accept", "X-XSRF-TOKEN"],
     )
 
     # XSRF protection (defense-in-depth — JWT Bearer is the primary auth mechanism).

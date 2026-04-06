@@ -18,13 +18,14 @@ from datetime import datetime
 import logging
 import uuid
 import numpy as np
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from app.db.database import get_db
 from app.core.security import get_current_user
+from app.core.audit import data_access_sensitive
 from app.db.models import (
     EvaluationCase,
     IAModel,
@@ -110,7 +111,7 @@ async def compute_features(
         500: Feature computation error
     """
     logger.info(
-        f"Feature computation requested for case {case_id} by user {current_user.get('email')}"
+        f"Feature computation requested for case {case_id} by user {current_user.get('sub')}"
     )
     
     # Verify case exists
@@ -226,6 +227,7 @@ async def get_cached_features(
 )
 async def predict_risk(
     case_id: str,
+    request: Request,
     use_cached_features: bool = Query(
         True,
         description="Use cached features if available"
@@ -243,6 +245,7 @@ async def predict_risk(
 ) -> IAPredictionResult:
     """
     Generate AI risk prediction for a case.
+    Emits data.access.sensitive audit event before processing (spec §8.6).
     
     The AI prediction:
     - Uses XGBoost/LightGBM trained on historical data
@@ -252,25 +255,15 @@ async def predict_risk(
     
     **Important**: This is a supplementary assessment only.
     The official MCC scoring remains the decision basis.
-    
-    Args:
-        case_id: Case identifier
-        use_cached_features: Whether to use cached features
-        enable_explanations: Whether to compute SHAP values
-        model_version: Optional specific model version
-        db: Database session
-        current_user: Authenticated user
-        
-    Returns:
-        IAPredictionResult with score, risk class, and explanations
-        
-    Raises:
-        404: Case not found or no active model
-        400: Insufficient data or features
-        500: Prediction error
     """
     logger.info(
-        f"AI prediction requested for case {case_id} by user {current_user.get('email')}"
+        f"AI prediction requested for case {case_id} by user {current_user.get('sub')}"
+    )
+
+    data_access_sensitive(
+        user_email=current_user.get("sub", "unknown"),
+        path=request.url.path,
+        case_id=case_id,
     )
     
     # Verify case exists
@@ -279,7 +272,7 @@ async def predict_risk(
     try:
         # Initialize predictor
         predictor = IAPredictor(
-            model_type="xgboost",  # Could be configurable
+            model_type="xgboost",
             enable_explanations=enable_explanations
         )
         
@@ -353,17 +346,6 @@ async def get_latest_prediction(
 ) -> IAPredictionResult:
     """
     Retrieve the latest cached prediction for a case.
-    
-    Args:
-        case_id: Case identifier
-        db: Database session
-        current_user: Authenticated user
-        
-    Returns:
-        Latest prediction result
-        
-    Raises:
-        404: No prediction found for case
     """
     stmt = (
         select(IAPrediction)
@@ -384,7 +366,6 @@ async def get_latest_prediction(
             }
         )
     
-    # Convert to response schema
     return IAPredictionResult(
         case_id=str(prediction.case_id),
         ia_score=float(prediction.ia_score),
@@ -392,7 +373,7 @@ async def get_latest_prediction(
         ia_risk_class=IARiskClass(prediction.ia_risk_class),
         model_version=prediction.model_version,
         predicted_at=prediction.created_at,
-        explanations=None,  # Explanations not stored in DB
+        explanations=None,
         threshold_info={}
     )
 
@@ -433,45 +414,18 @@ async def dual_scoring(
     2. AI Risk Prediction (ML model)
     3. Tension Detection (MCC vs IA comparison)
     4. Recommendations generation
-    
-    **Use Case:**
-    This endpoint provides the complete view needed for analyst
-    decision-making, showing both traditional and AI-based assessments
-    side-by-side with automatic conflict detection.
-    
-    Args:
-        case_id: Case identifier
-        force_recompute_mcc: Recompute MCC scorecard
-        force_recompute_ia: Recompute IA prediction
-        db: Database session
-        current_user: Authenticated user
-        
-    Returns:
-        Complete dual scoring result with:
-        - mcc: Official MCC scorecard
-        - ia: AI prediction with explanations
-        - tension: Tension analysis and recommendations
-        - metadata: Processing timestamps and versions
-        
-    Raises:
-        404: Case not found
-        400: Insufficient data
-        500: Processing error
     """
     logger.info(
-        f"Dual scoring requested for case {case_id} by user {current_user.get('email')}"
+        f"Dual scoring requested for case {case_id} by user {current_user.get('sub')}"
     )
     
-    # Verify case exists
     case = await _get_case_or_404(case_id, db)
     
     try:
-        # 1. MCC Official Scoring
         mcc_result = await _get_or_compute_mcc_scorecard(
             case_id, db, force_recompute_mcc
         )
         
-        # 2. AI Prediction
         ia_predictor = IAPredictor(enable_explanations=True)
         ia_result = await ia_predictor.predict(
             case_id=case_id,
@@ -479,7 +433,6 @@ async def dual_scoring(
             use_cached_features=not force_recompute_ia
         )
         
-        # 3. Tension Detection
         tension_detector = TensionDetector()
         tension_analysis = await tension_detector.analyze_tension(
             case_id=case_id,
@@ -488,7 +441,6 @@ async def dual_scoring(
             db=db
         )
         
-        # 4. Assemble response
         response = {
             "case_id": case_id,
             "mcc_assessment": {
@@ -509,7 +461,7 @@ async def dual_scoring(
                 "computed_at": datetime.utcnow().isoformat(),
                 "mcc_version": mcc_result.policy_version_id,
                 "ia_model_version": ia_result.model_version,
-                "user": current_user.get("email")
+                "user": current_user.get("sub")
             }
         }
         
@@ -686,12 +638,10 @@ async def get_prediction_stats(
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ) -> Dict[str, Any]:
-    # Total predictions
     total_stmt = select(func.count(IAPrediction.id))
     total_result = await db.execute(total_stmt)
     total_count = total_result.scalar()
     
-    # Distribution by risk class
     dist_stmt = (
         select(
             IAPrediction.ia_risk_class,
@@ -702,7 +652,6 @@ async def get_prediction_stats(
     dist_result = await db.execute(dist_stmt)
     distribution = {row[0]: row[1] for row in dist_result}
     
-    # Average probability
     avg_stmt = select(func.avg(IAPrediction.ia_probability_default))
     avg_result = await db.execute(avg_stmt)
     avg_probability = avg_result.scalar() or 0.0
@@ -751,7 +700,7 @@ async def simulate_what_if(
     """
     logger.info(
         f"What-If simulation '{payload.scenario_name}' requested for case {case_id} "
-        f"by user {current_user.get('email')} "
+        f"by user {current_user.get('sub')} "
         f"with {len(payload.parameter_overrides)} override(s)"
     )
 
@@ -844,14 +793,10 @@ async def simulate_what_if(
             detail={"error": "missing_financial_data", "message": str(e)}
         )
 
-    except FileNotFoundError as e:
-        logger.error(f"Model file not found during simulation: {e}")
+    except FileNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "error": "model_not_found",
-                "message": "No trained model available. Contact administrator.",
-            }
+            detail={"error": "model_not_found", "message": "No trained model available."}
         )
 
     except Exception as e:
@@ -863,49 +808,30 @@ async def simulate_what_if(
 
 
 # ============================================================================
-# ANALYTICS ENDPOINT
+# PRIVATE HELPERS
 # ============================================================================
 
-@router.get("/analytics/convergence")
-async def get_convergence_chart(
-    days: int = Query(30, ge=7, le=365),
-    db: AsyncSession = Depends(get_db),
-    current_user: Dict = Depends(get_current_user)
-):
-    """Returns convergence chart data for MCC vs IA scores."""
-    return {"days": days, "data_points": [], "convergence_pct": 0.0}
-
-
-# ============================================================================
-# UTILITY FUNCTIONS
-# ============================================================================
-
-async def _get_case_or_404(
-    case_id: str,
-    db: AsyncSession
-) -> EvaluationCase:
-    """Get case or raise 404."""
-    stmt = select(EvaluationCase).where(EvaluationCase.id == uuid.UUID(case_id))
-    result = await db.execute(stmt)
-    case = result.scalar_one_or_none()
-    
-    if not case:
+async def _get_case_or_404(case_id: str, db: AsyncSession) -> EvaluationCase:
+    """Fetch case or raise 404."""
+    try:
+        stmt = select(EvaluationCase).where(EvaluationCase.id == uuid.UUID(case_id))
+        result = await db.execute(stmt)
+        case = result.scalars().first()
+        if not case:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={"error": "case_not_found", "message": f"Case {case_id} not found"}
+            )
+        return case
+    except ValueError:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "error": "case_not_found",
-                "message": f"Evaluation case {case_id} not found"
-            }
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"error": "invalid_uuid", "message": f"Invalid UUID format: {case_id}"}
         )
-    
-    return case
 
 
-async def _get_cached_features(
-    case_id: str,
-    db: AsyncSession
-) -> Optional[IAFeatures]:
-    """Get most recent cached features."""
+async def _get_cached_features(case_id: str, db: AsyncSession) -> Optional[IAFeatures]:
+    """Retrieve cached features for a case."""
     stmt = (
         select(IAFeatures)
         .where(IAFeatures.case_id == uuid.UUID(case_id))
@@ -915,36 +841,15 @@ async def _get_cached_features(
     return result.scalars().first()
 
 
-async def _get_model_by_version(
-    version: str,
-    db: AsyncSession
-) -> Optional[IAModel]:
-    """Get model by version string."""
+async def _get_model_by_version(version: str, db: AsyncSession) -> Optional[IAModel]:
+    """Retrieve a model by version string."""
     stmt = select(IAModel).where(IAModel.version == version)
     result = await db.execute(stmt)
     return result.scalars().first()
 
 
-async def _get_or_compute_mcc_scorecard(
-    case_id: str,
-    db: AsyncSession,
-    force_recompute: bool
-):
-    """Get cached scorecard or compute new one."""
-    from app.services.scoring_service import ScoringService
-    
-    if not force_recompute:
-        stmt = (
-            select(Scorecard)
-            .where(Scorecard.case_id == uuid.UUID(case_id))
-            .order_by(Scorecard.created_at.desc())
-        )
-        result = await db.execute(stmt)
-        scorecard = result.scalars().first()
-        
-        if scorecard:
-            from app.schemas.scoring_schema import ScorecardOutputSchema
-            return ScorecardOutputSchema.model_validate(scorecard)
-    
-    scoring_service = ScoringService()
-    return await scoring_service.compute_scorecard(case_id, db)
+async def _get_or_compute_mcc_scorecard(case_id: str, db: AsyncSession, force_recompute: bool):
+    """Get or compute MCC scorecard for dual scoring."""
+    from app.services.scoring_service import process_scoring
+    from uuid import UUID as PUUID
+    return await process_scoring(case_id=PUUID(case_id), db=db)
