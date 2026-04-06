@@ -10,7 +10,7 @@ from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.security import get_current_user, RequireRole
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -40,25 +40,35 @@ class ConsortiumMemberCreate(BaseModel):
 
 
 class CaseCreate(BaseModel):
-    case_type: str = "SINGLE"
-    market_reference: str
-    market_label: str
+    case_type: str = Field("SINGLE", min_length=1, max_length=20)
+    market_reference: str = Field(..., min_length=1, max_length=255)
+    market_label: str = Field(..., min_length=1, max_length=255)
     contract_value: float = 0.0
-    contract_currency: str = "USD"
-    contract_duration_months: int = 12
-    notes: str = ""
+    contract_currency: str = Field("USD", min_length=3, max_length=3)  # ISO 4217
+    contract_duration_months: int = Field(12, ge=1, le=600)
+    notes: str = Field("", max_length=4000)
     # SINGLE
-    bidder_id: Optional[str] = None
-    bidder_name: Optional[str] = None
-    legal_form: Optional[str] = "SA"
-    registration_number: Optional[str] = ""
-    country: Optional[str] = ""
-    sector: Optional[str] = "AUTRE"
-    contact_email: Optional[str] = ""
+    bidder_id: Optional[str] = Field(None, max_length=100)
+    bidder_name: Optional[str] = Field(None, max_length=255)
+    legal_form: Optional[str] = Field("SA", max_length=50)
+    registration_number: Optional[str] = Field("", max_length=100)
+    country: Optional[str] = Field("", max_length=100)
+    sector: Optional[str] = Field("AUTRE", max_length=100)
+    contact_email: Optional[EmailStr] = Field(None, description="Contact email address")
     # CONSORTIUM
-    consortium_name: Optional[str] = None
-    jv_type: Optional[str] = "JOINT_AND_SEVERAL"
+    consortium_name: Optional[str] = Field(None, max_length=255)
+    jv_type: Optional[str] = Field("JOINT_AND_SEVERAL", max_length=50)
     members: Optional[List[ConsortiumMemberCreate]] = None
+
+    @field_validator("contact_email", mode="before")
+    @classmethod
+    def _normalise_empty_email(cls, v: Optional[str]) -> Optional[str]:
+        """Treat empty string as None so EmailStr validation is only triggered
+        for non-empty values, preserving backward compat with clients that
+        send contact_email='' instead of null."""
+        if not v or str(v).strip() == "":
+            return None
+        return v
 
 
 class StatusTransition(BaseModel):
@@ -66,11 +76,11 @@ class StatusTransition(BaseModel):
 
 
 class RecommendationUpdate(BaseModel):
-    recommendation: str
+    recommendation: str = Field(..., min_length=1, max_length=50)
 
 
 class ConclusionUpdate(BaseModel):
-    conclusion: str
+    conclusion: str = Field(..., min_length=1, max_length=8000)
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -197,7 +207,7 @@ async def api_create_case(body: CaseCreate, db: AsyncSession = Depends(get_db), 
         registration_number=body.registration_number,
         country=body.country,
         sector=body.sector,
-        contact_email=body.contact_email,
+        contact_email=str(body.contact_email) if body.contact_email else None,
         # CONSORTIUM
         consortium_name=body.consortium_name,
         jv_type=body.jv_type,

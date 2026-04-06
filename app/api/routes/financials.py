@@ -40,9 +40,9 @@ class FinancialStatementCreate(BaseModel):
     Ingestion payload for a raw financial statement.
     Keys map directly to FinancialStatementRaw ORM model columns.
     """
-    fiscal_year: int
-    currency_original: str = "USD"
-    referentiel: Optional[str] = None
+    fiscal_year: int = Field(..., ge=1900, le=2100)
+    currency_original: str = Field("USD", min_length=3, max_length=3)  # ISO 4217
+    referentiel: Optional[str] = Field(None, max_length=10)
     exchange_rate_to_usd: Optional[Decimal] = Field(default=Decimal("1.0"), ge=Decimal("0.0"))
 
     # ── Assets ───────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ class FinancialStatementCreate(BaseModel):
     dividends_distributed: Optional[Decimal] = None
     capex: Optional[Decimal] = None
     is_consolidated: Optional[int] = 0
-    source_notes: str = ""
+    source_notes: str = Field("", max_length=2000)
 
     # ─────────────────────────────────────────────────────────────
     # Pydantic V2 balance sheet guard (F-1.4)
@@ -155,11 +155,15 @@ class FinancialStatementRawOut(BaseModel):
 # ─────────────────────────────────────────────────────────────────
 
 @router.get("/{case_id}/financials", response_model=List[FinancialStatementRawOut])
-async def api_get_financials(case_id: str, db: AsyncSession = Depends(get_db), current_user: dict = Depends(get_current_user)):
+async def api_get_financials(
+    case_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Returns all raw financial statements for a given case."""
     result = await db.execute(
         select(FinancialStatementRaw)
-        .where(FinancialStatementRaw.case_id == uuid.UUID(case_id))
+        .where(FinancialStatementRaw.case_id == case_id)
         .order_by(FinancialStatementRaw.fiscal_year.desc())
     )
     return result.scalars().all()
@@ -167,38 +171,36 @@ async def api_get_financials(case_id: str, db: AsyncSession = Depends(get_db), c
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
+
 @router.post("/{case_id}/financials")
 async def api_create_financial(
-    case_id: str,
+    case_id: uuid.UUID,
     body: FinancialStatementCreate,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
     """Creates or updates a raw financial statement (upsert by case_id + fiscal_year)."""
     try:
-        case_uuid = uuid.UUID(case_id)
         data = body.model_dump(exclude_unset=True)
 
         from app.services.financial_service import upsert_financial_statement
         stmt_id, event_type = await upsert_financial_statement(
-            case_uuid=case_uuid,
+            case_uuid=case_id,
             fiscal_year=body.fiscal_year,
             data=data,
             db=db
         )
-        
-        # Audit logging is assumed to be either handled downstream or via a separate wrapper
-        # Note: If P1-AUDIT-01 is fully merged, make sure log_event is integrated inside the service or here.
+
         await log_event(
             db=db,
             event_type=event_type,
             entity_type="FinancialStatementRaw",
             entity_id=str(stmt_id),
-            case_id=str(case_uuid),
+            case_id=str(case_id),
             description=f"Raw financial statement {body.fiscal_year} {'updated' if event_type == 'FINANCIAL_UPDATED' else 'created'}.",
             user_id=current_user.get("sub", "SYSTEM")
         )
-        
+
         logger.info(f"Financial statement {body.fiscal_year} {'updated' if event_type == 'FINANCIAL_UPDATED' else 'created'} for case {case_id}")
         return {"statement_id": str(stmt_id), "event": event_type}
     except ValueError as e:
@@ -214,28 +216,25 @@ async def api_create_financial(
 
 @router.delete("/{case_id}/financials/{statement_id}")
 async def api_delete_financial(
-    case_id: str,
-    statement_id: str,
+    case_id: uuid.UUID,
+    statement_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
     """Deletes a raw financial statement."""
-    case_uuid = uuid.UUID(case_id)
-    stmt_uuid = uuid.UUID(statement_id)
-
     from app.services.financial_service import delete_financial_statement
-    await delete_financial_statement(case_uuid=case_uuid, statement_id=stmt_uuid, db=db)
+    await delete_financial_statement(case_uuid=case_id, statement_id=statement_id, db=db)
 
     # <-- FIX P1-AUDIT-02
     await log_event(
         db=db,
         event_type="FINANCIAL_DELETED",
         entity_type="FinancialStatementRaw",
-        entity_id=statement_id,
-        case_id=str(case_uuid),
+        entity_id=str(statement_id),
+        case_id=str(case_id),
         description="Raw financial statement deleted.",
         user_id=current_user.get("sub", "SYSTEM")
     )
 
     logger.info(f"Financial statement {statement_id} deleted for case {case_id}")
-    return {"status": "deleted", "statement_id": statement_id}
+    return {"status": "deleted", "statement_id": str(statement_id)}

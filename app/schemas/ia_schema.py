@@ -74,7 +74,7 @@ class WhatIfInput(BaseModel):
     Keys must be valid feature names known to the model; unknown keys are
     silently ignored during scoring but returned in the result for traceability.
     """
-    scenario_name: str = Field(..., min_length=1, description="Human-readable scenario label")
+    scenario_name: str = Field(..., min_length=1, max_length=200, description="Human-readable scenario label")
     parameter_overrides: Dict[str, float] = Field(
         default_factory=dict,
         description="Feature overrides to apply on top of real computed features"
@@ -84,6 +84,11 @@ class WhatIfInput(BaseModel):
     def require_at_least_one_override(self) -> "WhatIfInput":
         if not self.parameter_overrides:
             raise ValueError("parameter_overrides must contain at least one entry")
+        if len(self.parameter_overrides) > 100:
+            raise ValueError("parameter_overrides cannot contain more than 100 entries.")
+        for key in self.parameter_overrides:
+            if len(key) > 100:
+                raise ValueError(f"Override key '{key[:30]}...' exceeds 100 characters.")
         return self
 
 

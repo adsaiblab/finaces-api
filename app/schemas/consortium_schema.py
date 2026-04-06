@@ -3,9 +3,10 @@ from typing import List, Optional
 from decimal import Decimal
 from app.schemas.enums import ConsortiumRole
 
+
 class ConsortiumMemberInput(BaseModel):
-    bidder_id: str
-    bidder_name: str
+    bidder_id: str = Field(..., min_length=1, max_length=100)
+    bidder_name: str = Field(..., min_length=1, max_length=255)
     role: ConsortiumRole
     participation_pct: Decimal = Field(..., ge=0, le=100)
     score_global: Decimal = Field(...)
@@ -13,14 +14,15 @@ class ConsortiumMemberInput(BaseModel):
     score_solvency: Optional[Decimal] = None
     score_profitability: Optional[Decimal] = None
     score_capacity: Optional[Decimal] = None
-    final_risk_class: str
-    stress_60d_result: str
+    final_risk_class: str = Field(..., min_length=1, max_length=50)
+    stress_60d_result: str = Field(..., min_length=1, max_length=50)
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class ConsortiumInputSchema(BaseModel):
-    consortium_id: str
-    jv_type: str
+    consortium_id: str = Field(..., min_length=1, max_length=100)
+    jv_type: str = Field(..., min_length=1, max_length=50)
     members: List[ConsortiumMemberInput]
 
     @model_validator(mode='after')
@@ -32,6 +34,7 @@ class ConsortiumInputSchema(BaseModel):
         return self
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class ConsortiumScorecardOutput(BaseModel):
     consortium_id: str

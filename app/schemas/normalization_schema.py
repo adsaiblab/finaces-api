@@ -4,21 +4,24 @@ from typing import Optional, Literal, Annotated
 from datetime import datetime
 from uuid import UUID
 
+
 class AdjustmentSchema(BaseModel):
     raw_statement_id: UUID
-    fiscal_year: int
+    fiscal_year: int = Field(..., ge=1900, le=2100)
     adj_type: Literal["RECLASS", "CORRECTION", "ESTIMATE", "CURRENCY", "OTHER"]
-    field: str
+    field: str = Field(..., min_length=1, max_length=100)
     amount_before: Decimal = Decimal("0.0")
     amount_after: Decimal = Decimal("0.0")
     mode: Literal['replace', 'add'] = 'add'
-    justification: str
-    source_ref: Optional[str] = None
+    justification: str = Field(..., min_length=1, max_length=2000)
+    source_ref: Optional[str] = Field(None, max_length=500)
 
     model_config = ConfigDict(from_attributes=True)
 
+
 from datetime import date
 from pydantic import field_validator
+
 
 class FinancialStatementRawSchema(BaseModel):
     """Schema representing the raw statement input expected by the engine."""
@@ -83,6 +86,7 @@ class FinancialStatementRawSchema(BaseModel):
         return v
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class FinancialStatementNormalizedSchema(BaseModel):
     """Schema representing the output of the normalization engine."""

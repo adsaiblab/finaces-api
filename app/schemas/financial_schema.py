@@ -22,11 +22,13 @@ class BalanceSheetAssets(BaseModel):
     inventory: Decimal = Decimal("0.0")
     other_noncurrent_assets: Decimal = Decimal("0.0")
 
+
 class BalanceSheetLiabilities(BaseModel):
     total_liabilities: Decimal
     current_liabilities: Decimal
     long_term_debt: Decimal
     equity: Decimal
+
 
 class IncomeStatement(BaseModel):
     revenue: Decimal
@@ -36,6 +38,7 @@ class IncomeStatement(BaseModel):
     net_income: Decimal
     extraordinary_expenses: Decimal = Decimal("0.0")
     dividends: Decimal = Decimal("0.0")
+
 
 class CashFlow(BaseModel):
     operating_cash_flow: Decimal
@@ -49,10 +52,10 @@ class CashFlow(BaseModel):
 # ═══════════════════════════════════════════════════════════
 
 class FinancialStatementNestedCreate(BaseModel):
-    fiscal_year: int
-    currency_original: str = "USD"
+    fiscal_year: int = Field(..., ge=1900, le=2100)
+    currency_original: str = Field("USD", min_length=3, max_length=3)  # ISO 4217
     exchange_rate_to_usd: Decimal = Field(default=Decimal("1.0"), ge=Decimal("0.0"))
-    referentiel: str = "IFRS"
+    referentiel: str = Field("IFRS", min_length=1, max_length=10)
     is_consolidated: bool = False
     balance_sheet_assets: BalanceSheetAssets
     balance_sheet_liabilities: BalanceSheetLiabilities
