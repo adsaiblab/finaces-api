@@ -12,11 +12,12 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import bcrypt
 
 from app.core.config import settings
+from app.core.audit import auth_token_invalid, auth_authorization_denied
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifies a plain password against a bcrypt hash."""
     try:
         return bcrypt.checkpw(
-            plain_password.encode("utf-8"), 
+            plain_password.encode("utf-8"),
             hashed_password.encode("utf-8")
         )
     except Exception as e:
@@ -37,7 +38,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     """Generates a bcrypt hash for a plain password."""
-    # Salt generation with default rounds (12)
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
     return hashed.decode("utf-8")
@@ -61,6 +61,7 @@ _CREDENTIALS_EXCEPTION = HTTPException(
 )
 
 async def get_current_user(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer_scheme),
 ) -> dict:
     """
@@ -74,8 +75,9 @@ async def get_current_user(
         raise _CREDENTIALS_EXCEPTION
 
     token = credentials.credentials
+    client_ip = request.client.host if request.client else "unknown"
+    request_path = request.url.path
 
-    # ── JWT validation ────────────────────────────────────────────
     try:
         payload = jwt.decode(
             token,
@@ -85,9 +87,11 @@ async def get_current_user(
         )
         subject: Optional[str] = payload.get("sub")
         if not subject:
+            auth_token_invalid(ip=client_ip, reason="token_missing_sub", path=request_path)
             raise _CREDENTIALS_EXCEPTION
         return {"sub": subject, "role": payload.get("role", "ANALYST")}
     except jwt.ExpiredSignatureError:
+        auth_token_invalid(ip=client_ip, reason="token_expired", path=request_path)
         logger.warning("Expired JWT token rejected.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -95,8 +99,10 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     except jwt.PyJWTError as e:
+        auth_token_invalid(ip=client_ip, reason="token_invalid_signature", path=request_path)
         logger.warning(f"Invalid JWT token rejected: {e}")
         raise _CREDENTIALS_EXCEPTION
+
 
 class RequireRole:
     """
@@ -106,9 +112,19 @@ class RequireRole:
     def __init__(self, allowed_roles: list[str]):
         self.allowed_roles = allowed_roles
 
-    def __call__(self, current_user: dict = Depends(get_current_user)) -> dict:
+    def __call__(
+        self,
+        request: Request,
+        current_user: dict = Depends(get_current_user),
+    ) -> dict:
         user_role = current_user.get("role", "ANALYST")
         if user_role not in self.allowed_roles:
+            auth_authorization_denied(
+                user_email=current_user.get("sub", "unknown"),
+                ip=request.client.host if request.client else "unknown",
+                path=request.url.path,
+                required_roles=self.allowed_roles,
+            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Operation not permitted. Required roles: {self.allowed_roles}"
