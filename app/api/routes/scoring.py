@@ -1,5 +1,6 @@
 from app.core.security import get_current_user
 from fastapi import APIRouter, Depends, Request
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
@@ -14,7 +15,17 @@ router = APIRouter(
     tags=["Scoring Workflow"]
 )
 
-@router.post("/{case_id}/score", response_model=ScorecardOutputSchema)
+@router.post(
+    "/{case_id}/score",
+    response_model=ScorecardOutputSchema,
+    dependencies=[
+        # Scoring triggers the full ML pipeline (XGBoost + LightGBM + SHAP).
+        # 3 runs/60s is generous for legitimate use while blocking abuse.
+        # NOTE: RateLimiter keys on client IP — ensure X-Forwarded-For is
+        # trusted behind reverse proxy (Phase 3 infra config).
+        Depends(RateLimiter(times=3, seconds=60)),
+    ],
+)
 async def api_compute_scoring(
     request: Request,
     case_id: UUID,

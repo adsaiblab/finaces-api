@@ -12,6 +12,7 @@ Fournit :
 import hashlib
 import uuid
 import os
+import re
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -72,23 +73,30 @@ async def save_document(
 ) -> str:
     """
     Save a file uploaded asynchronously:
-      1. Calculates SHA-256 hash (immutable cryptographic fingerprint)
-      2. Writes the file to disk via aiofiles (non-blocking)
-      3. Creates the DocumentEvidence ORM and persists it
-      4. Emits a DOCUMENT_ADDED event in the audit trail
+      1. Sanitizes filename (path traversal prevention)
+      2. Calculates SHA-256 hash (immutable cryptographic fingerprint)
+      3. Writes the file to disk via aiofiles (non-blocking)
+      4. Creates the DocumentEvidence ORM and persists it
+      5. Emits a DOCUMENT_ADDED event in the audit trail
 
-    Retourne le document_id (str UUID).
+    Returns the document_id (str UUID).
     """
     doc_id = str(uuid.uuid4())
+
+    # 1. Filename sanitization — strip path components and dangerous characters.
+    #    Keeps only alphanumerics, dots, dashes, underscores.
+    #    e.g. "../../etc/passwd" → "etc_passwd", "report 2024.pdf" → "report_2024.pdf"
+    safe_filename = _sanitize_filename(filename)
+
     sha256 = _compute_hash(file_bytes)
     file_size_kb = round(len(file_bytes) / 1024, 2)
 
-    # 1. Directory by box
+    # 2. Directory by case
     case_dir = UPLOAD_DIR / case_id
     case_dir.mkdir(parents=True, exist_ok=True)
-    file_path = case_dir / f"{doc_id}_{filename}"
+    file_path = case_dir / f"{doc_id}_{safe_filename}"
 
-    # 2. Asynchronous writing
+    # 3. Asynchronous writing
     try:
         async with aiofiles.open(file_path, "wb") as f:
             await f.write(file_bytes)
@@ -97,13 +105,13 @@ async def save_document(
         logger.error(f"File write failed for doc {doc_id}: {exc}")
         raise
 
-    # 3. ORM Persistence
+    # 4. ORM Persistence
     doc = DocumentEvidence(
         id=uuid.UUID(doc_id),
         case_id=uuid.UUID(case_id),
         doc_type=DocType(doc_type),
         fiscal_year=fiscal_year,
-        filename=filename,
+        filename=safe_filename,
         file_path=str(file_path),
         file_size_kb=file_size_kb,
         mime_type=mime_type,
@@ -118,14 +126,14 @@ async def save_document(
     await db.commit()
     await db.refresh(doc)
 
-    # 4. Audit
+    # 5. Audit
     await log_event(
         db=db,
         event_type="DOCUMENT_UPLOADED",
         entity_type="CaseDocument",
         entity_id=doc_id,
         case_id=case_id,
-        description=f"Document uploaded: {filename} ({doc_type})",
+        description=f"Document uploaded: {safe_filename} ({doc_type})",
         new_value={
             "doc_type":          doc_type,
             "fiscal_year":       fiscal_year,
@@ -193,9 +201,9 @@ async def verify_document_integrity(doc_id: str, db: AsyncSession) -> dict:
 
 
 async def mark_document_status(
-    doc_id: str,
-    status: str,
-    db:     AsyncSession,
+    doc_id:  str,
+    status:  str,
+    db:      AsyncSession,
     user_id: str = "SYSTEM",
 ) -> None:
     """
@@ -243,3 +251,23 @@ async def mark_document_status(
 def _compute_hash(file_bytes: bytes) -> str:
     """Calculates the SHA-256 hash of a file."""
     return hashlib.sha256(file_bytes).hexdigest()
+
+
+def _sanitize_filename(filename: str) -> str:
+    """
+    Strips path traversal sequences and dangerous characters from a filename.
+    Keeps only the base name (no directory components), then replaces
+    anything outside [a-zA-Z0-9._-] with an underscore.
+
+    Examples:
+      '../../etc/passwd'      → 'etc_passwd'
+      'report 2024 (v2).pdf'  → 'report_2024__v2_.pdf'
+      '../secret.xlsx'        → 'secret.xlsx'
+    """
+    # Extract base name only — kills all path traversal
+    base = Path(filename).name
+    # Replace any character that is not alphanumeric, dot, dash, or underscore
+    safe = re.sub(r"[^\w.\-]", "_", base)
+    # Collapse multiple consecutive underscores for readability
+    safe = re.sub(r"_+", "_", safe)
+    return safe or "unnamed"
