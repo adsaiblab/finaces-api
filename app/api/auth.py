@@ -12,6 +12,11 @@ from app.core.security import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
+@router.get("/csrf-token")
+async def get_csrf_token():
+    """Endpoint to bootstrap XSRF-TOKEN cookie for non-browser clients."""
+    return {"status": "ok"}
+
 @router.post(
     "/login",
     dependencies=[
