@@ -1,0 +1,76 @@
+# docker-compose.prod.yml — Orchestrateur production FinaCES Backend
+# Frontend Angular est géré séparément (finaces-front/Dockerfile)
+# Variables sensibles : définies dans .env.production (jamais versionné)
+
+services:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # PostgreSQL 15
+  # ─────────────────────────────────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - finaces-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    # db n'est pas exposé à l'hôte — accessible uniquement via finaces-net
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Redis 7
+  # ─────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - finaces-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    # redis n'est pas exposé à l'hôte
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # FastAPI Backend
+  # ─────────────────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    ports:
+      - "8000:8000"
+    networks:
+      - finaces-net
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+# ─────────────────────────────────────────────────────────────────────────
+# Volumes nommés
+# ─────────────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+
+# ─────────────────────────────────────────────────────────────────────────
+# Réseau interne
+# ─────────────────────────────────────────────────────────────────────────
+networks:
+  finaces-net:
+    driver: bridge
