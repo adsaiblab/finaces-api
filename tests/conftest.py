@@ -28,6 +28,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.pool import NullPool
 from httpx import AsyncClient, ASGITransport
 from faker import Faker
+from unittest.mock import AsyncMock, patch
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -57,23 +58,10 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 # ============================================================================
 
 # Set event loop scope for async tests
-@pytest.fixture(scope="session")
-def event_loop_policy():
-    """Use default asyncio event loop policy."""
-    return asyncio.get_event_loop_policy()
-
-
-@pytest.fixture(scope="session")
-def event_loop(event_loop_policy) -> Generator:
-    """
-    Create event loop for entire test session.
-    
-    This prevents "Event loop is closed" errors in async tests.
-    """
-    loop = event_loop_policy.new_event_loop()
-    yield loop
-    loop.close()
-
+# NOTE: event_loop and event_loop_policy fixtures are removed.
+# pytest-asyncio >= 0.24.0 with asyncio_mode=auto manages the event loop
+# automatically. The session scope is configured via
+# asyncio_default_fixture_loop_scope=session in pytest.ini.
 
 # ============================================================================
 # DATABASE FIXTURES (ASYNC)
@@ -159,13 +147,27 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
 # FASTAPI TEST CLIENT (ASYNC)
 # ============================================================================
 
+@pytest_asyncio.fixture(autouse=True, scope="session")
+async def mock_fastapi_limiter():
+    """Mock FastAPILimiter.init (Redis) + désactive RateLimiter.__call__ en test."""
+    with patch("fastapi_limiter.FastAPILimiter.init", new_callable=AsyncMock):
+        with patch(
+            "fastapi_limiter.depends.RateLimiter.__call__",
+            new_callable=AsyncMock,
+            return_value=None,
+        ):
+            yield
+
+
 @pytest_asyncio.fixture
 async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """
     Create async HTTP test client.
     
-    Overrides database dependency to use the SAME test session
-    so fixture-inserted data is visible to the ASGI handlers.
+    Overrides database dependency to use the SAME test session so
+    fixture-inserted data is visible to the ASGI handlers.
+    The base_url is http://test — no XSRF cookie is set here (unauthenticated
+    client for testing 403 scenarios).
     """
     
     # Override database dependency - share session for data visibility
@@ -188,20 +190,30 @@ async def authenticated_client(
 ) -> AsyncClient:
     """
     Authenticated HTTP client with test user.
-    
-    Bypasses authentication for testing.
+
+    - Overrides get_current_user to return test_user (no real JWT).
+    - Injects a XSRF-TOKEN cookie and the matching X-XSRF-TOKEN header
+      so the XSRFMiddleware passes on all POST/PUT/PATCH/DELETE requests.
+      The token value is a fixed test string — predictable is fine in tests,
+      secrets.compare_digest just checks equality.
     """
-    
-    # Override auth dependency
     async def override_get_current_user():
         return test_user
-    
+
     app.dependency_overrides[get_current_user] = override_get_current_user
-    
+
+    # Inject XSRF cookie + header for mutation requests
+    _XSRF_TEST_TOKEN = "test-xsrf-token-finaces-12345"
+    client.cookies.set("XSRF-TOKEN", _XSRF_TEST_TOKEN)
+    client.headers.update({"X-XSRF-TOKEN": _XSRF_TEST_TOKEN})
+
     yield client
-    
-    # Clean up
+
     app.dependency_overrides.clear()
+    # Reset cookies and headers after test
+    client.cookies.clear()
+    if "X-XSRF-TOKEN" in client.headers:
+        del client.headers["X-XSRF-TOKEN"]
 
 
 # ============================================================================
@@ -502,9 +514,8 @@ def pytest_collection_modifyitems(config, items):
         if "db_session" in item.fixturenames:
             item.add_marker(pytest.mark.requires_db)
         
-        # Mark async tests
-        if asyncio.iscoroutinefunction(item.function):
-            item.add_marker(pytest.mark.asyncio)
+        # asyncio_mode=auto in pytest.ini marks async tests automatically
+        # No manual pytest.mark.asyncio needed
 
 
 def pytest_sessionfinish(session, exitstatus):
