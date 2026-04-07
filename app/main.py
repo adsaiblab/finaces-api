@@ -13,6 +13,21 @@ from fastapi_limiter import FastAPILimiter
 from app.core.security import get_current_user
 from app.core.config import settings
 
+# ── Sentry ───────────────────────────────────────────────────────────────────
+# Guard: Sentry reste silencieux si SENTRY_DSN est absent (devs locaux, CI).
+# traces_sample_rate=0.1 : 10% des transactions tracées en prod — jamais 1.0.
+# send_default_pii=False  : RGPD — pas d'IP ni d'email dans les events.
+# ─────────────────────────────────────────────────────────────────────────────
+import sentry_sdk
+if getattr(settings, "SENTRY_DSN", None):
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        environment=settings.ENVIRONMENT,
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.1,
+        send_default_pii=False,
+    )
+
 from app.api.routes import normalization
 from app.api.routes import ratios
 from app.api.routes import scoring
@@ -31,6 +46,7 @@ from app.api.routes import audit
 from app.api.routes import comparison
 from app.api.routes import report
 from app.api.routes import ia
+from app.api.routes import admin_ia
 from app.api import auth
 from app.api.exception_handlers import add_exception_handlers
 
@@ -264,6 +280,9 @@ def create_app() -> FastAPI:
 
     # Master registration
     app.include_router(api_v1_router)
+
+    # Admin routes (separate prefix — not under /api/v1)
+    app.include_router(admin_ia.router)
 
     # 4. Route Healthcheck
     @app.get("/health", tags=["System"])

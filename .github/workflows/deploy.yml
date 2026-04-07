@@ -148,3 +148,10 @@ jobs:
             echo "🧹 Pruning unused images..."
             docker image prune -f
             echo "✅ Deploy complete."
+
+      - name: 🩺 Smoke test — /health must return 200
+        run: |
+          echo "Waiting 10s for the container to be ready..."
+          sleep 10
+          curl --fail --silent --max-time 10 https://staging.finaces.io/health | jq .
+

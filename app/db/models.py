@@ -1042,6 +1042,11 @@ class IAPrediction(Base):
     ia_probability_default: Mapped[float] = mapped_column(Numeric(5, 4), nullable=False)
     ia_risk_class: Mapped[str] = mapped_column(String(20), nullable=False)
     model_version: Mapped[str] = mapped_column(String(50), nullable=False)
+    # C.6.2 — MLOps drift monitoring columns
+    # Migration: ALTER TABLE ia_predictions ADD COLUMN IF NOT EXISTS input_features JSONB;
+    #            ALTER TABLE ia_predictions ADD COLUMN IF NOT EXISTS actual_outcome VARCHAR(20);
+    input_features: Mapped[dict | None] = mapped_column(JSONB, nullable=True)  # snapshot features at inference time
+    actual_outcome: Mapped[str | None] = mapped_column(String(20), nullable=True)  # ground truth filled when case is closed
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, onupdate=func.now(), nullable=True)
     

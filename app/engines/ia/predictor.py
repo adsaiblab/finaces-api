@@ -323,27 +323,30 @@ class IAPredictor:
         probability: float,
         risk_class: str,
         model_version: str,
-        db: AsyncSession
+        db: AsyncSession,
+        features: dict | None = None,
     ) -> None:
         """
         Persist prediction to database.
-        
+
         Args:
-            case_id: Case identifier
-            probability: Predicted probability
-            risk_class: Classified risk level
+            case_id:       Case identifier
+            probability:   Predicted probability
+            risk_class:    Classified risk level
             model_version: Model version used
-            db: Database session
+            db:            Database session
+            features:      Input feature snapshot for drift monitoring (C.6.2)
         """
         prediction = IAPrediction(
             case_id=uuid.UUID(case_id),
             ia_score=round(probability * 100, 2),
             ia_probability_default=round(probability, 4),
             ia_risk_class=risk_class,
-            model_version=model_version
+            model_version=model_version,
+            input_features=features,  # snapshot at inference time — used by drift_report.py
         )
-        
+
         db.add(prediction)
         await db.commit()
-        
+
         logger.info(f"Prediction saved to database for case {case_id}")
