@@ -153,5 +153,5 @@ jobs:
         run: |
           echo "Waiting 10s for the container to be ready..."
           sleep 10
-          curl --fail --silent --max-time 10 https://staging.finaces.io/health | jq .
+          curl --fail --silent --max-time 10 https://staging.adsa.cloud/health
 

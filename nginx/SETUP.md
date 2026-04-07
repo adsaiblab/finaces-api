@@ -28,7 +28,7 @@ curl -I http://localhost
 sudo cp nginx/finaces-api.conf /etc/nginx/sites-available/finaces-api
 
 # Remplacer le domaine placeholder (si pas encore fait dans le fichier)
-sudo sed -i 's/staging.finaces.io/VOTRE_DOMAINE_REEL/g' /etc/nginx/sites-available/finaces-api
+sudo sed -i 's/staging.adsa.cloud/VOTRE_DOMAINE_REEL/g' /etc/nginx/sites-available/finaces-api
 
 # Activer le site via symlink
 sudo ln -sf /etc/nginx/sites-available/finaces-api /etc/nginx/sites-enabled/finaces-api
