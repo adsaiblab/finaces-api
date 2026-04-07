@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_limiter.depends import RateLimiter
 
+from app.core.exceptions import FinaCESBaseException
 from app.db.database import get_db
 from app.services.report_service import (
     build_full_report,
@@ -129,8 +130,12 @@ current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.post("/{report_id}/finalize")
-async def finalize_mcc_report(report_id: str, db: AsyncSession = Depends(get_db)):
+@router.post("/cases/{case_id}/report/{report_id}/finalize")
+async def finalize_mcc_report(
+    case_id:      str,
+    report_id:    str,
+    db:           AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)):
     """Marks the report as FINAL (Restricted access)."""
     try:
         report = await finalize_report(report_id=report_id, db=db)
@@ -142,6 +147,7 @@ async def finalize_mcc_report(report_id: str, db: AsyncSession = Depends(get_db)
                 entity_id=str(report.id),
                 case_id=str(report.case_id),
                 description="MCC-grade score finalized",
+                user_id=current_user.get("sub", "SYSTEM"),
             )
             return {"status": "FINALIZED"}
 

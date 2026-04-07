@@ -113,11 +113,9 @@ current_user: dict = Depends(get_current_user)):
 async def api_export_pdf(
     case_id: str,
     db:      AsyncSession = Depends(get_db),
-current_user: dict = Depends(get_current_user)):
+    current_user: dict = Depends(get_current_user)):
     """
     Generates the MCC-grade report in PDF format via WeasyPrint.
-
-    Automatic HTML fallback if WeasyPrint is not installed.
 
     - Retrieves the final report for the case
     - Delegates generation to `export_service.export_to_pdf`
@@ -133,13 +131,10 @@ current_user: dict = Depends(get_current_user)):
         db=db,
     )
 
-    is_html_fallback = file_path.endswith(".html")
-    fmt = "html (WeasyPrint fallback)" if is_html_fallback else "pdf"
-
     logger.info(f"PDF export requested for case {case_id}: {file_path}")
     return {
         "status":      "ok",
-        "format":      fmt,
+        "format":      "pdf",
         "case_id":     case_id,
         "report_id":   str(report.id),
         "file_path":   file_path,
@@ -178,10 +173,8 @@ current_user: dict = Depends(get_current_user)):
             status_code=404,
             detail="No PDF export available. Call POST /export/pdf first."
         )
-    path = report.export_pdf_path
-    media_type = "application/pdf" if path.endswith(".pdf") else "text/html"
     return FileResponse(
-        path=path,
-        media_type=media_type,
+        path=report.export_pdf_path,
+        media_type="application/pdf",
         filename=f"Note_MCC_{case_id[:8]}.pdf",
     )
