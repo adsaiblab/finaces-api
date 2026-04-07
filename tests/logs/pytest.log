@@ -1,694 +1,639 @@
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.address`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.address` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.automotive`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.automotive` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.bank`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:86] Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.barcode`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.barcode` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.color`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.color` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.company`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.company` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.credit_card`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.credit_card` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.currency`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.currency` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.date_time`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.date_time` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:106] Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:106] Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.geo`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.geo` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.internet`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.internet` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:106] Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.job`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.job` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.lorem`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.lorem` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.misc`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.misc` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.passport`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.passport` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.person`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.person` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.phone_number`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.phone_number` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:106] Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:106] Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:106] Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.ssn`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:95] Provider `faker.providers.ssn` has been localized to `en_US`.
-2026-03-11 19:31:20 [   DEBUG] [factory.py:106] Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
-2026-03-11 19:31:20 [    INFO] [conftest.py:102] Using test database: postgresql+asyncpg://finaces:password@localhost:5433/finaces_test
-2026-03-11 19:31:20 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
-2026-03-11 19:31:21 [    INFO] [conftest.py:126] ✓ Test database tables created
-2026-03-11 19:31:21 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
-2026-03-11 19:31:21 [    INFO] [feature_engineering.py:85] Starting feature engineering for case c1205ba5-4a64-4ff2-9723-e7606086e56e
-2026-03-11 19:31:21 [    INFO] [feature_engineering.py:158] Feature engineering completed for case c1205ba5-4a64-4ff2-9723-e7606086e56e. Computed 41 features.
-2026-03-11 19:31:21 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 2da19798-3a66-4eb0-8973-e79e26b7f8ed
-2026-03-11 19:31:21 [    INFO] [feature_engineering.py:158] Feature engineering completed for case 2da19798-3a66-4eb0-8973-e79e26b7f8ed. Computed 41 features.
-2026-03-11 19:31:21 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 34156848-87d3-4ff2-b7a3-e46966709003
-2026-03-11 19:31:21 [    INFO] [feature_engineering.py:158] Feature engineering completed for case 34156848-87d3-4ff2-b7a3-e46966709003. Computed 41 features.
-2026-03-11 19:31:22 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 2dd0f447-86a7-4bb1-8d9c-4032aca09c99
-2026-03-11 19:31:22 [    INFO] [feature_engineering.py:158] Feature engineering completed for case 2dd0f447-86a7-4bb1-8d9c-4032aca09c99. Computed 41 features.
-2026-03-11 19:31:22 [    INFO] [feature_engineering.py:85] Starting feature engineering for case c3c11535-7f92-4c38-993f-c26a26e3b79d
-2026-03-11 19:31:22 [    INFO] [feature_engineering.py:158] Feature engineering completed for case c3c11535-7f92-4c38-993f-c26a26e3b79d. Computed 41 features.
-2026-03-11 19:31:22 [    INFO] [feature_engineering.py:85] Starting feature engineering for case ae7662e2-5319-47d9-ac28-224c64b39995
-2026-03-11 19:31:22 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 6d039f8a-001e-4d7f-bcb1-754d27ec955c
-2026-03-11 19:31:22 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 61b9b4a3-7341-4fb7-a53c-f55998709c13
-2026-03-11 19:31:22 [    INFO] [feature_engineering.py:158] Feature engineering completed for case 61b9b4a3-7341-4fb7-a53c-f55998709c13. Computed 41 features.
-2026-03-11 19:31:22 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 830b1c72-9eaf-4629-a964-dd051d04fd39
-2026-03-11 19:31:22 [    INFO] [feature_engineering.py:158] Feature engineering completed for case 830b1c72-9eaf-4629-a964-dd051d04fd39. Computed 41 features.
-2026-03-11 19:31:23 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 4e18114a-c34e-4044-aa0a-cf4a85b386c6
-2026-03-11 19:31:23 [    INFO] [feature_engineering.py:158] Feature engineering completed for case 4e18114a-c34e-4044-aa0a-cf4a85b386c6. Computed 41 features.
-2026-03-11 19:31:23 [    INFO] [feature_engineering.py:85] Starting feature engineering for case c3509450-3a90-4d36-b960-4073eb730f84
-2026-03-11 19:31:23 [    INFO] [feature_engineering.py:158] Feature engineering completed for case c3509450-3a90-4d36-b960-4073eb730f84. Computed 41 features.
-2026-03-11 19:31:23 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:23 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:23 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:23 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:23 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_load_model_from_file0/test_model.joblib
-2026-03-11 19:31:23 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:23 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:23 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:23 [    INFO] [predictor.py:254] Loading active model: xgboost_test_model vtest_v1.0
-2026-03-11 19:31:23 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_load_active_model_from_db0/test_model.joblib
-2026-03-11 19:31:23 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:23 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:23 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:23 [ WARNING] [predictor.py:250] No active model found in database. Loading latest from disk.
-2026-03-11 19:31:23 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:23 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:23 [    INFO] [predictor.py:140] Starting AI prediction for case 2b4ce84a-c009-45b2-87ed-c2bf56bd379a
-2026-03-11 19:31:23 [    INFO] [predictor.py:221] Using cached features for case 2b4ce84a-c009-45b2-87ed-c2bf56bd379a
-2026-03-11 19:31:23 [    INFO] [predictor.py:349] Prediction saved to database for case 2b4ce84a-c009-45b2-87ed-c2bf56bd379a
-2026-03-11 19:31:23 [    INFO] [predictor.py:185] Prediction completed for case 2b4ce84a-c009-45b2-87ed-c2bf56bd379a. Probability: 0.8004, Risk: CRITICAL
-2026-03-11 19:31:23 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:23 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:23 [    INFO] [predictor.py:140] Starting AI prediction for case 719b07e7-a116-415f-bdc7-e27a25ef2605
-2026-03-11 19:31:23 [    INFO] [predictor.py:225] Computing fresh features for case 719b07e7-a116-415f-bdc7-e27a25ef2605
-2026-03-11 19:31:23 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 719b07e7-a116-415f-bdc7-e27a25ef2605
-2026-03-11 19:31:24 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:140] Starting AI prediction for case 0b9ad26a-2228-4b82-819c-3eb5bbd2cc38
-2026-03-11 19:31:24 [    INFO] [predictor.py:221] Using cached features for case 0b9ad26a-2228-4b82-819c-3eb5bbd2cc38
-2026-03-11 19:31:24 [    INFO] [predictor.py:349] Prediction saved to database for case 0b9ad26a-2228-4b82-819c-3eb5bbd2cc38
-2026-03-11 19:31:24 [    INFO] [predictor.py:185] Prediction completed for case 0b9ad26a-2228-4b82-819c-3eb5bbd2cc38. Probability: 0.8004, Risk: CRITICAL
-2026-03-11 19:31:24 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:24 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:24 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:24 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:24 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:24 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:140] Starting AI prediction for case 910d969d-8425-4d1b-9163-1c7f98e5da12
-2026-03-11 19:31:24 [    INFO] [predictor.py:221] Using cached features for case 910d969d-8425-4d1b-9163-1c7f98e5da12
-2026-03-11 19:31:24 [    INFO] [predictor.py:254] Loading active model: xgboost_test_model vtest_v1.0
-2026-03-11 19:31:24 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_load_active_model_from_db0/test_model.joblib
-2026-03-11 19:31:24 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:24 [    INFO] [predictor.py:349] Prediction saved to database for case 910d969d-8425-4d1b-9163-1c7f98e5da12
-2026-03-11 19:31:24 [    INFO] [predictor.py:185] Prediction completed for case 910d969d-8425-4d1b-9163-1c7f98e5da12. Probability: 0.3951, Risk: CRITICAL
-2026-03-11 19:31:24 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:140] Starting AI prediction for case d1458913-e538-4291-a7bf-20971c26d0a0
-2026-03-11 19:31:24 [    INFO] [predictor.py:225] Computing fresh features for case d1458913-e538-4291-a7bf-20971c26d0a0
-2026-03-11 19:31:24 [    INFO] [feature_engineering.py:85] Starting feature engineering for case d1458913-e538-4291-a7bf-20971c26d0a0
-2026-03-11 19:31:24 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:140] Starting AI prediction for case 30409b84-53da-4d3b-83d9-9896236dd032
-2026-03-11 19:31:24 [    INFO] [predictor.py:225] Computing fresh features for case 30409b84-53da-4d3b-83d9-9896236dd032
-2026-03-11 19:31:24 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 30409b84-53da-4d3b-83d9-9896236dd032
-2026-03-11 19:31:24 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:24 [    INFO] [predictor.py:254] Loading active model: xgboost_test_model vtest_v1.0
-2026-03-11 19:31:24 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_complete_prediction_workf0/test_model.joblib
-2026-03-11 19:31:24 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:24 [    INFO] [predictor.py:140] Starting AI prediction for case 508e1582-f0a5-42fe-be3a-aab349ab9ae1
-2026-03-11 19:31:24 [    INFO] [predictor.py:221] Using cached features for case 508e1582-f0a5-42fe-be3a-aab349ab9ae1
-2026-03-11 19:31:24 [    INFO] [predictor.py:349] Prediction saved to database for case 508e1582-f0a5-42fe-be3a-aab349ab9ae1
-2026-03-11 19:31:24 [    INFO] [predictor.py:185] Prediction completed for case 508e1582-f0a5-42fe-be3a-aab349ab9ae1. Probability: 0.3951, Risk: CRITICAL
-2026-03-11 19:31:24 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:24 [    INFO] [tension_detector.py:169] Starting tension analysis for case 8b9cf568-0c30-4a18-9fe0-d87808b14f35
-2026-03-11 19:31:24 [    INFO] [tension_detector.py:740] Tension analysis saved for case 8b9cf568-0c30-4a18-9fe0-d87808b14f35
-2026-03-11 19:31:24 [    INFO] [tension_detector.py:263] Tension analysis completed for case 8b9cf568-0c30-4a18-9fe0-d87808b14f35. Type: CONVERGENCE, Severity: NONE
-2026-03-11 19:31:24 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:24 [    INFO] [tension_detector.py:169] Starting tension analysis for case ac2a2286-a382-451b-b377-93fbf79036ac
-2026-03-11 19:31:24 [    INFO] [tension_detector.py:740] Tension analysis saved for case ac2a2286-a382-451b-b377-93fbf79036ac
-2026-03-11 19:31:24 [    INFO] [tension_detector.py:263] Tension analysis completed for case ac2a2286-a382-451b-b377-93fbf79036ac. Type: TENSION_UP, Severity: MODERATE
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:169] Starting tension analysis for case e641a59f-ff01-4487-8b58-818f74ca3118
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:740] Tension analysis saved for case e641a59f-ff01-4487-8b58-818f74ca3118
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:263] Tension analysis completed for case e641a59f-ff01-4487-8b58-818f74ca3118. Type: TENSION_DOWN, Severity: MODERATE
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:169] Starting tension analysis for case 34540c0c-e3eb-4657-a74a-8a9463ca1b64
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:740] Tension analysis saved for case 34540c0c-e3eb-4657-a74a-8a9463ca1b64
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:263] Tension analysis completed for case 34540c0c-e3eb-4657-a74a-8a9463ca1b64. Type: MAJOR_DIVERGENCE, Severity: HIGH
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:169] Starting tension analysis for case 5c03ba53-e9da-4374-a860-fffaae0eb12a
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:740] Tension analysis saved for case 5c03ba53-e9da-4374-a860-fffaae0eb12a
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:263] Tension analysis completed for case 5c03ba53-e9da-4374-a860-fffaae0eb12a. Type: CONVERGENCE, Severity: NONE
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:169] Starting tension analysis for case b4bf1347-ea59-42ed-b35f-f0164e858b89
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:740] Tension analysis saved for case b4bf1347-ea59-42ed-b35f-f0164e858b89
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:263] Tension analysis completed for case b4bf1347-ea59-42ed-b35f-f0164e858b89. Type: MAJOR_DIVERGENCE, Severity: HIGH
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:169] Starting tension analysis for case 435c8a85-3a83-48fb-912c-849c3f2b1bf4
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:740] Tension analysis saved for case 435c8a85-3a83-48fb-912c-849c3f2b1bf4
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:263] Tension analysis completed for case 435c8a85-3a83-48fb-912c-849c3f2b1bf4. Type: MAJOR_DIVERGENCE, Severity: HIGH
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:169] Starting tension analysis for case 082d5efd-b451-42f1-aa78-bec708dca3d7
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:740] Tension analysis saved for case 082d5efd-b451-42f1-aa78-bec708dca3d7
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:263] Tension analysis completed for case 082d5efd-b451-42f1-aa78-bec708dca3d7. Type: CONVERGENCE, Severity: NONE
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:169] Starting tension analysis for case 795d627a-9a04-4631-a6a1-1df146e7ea4d
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:740] Tension analysis saved for case 795d627a-9a04-4631-a6a1-1df146e7ea4d
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:263] Tension analysis completed for case 795d627a-9a04-4631-a6a1-1df146e7ea4d. Type: MAJOR_DIVERGENCE, Severity: HIGH
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:169] Starting tension analysis for case 99db59bb-12c8-485c-b5c5-1da4e2db2c3e
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:740] Tension analysis saved for case 99db59bb-12c8-485c-b5c5-1da4e2db2c3e
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:263] Tension analysis completed for case 99db59bb-12c8-485c-b5c5-1da4e2db2c3e. Type: CRITICAL_ALERT, Severity: CRITICAL
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:169] Starting tension analysis for case 623b89c3-d0af-47d8-b5c0-97a69c2b3dba
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:740] Tension analysis saved for case 623b89c3-d0af-47d8-b5c0-97a69c2b3dba
-2026-03-11 19:31:25 [    INFO] [tension_detector.py:263] Tension analysis completed for case 623b89c3-d0af-47d8-b5c0-97a69c2b3dba. Type: CONVERGENCE, Severity: NONE
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:169] Starting tension analysis for case 7c2f4def-eda9-436c-a69a-058464103d9f
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:740] Tension analysis saved for case 7c2f4def-eda9-436c-a69a-058464103d9f
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:263] Tension analysis completed for case 7c2f4def-eda9-436c-a69a-058464103d9f. Type: CONVERGENCE, Severity: NONE
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:169] Starting tension analysis for case 7c2f4def-eda9-436c-a69a-058464103d9f
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:740] Tension analysis saved for case 7c2f4def-eda9-436c-a69a-058464103d9f
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:263] Tension analysis completed for case 7c2f4def-eda9-436c-a69a-058464103d9f. Type: CONVERGENCE, Severity: NONE
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:169] Starting tension analysis for case 7c2f4def-eda9-436c-a69a-058464103d9f
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:740] Tension analysis saved for case 7c2f4def-eda9-436c-a69a-058464103d9f
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:263] Tension analysis completed for case 7c2f4def-eda9-436c-a69a-058464103d9f. Type: CONVERGENCE, Severity: NONE
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:148] TensionDetector initialized
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:169] Starting tension analysis for case 2f72486a-6bbc-46ed-83b5-450094c6d9f4
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:740] Tension analysis saved for case 2f72486a-6bbc-46ed-83b5-450094c6d9f4
-2026-03-11 19:31:26 [    INFO] [tension_detector.py:263] Tension analysis completed for case 2f72486a-6bbc-46ed-83b5-450094c6d9f4. Type: CONVERGENCE, Severity: NONE
-2026-03-11 19:31:26 [    INFO] [ia.py:101] Feature computation requested for case d65c60f7-de9a-481f-bfc5-19eea2a55086 by user test.analyst@finaces.test
-2026-03-11 19:31:26 [    INFO] [feature_engineering.py:85] Starting feature engineering for case d65c60f7-de9a-481f-bfc5-19eea2a55086
-2026-03-11 19:31:26 [    INFO] [feature_engineering.py:158] Feature engineering completed for case d65c60f7-de9a-481f-bfc5-19eea2a55086. Computed 41 features.
-2026-03-11 19:31:26 [    INFO] [ia.py:120] Features computed successfully for case d65c60f7-de9a-481f-bfc5-19eea2a55086. Count: 41
-2026-03-11 19:31:26 [    INFO] [ia.py:101] Feature computation requested for case 22c696e4-0178-4f38-a0c9-7b17d814fec8 by user test.analyst@finaces.test
-2026-03-11 19:31:26 [    INFO] [ia.py:101] Feature computation requested for case 236611cf-1678-4e58-8e94-b81bbf6040ee by user test.analyst@finaces.test
-2026-03-11 19:31:26 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 236611cf-1678-4e58-8e94-b81bbf6040ee
-2026-03-11 19:31:26 [ WARNING] [ia.py:128] Insufficient data for case 236611cf-1678-4e58-8e94-b81bbf6040ee: At least 2 fiscal years required for AI features. Found: 0
-2026-03-11 19:31:26 [   ERROR] [exception_handlers.py:55] 500 - Unhandled exception on path /api/v1/ia/features/0bf30f9c-2e9d-4f9f-8059-b348d4174d93: 4 validation errors for IAFeaturesResponse
-case_id
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-computed_at
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-missing_flags
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-capped_flags
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-Traceback (most recent call last):
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 87, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/routing.py", line 290, in handle
-    await self.app(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 130, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 116, in app
-    response = await f(request)
-               ^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 670, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    ...<3 lines>...
-    )
-    ^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 324, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 198, in get_cached_features
-    return IAFeaturesResponse(**cached_features.features)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/pydantic/main.py", line 250, in __init__
-    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
-pydantic_core._pydantic_core.ValidationError: 4 validation errors for IAFeaturesResponse
-case_id
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-computed_at
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-missing_flags
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-capped_flags
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-2026-03-11 19:31:27 [    INFO] [ia.py:260] AI prediction requested for case facd65ba-d4f6-4a08-a3cb-ca5d8eae79f7 by user test.analyst@finaces.test
-2026-03-11 19:31:27 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:27 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:27 [    INFO] [predictor.py:140] Starting AI prediction for case facd65ba-d4f6-4a08-a3cb-ca5d8eae79f7
-2026-03-11 19:31:27 [    INFO] [predictor.py:221] Using cached features for case facd65ba-d4f6-4a08-a3cb-ca5d8eae79f7
-2026-03-11 19:31:27 [    INFO] [predictor.py:254] Loading active model: xgboost_api_test vapi_test_v1.0
-2026-03-11 19:31:27 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_generate_prediction_succe0/test_model.joblib
-2026-03-11 19:31:27 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:27 [    INFO] [predictor.py:349] Prediction saved to database for case facd65ba-d4f6-4a08-a3cb-ca5d8eae79f7
-2026-03-11 19:31:27 [    INFO] [predictor.py:185] Prediction completed for case facd65ba-d4f6-4a08-a3cb-ca5d8eae79f7. Probability: 0.3951, Risk: CRITICAL
-2026-03-11 19:31:27 [    INFO] [ia.py:291] Prediction completed for case facd65ba-d4f6-4a08-a3cb-ca5d8eae79f7. Risk: IARiskClass.CRITICAL, Probability: 0.3951
-2026-03-11 19:31:27 [    INFO] [ia.py:260] AI prediction requested for case 19c79cc1-151d-44b3-a559-5e83552a8dfe by user test.analyst@finaces.test
-2026-03-11 19:31:27 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:27 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:27 [    INFO] [predictor.py:140] Starting AI prediction for case 19c79cc1-151d-44b3-a559-5e83552a8dfe
-2026-03-11 19:31:27 [    INFO] [predictor.py:221] Using cached features for case 19c79cc1-151d-44b3-a559-5e83552a8dfe
-2026-03-11 19:31:27 [    INFO] [predictor.py:254] Loading active model: xgboost_api_test vapi_test_v1.0
-2026-03-11 19:31:27 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_generate_prediction_with_0/test_model.joblib
-2026-03-11 19:31:27 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:27 [    INFO] [predictor.py:349] Prediction saved to database for case 19c79cc1-151d-44b3-a559-5e83552a8dfe
-2026-03-11 19:31:27 [    INFO] [predictor.py:185] Prediction completed for case 19c79cc1-151d-44b3-a559-5e83552a8dfe. Probability: 0.3951, Risk: CRITICAL
-2026-03-11 19:31:27 [    INFO] [ia.py:291] Prediction completed for case 19c79cc1-151d-44b3-a559-5e83552a8dfe. Risk: IARiskClass.CRITICAL, Probability: 0.3951
-2026-03-11 19:31:27 [    INFO] [ia.py:260] AI prediction requested for case 090f4b1f-dff6-455a-b1d9-a6f2c557cc02 by user test.analyst@finaces.test
-2026-03-11 19:31:27 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:27 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:27 [    INFO] [predictor.py:140] Starting AI prediction for case 090f4b1f-dff6-455a-b1d9-a6f2c557cc02
-2026-03-11 19:31:27 [    INFO] [predictor.py:225] Computing fresh features for case 090f4b1f-dff6-455a-b1d9-a6f2c557cc02
-2026-03-11 19:31:27 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 090f4b1f-dff6-455a-b1d9-a6f2c557cc02
-2026-03-11 19:31:27 [    INFO] [feature_engineering.py:158] Feature engineering completed for case 090f4b1f-dff6-455a-b1d9-a6f2c557cc02. Computed 41 features.
-2026-03-11 19:31:27 [    INFO] [predictor.py:254] Loading active model: xgboost_api_test vapi_test_v1.0
-2026-03-11 19:31:27 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_generate_prediction_no_fe0/test_model.joblib
-2026-03-11 19:31:27 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:27 [    INFO] [predictor.py:349] Prediction saved to database for case 090f4b1f-dff6-455a-b1d9-a6f2c557cc02
-2026-03-11 19:31:27 [    INFO] [predictor.py:185] Prediction completed for case 090f4b1f-dff6-455a-b1d9-a6f2c557cc02. Probability: 0.3951, Risk: CRITICAL
-2026-03-11 19:31:27 [    INFO] [ia.py:291] Prediction completed for case 090f4b1f-dff6-455a-b1d9-a6f2c557cc02. Risk: IARiskClass.CRITICAL, Probability: 0.3951
-2026-03-11 19:31:28 [    INFO] [ia.py:260] AI prediction requested for case f2d4bb82-4dfc-4f1d-8b2d-3b58601e81c9 by user test.analyst@finaces.test
-2026-03-11 19:31:28 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:28 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:28 [    INFO] [predictor.py:140] Starting AI prediction for case f2d4bb82-4dfc-4f1d-8b2d-3b58601e81c9
-2026-03-11 19:31:28 [    INFO] [predictor.py:225] Computing fresh features for case f2d4bb82-4dfc-4f1d-8b2d-3b58601e81c9
-2026-03-11 19:31:28 [    INFO] [feature_engineering.py:85] Starting feature engineering for case f2d4bb82-4dfc-4f1d-8b2d-3b58601e81c9
-2026-03-11 19:31:28 [    INFO] [feature_engineering.py:158] Feature engineering completed for case f2d4bb82-4dfc-4f1d-8b2d-3b58601e81c9. Computed 41 features.
-2026-03-11 19:31:28 [    INFO] [predictor.py:254] Loading active model: xgboost_api_test vapi_test_v1.0
-2026-03-11 19:31:28 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_generate_prediction_compu0/test_model.joblib
-2026-03-11 19:31:28 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:28 [    INFO] [predictor.py:349] Prediction saved to database for case f2d4bb82-4dfc-4f1d-8b2d-3b58601e81c9
-2026-03-11 19:31:28 [    INFO] [predictor.py:185] Prediction completed for case f2d4bb82-4dfc-4f1d-8b2d-3b58601e81c9. Probability: 0.3951, Risk: CRITICAL
-2026-03-11 19:31:28 [    INFO] [ia.py:291] Prediction completed for case f2d4bb82-4dfc-4f1d-8b2d-3b58601e81c9. Risk: IARiskClass.CRITICAL, Probability: 0.3951
-2026-03-11 19:31:28 [    INFO] [ia.py:260] AI prediction requested for case 77859e98-58ce-402d-ad5a-ddda5f701cd3 by user test.analyst@finaces.test
-2026-03-11 19:31:28 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:28 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:28 [    INFO] [predictor.py:140] Starting AI prediction for case 77859e98-58ce-402d-ad5a-ddda5f701cd3
-2026-03-11 19:31:28 [    INFO] [predictor.py:221] Using cached features for case 77859e98-58ce-402d-ad5a-ddda5f701cd3
-2026-03-11 19:31:28 [    INFO] [predictor.py:254] Loading active model: xgboost_api_test vapi_test_v1.0
-2026-03-11 19:31:28 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_get_latest_prediction0/test_model.joblib
-2026-03-11 19:31:28 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:28 [    INFO] [predictor.py:349] Prediction saved to database for case 77859e98-58ce-402d-ad5a-ddda5f701cd3
-2026-03-11 19:31:28 [    INFO] [predictor.py:185] Prediction completed for case 77859e98-58ce-402d-ad5a-ddda5f701cd3. Probability: 0.3951, Risk: CRITICAL
-2026-03-11 19:31:28 [    INFO] [ia.py:291] Prediction completed for case 77859e98-58ce-402d-ad5a-ddda5f701cd3. Risk: IARiskClass.CRITICAL, Probability: 0.3951
-2026-03-11 19:31:28 [    INFO] [ia.py:101] Feature computation requested for case 91eae9be-e95c-4e0f-b377-c2a7a3655f50 by user test.analyst@finaces.test
-2026-03-11 19:31:28 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 91eae9be-e95c-4e0f-b377-c2a7a3655f50
-2026-03-11 19:31:28 [    INFO] [feature_engineering.py:158] Feature engineering completed for case 91eae9be-e95c-4e0f-b377-c2a7a3655f50. Computed 41 features.
-2026-03-11 19:31:28 [    INFO] [ia.py:120] Features computed successfully for case 91eae9be-e95c-4e0f-b377-c2a7a3655f50. Count: 41
-2026-03-11 19:31:28 [    INFO] [ia.py:101] Feature computation requested for case invalid-uuid by user test.analyst@finaces.test
-2026-03-11 19:31:28 [   ERROR] [exception_handlers.py:55] 500 - Unhandled exception on path /api/v1/ia/features/invalid-uuid: badly formed hexadecimal UUID string
-Traceback (most recent call last):
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 87, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/routing.py", line 290, in handle
-    await self.app(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 130, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 116, in app
-    response = await f(request)
-               ^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 670, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    ...<3 lines>...
-    )
-    ^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 324, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 106, in compute_features
-    case = await _get_case_or_404(case_id, db)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 780, in _get_case_or_404
-    stmt = select(EvaluationCase).where(EvaluationCase.id == uuid.UUID(case_id))
-                                                             ~~~~~~~~~^^^^^^^^^
-  File "/opt/homebrew/Cellar/python@3.14/3.14.0_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/uuid.py", line 219, in __init__
-    raise ValueError('badly formed hexadecimal UUID string')
-ValueError: badly formed hexadecimal UUID string
-2026-03-11 19:31:29 [    INFO] [ia.py:101] Feature computation requested for case 25533fdf-eda8-47b2-b0bf-15a5812b832f by user test.analyst@finaces.test
-2026-03-11 19:31:29 [    INFO] [ia.py:260] AI prediction requested for case f26ce49a-c3c8-4444-ac58-d38a6cb0e258 by user test.analyst@finaces.test
-2026-03-11 19:31:29 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:29 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:29 [    INFO] [predictor.py:140] Starting AI prediction for case f26ce49a-c3c8-4444-ac58-d38a6cb0e258
-2026-03-11 19:31:29 [    INFO] [predictor.py:221] Using cached features for case f26ce49a-c3c8-4444-ac58-d38a6cb0e258
-2026-03-11 19:31:29 [    INFO] [predictor.py:254] Loading active model: xgboost_api_test vapi_test_v1.0
-2026-03-11 19:31:29 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_get_active_model0/test_model.joblib
-2026-03-11 19:31:29 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:29 [    INFO] [predictor.py:349] Prediction saved to database for case f26ce49a-c3c8-4444-ac58-d38a6cb0e258
-2026-03-11 19:31:29 [    INFO] [predictor.py:185] Prediction completed for case f26ce49a-c3c8-4444-ac58-d38a6cb0e258. Probability: 0.3951, Risk: CRITICAL
-2026-03-11 19:31:29 [    INFO] [ia.py:291] Prediction completed for case f26ce49a-c3c8-4444-ac58-d38a6cb0e258. Risk: IARiskClass.CRITICAL, Probability: 0.3951
-2026-03-11 19:31:29 [    INFO] [ia.py:101] Feature computation requested for case 48b5d735-b353-456b-bd7f-98c7809983c2 by user test.analyst@finaces.test
-2026-03-11 19:31:29 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 48b5d735-b353-456b-bd7f-98c7809983c2
-2026-03-11 19:31:29 [ WARNING] [ia.py:128] Insufficient data for case 48b5d735-b353-456b-bd7f-98c7809983c2: At least 2 fiscal years required for AI features. Found: 0
-2026-03-11 19:31:29 [    INFO] [ia.py:101] Feature computation requested for case 00ad3183-9d60-43f8-8f0c-b47e5dfef4f7 by user test.analyst@finaces.test
-2026-03-11 19:31:29 [    INFO] [feature_engineering.py:85] Starting feature engineering for case 00ad3183-9d60-43f8-8f0c-b47e5dfef4f7
-2026-03-11 19:31:29 [    INFO] [feature_engineering.py:158] Feature engineering completed for case 00ad3183-9d60-43f8-8f0c-b47e5dfef4f7. Computed 41 features.
-2026-03-11 19:31:29 [    INFO] [ia.py:120] Features computed successfully for case 00ad3183-9d60-43f8-8f0c-b47e5dfef4f7. Count: 41
-2026-03-11 19:31:29 [    INFO] [ia.py:260] AI prediction requested for case 545bf5d7-3ae0-48b8-9c4d-83c47257e1f7 by user test.analyst@finaces.test
-2026-03-11 19:31:29 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:29 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:29 [    INFO] [predictor.py:140] Starting AI prediction for case 545bf5d7-3ae0-48b8-9c4d-83c47257e1f7
-2026-03-11 19:31:29 [    INFO] [predictor.py:221] Using cached features for case 545bf5d7-3ae0-48b8-9c4d-83c47257e1f7
-2026-03-11 19:31:29 [    INFO] [predictor.py:254] Loading active model: xgboost_api_test vapi_test_v1.0
-2026-03-11 19:31:29 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_prediction_response_schem0/test_model.joblib
-2026-03-11 19:31:29 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:29 [    INFO] [predictor.py:349] Prediction saved to database for case 545bf5d7-3ae0-48b8-9c4d-83c47257e1f7
-2026-03-11 19:31:29 [    INFO] [predictor.py:185] Prediction completed for case 545bf5d7-3ae0-48b8-9c4d-83c47257e1f7. Probability: 0.3951, Risk: CRITICAL
-2026-03-11 19:31:29 [    INFO] [ia.py:291] Prediction completed for case 545bf5d7-3ae0-48b8-9c4d-83c47257e1f7. Risk: IARiskClass.CRITICAL, Probability: 0.3951
-2026-03-11 19:31:29 [    INFO] [ia.py:101] Feature computation requested for case ab8fef88-2d37-46d4-a5d3-b52113d44286 by user test.analyst@finaces.test
-2026-03-11 19:31:29 [    INFO] [ia.py:101] Feature computation requested for case ab8fef88-2d37-46d4-a5d3-b52113d44286 by user test.analyst@finaces.test
-2026-03-11 19:31:29 [    INFO] [ia.py:101] Feature computation requested for case ab8fef88-2d37-46d4-a5d3-b52113d44286 by user test.analyst@finaces.test
-2026-03-11 19:31:29 [    INFO] [ia.py:101] Feature computation requested for case ab8fef88-2d37-46d4-a5d3-b52113d44286 by user test.analyst@finaces.test
-2026-03-11 19:31:29 [    INFO] [ia.py:101] Feature computation requested for case ab8fef88-2d37-46d4-a5d3-b52113d44286 by user test.analyst@finaces.test
-2026-03-11 19:31:29 [    INFO] [feature_engineering.py:85] Starting feature engineering for case ab8fef88-2d37-46d4-a5d3-b52113d44286
-2026-03-11 19:31:29 [    INFO] [feature_engineering.py:85] Starting feature engineering for case ab8fef88-2d37-46d4-a5d3-b52113d44286
-2026-03-11 19:31:29 [    INFO] [feature_engineering.py:85] Starting feature engineering for case ab8fef88-2d37-46d4-a5d3-b52113d44286
-2026-03-11 19:31:29 [    INFO] [feature_engineering.py:85] Starting feature engineering for case ab8fef88-2d37-46d4-a5d3-b52113d44286
-2026-03-11 19:31:29 [    INFO] [feature_engineering.py:85] Starting feature engineering for case ab8fef88-2d37-46d4-a5d3-b52113d44286
-2026-03-11 19:31:30 [    INFO] [feature_engineering.py:158] Feature engineering completed for case ab8fef88-2d37-46d4-a5d3-b52113d44286. Computed 41 features.
-2026-03-11 19:31:30 [    INFO] [feature_engineering.py:158] Feature engineering completed for case ab8fef88-2d37-46d4-a5d3-b52113d44286. Computed 41 features.
-2026-03-11 19:31:30 [   ERROR] [ia.py:149] Feature computation failed for case ab8fef88-2d37-46d4-a5d3-b52113d44286
-Traceback (most recent call last):
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 118, in compute_features
-    features_data = await generate_and_save_ia_features(uuid.UUID(case_id), db)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/services/ia_service.py", line 21, in generate_and_save_ia_features
-    await db.commit()
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/ext/asyncio/session.py", line 1000, in commit
-    await greenlet_spawn(self.sync_session.commit)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 190, in greenlet_spawn
-    result = context.switch(*args, **kwargs)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
-    trans.commit(_to_root=True)
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
-  File "<string>", line 2, in commit
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
-    ret_value = fn(self, *arg, **kw)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 1329, in commit
-    self._parent.commit(_to_root=True)
-    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
-  File "<string>", line 2, in commit
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 119, in _go
-    raise sa_exc.IllegalStateChangeError(
-    ...<5 lines>...
-    )
-sqlalchemy.exc.IllegalStateChangeError: Method 'commit()' can't be called here; method '_prepare_impl()' is already in progress and this would cause an unexpected state change to <SessionTransactionState.CLOSED: 5> (Background on this error at: https://sqlalche.me/e/20/isce)
-2026-03-11 19:31:30 [    INFO] [feature_engineering.py:158] Feature engineering completed for case ab8fef88-2d37-46d4-a5d3-b52113d44286. Computed 41 features.
-2026-03-11 19:31:30 [   ERROR] [ia.py:149] Feature computation failed for case ab8fef88-2d37-46d4-a5d3-b52113d44286
-Traceback (most recent call last):
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 118, in compute_features
-    features_data = await generate_and_save_ia_features(uuid.UUID(case_id), db)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/services/ia_service.py", line 21, in generate_and_save_ia_features
-    await db.commit()
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/ext/asyncio/session.py", line 1000, in commit
-    await greenlet_spawn(self.sync_session.commit)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 190, in greenlet_spawn
-    result = context.switch(*args, **kwargs)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
-    trans.commit(_to_root=True)
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
-  File "<string>", line 2, in commit
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 119, in _go
-    raise sa_exc.IllegalStateChangeError(
-    ...<5 lines>...
-    )
-sqlalchemy.exc.IllegalStateChangeError: Method 'commit()' can't be called here; method '_prepare_impl()' is already in progress and this would cause an unexpected state change to <SessionTransactionState.CLOSED: 5> (Background on this error at: https://sqlalche.me/e/20/isce)
-2026-03-11 19:31:30 [    INFO] [feature_engineering.py:158] Feature engineering completed for case ab8fef88-2d37-46d4-a5d3-b52113d44286. Computed 41 features.
-2026-03-11 19:31:30 [   ERROR] [ia.py:149] Feature computation failed for case ab8fef88-2d37-46d4-a5d3-b52113d44286
-Traceback (most recent call last):
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 118, in compute_features
-    features_data = await generate_and_save_ia_features(uuid.UUID(case_id), db)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/services/ia_service.py", line 21, in generate_and_save_ia_features
-    await db.commit()
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/ext/asyncio/session.py", line 1000, in commit
-    await greenlet_spawn(self.sync_session.commit)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 190, in greenlet_spawn
-    result = context.switch(*args, **kwargs)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
-    trans.commit(_to_root=True)
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
-  File "<string>", line 2, in commit
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 119, in _go
-    raise sa_exc.IllegalStateChangeError(
-    ...<5 lines>...
-    )
-sqlalchemy.exc.IllegalStateChangeError: Method 'commit()' can't be called here; method '_prepare_impl()' is already in progress and this would cause an unexpected state change to <SessionTransactionState.CLOSED: 5> (Background on this error at: https://sqlalche.me/e/20/isce)
-2026-03-11 19:31:30 [    INFO] [feature_engineering.py:158] Feature engineering completed for case ab8fef88-2d37-46d4-a5d3-b52113d44286. Computed 41 features.
-2026-03-11 19:31:30 [   ERROR] [ia.py:149] Feature computation failed for case ab8fef88-2d37-46d4-a5d3-b52113d44286
-Traceback (most recent call last):
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 118, in compute_features
-    features_data = await generate_and_save_ia_features(uuid.UUID(case_id), db)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/services/ia_service.py", line 21, in generate_and_save_ia_features
-    await db.commit()
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/ext/asyncio/session.py", line 1000, in commit
-    await greenlet_spawn(self.sync_session.commit)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 190, in greenlet_spawn
-    result = context.switch(*args, **kwargs)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
-    trans.commit(_to_root=True)
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
-  File "<string>", line 2, in commit
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 119, in _go
-    raise sa_exc.IllegalStateChangeError(
-    ...<5 lines>...
-    )
-sqlalchemy.exc.IllegalStateChangeError: Method 'commit()' can't be called here; method '_prepare_impl()' is already in progress and this would cause an unexpected state change to <SessionTransactionState.CLOSED: 5> (Background on this error at: https://sqlalche.me/e/20/isce)
-2026-03-11 19:31:30 [   ERROR] [ia.py:149] Feature computation failed for case ab8fef88-2d37-46d4-a5d3-b52113d44286
-Traceback (most recent call last):
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
-    flush_context.execute()
-    ~~~~~~~~~~~~~~~~~~~~~^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
-    rec.execute(self)
-    ~~~~~~~~~~~^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/unitofwork.py", line 679, in execute
-    util.preloaded.orm_persistence.delete_obj(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        self.mapper,
-        ^^^^^^^^^^^^
-        uow.states_for_mapper_hierarchy(self.mapper, True, False),
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        uow,
-        ^^^^
-    )
-    ^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/persistence.py", line 176, in delete_obj
-    states_to_delete = list(
-        _organize_states_for_delete(base_mapper, states, uowtransaction)
-    )
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/persistence.py", line 311, in _organize_states_for_delete
-    for state, dict_, mapper, connection in _connections_for_states(
-                                            ~~~~~~~~~~~~~~~~~~~~~~~^
-        base_mapper, uowtransaction, states
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    ):
-    ^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/persistence.py", line 1759, in _connections_for_states
-    connection = uowtransaction.transaction.connection(base_mapper)
-  File "<string>", line 2, in connection
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 101, in _go
-    self._raise_for_prerequisite_state(fn.__name__, current_state)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 986, in _raise_for_prerequisite_state
-    raise sa_exc.ResourceClosedError("This transaction is closed")
-sqlalchemy.exc.ResourceClosedError: This transaction is closed
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 118, in compute_features
-    features_data = await generate_and_save_ia_features(uuid.UUID(case_id), db)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/services/ia_service.py", line 21, in generate_and_save_ia_features
-    await db.commit()
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/ext/asyncio/session.py", line 1000, in commit
-    await greenlet_spawn(self.sync_session.commit)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
-    result = context.switch(value)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 2030, in commit
-    trans.commit(_to_root=True)
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
-  File "<string>", line 2, in commit
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
-    ret_value = fn(self, *arg, **kw)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 1311, in commit
-    self._prepare_impl()
-    ~~~~~~~~~~~~~~~~~~^^
-  File "<string>", line 2, in _prepare_impl
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
-    ret_value = fn(self, *arg, **kw)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 1286, in _prepare_impl
-    self.session.flush()
-    ~~~~~~~~~~~~~~~~~~^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
-    self._flush(objects)
-    ~~~~~~~~~~~^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
-    with util.safe_reraise():
-         ~~~~~~~~~~~~~~~~~^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 125, in __exit__
-    raise value.with_traceback(traceback)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 4467, in _flush
-    transaction.rollback(_capture_exception=True)
-    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<string>", line 2, in rollback
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/state_changes.py", line 101, in _go
-    self._raise_for_prerequisite_state(fn.__name__, current_state)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 986, in _raise_for_prerequisite_state
-    raise sa_exc.ResourceClosedError("This transaction is closed")
-sqlalchemy.exc.ResourceClosedError: This transaction is closed
-2026-03-11 19:31:30 [   ERROR] [exception_handlers.py:55] 500 - Unhandled exception on path /api/v1/ia/features/cef06c2c-d819-4ce5-8bba-554e0463dc98: 4 validation errors for IAFeaturesResponse
-case_id
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-computed_at
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-missing_flags
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-capped_flags
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-Traceback (most recent call last):
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/middleware/cors.py", line 87, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/routing.py", line 290, in handle
-    await self.app(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 130, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 116, in app
-    response = await f(request)
-               ^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 670, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    ...<3 lines>...
-    )
-    ^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/fastapi/routing.py", line 324, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 198, in get_cached_features
-    return IAFeaturesResponse(**cached_features.features)
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/venv/lib/python3.14/site-packages/pydantic/main.py", line 250, in __init__
-    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
-pydantic_core._pydantic_core.ValidationError: 4 validation errors for IAFeaturesResponse
-case_id
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-computed_at
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-missing_flags
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-capped_flags
-  Field required [type=missing, input_value={'features': {'roa': 10.0...rs_used': [2022, 2023]}}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-2026-03-11 19:31:30 [    INFO] [ia.py:101] Feature computation requested for case a530404f-e322-4732-aef4-3eed83ec6eee by user test.analyst@finaces.test
-2026-03-11 19:31:30 [    INFO] [feature_engineering.py:85] Starting feature engineering for case a530404f-e322-4732-aef4-3eed83ec6eee
-2026-03-11 19:31:30 [    INFO] [feature_engineering.py:158] Feature engineering completed for case a530404f-e322-4732-aef4-3eed83ec6eee. Computed 41 features.
-2026-03-11 19:31:30 [    INFO] [ia.py:120] Features computed successfully for case a530404f-e322-4732-aef4-3eed83ec6eee. Count: 41
-2026-03-11 19:31:30 [    INFO] [ia.py:260] AI prediction requested for case a530404f-e322-4732-aef4-3eed83ec6eee by user test.analyst@finaces.test
-2026-03-11 19:31:30 [    INFO] [ml_models.py:120] MLModelManager initialized with type: xgboost
-2026-03-11 19:31:30 [    INFO] [predictor.py:121] IAPredictor initialized with model type: xgboost
-2026-03-11 19:31:30 [    INFO] [predictor.py:140] Starting AI prediction for case a530404f-e322-4732-aef4-3eed83ec6eee
-2026-03-11 19:31:30 [    INFO] [predictor.py:221] Using cached features for case a530404f-e322-4732-aef4-3eed83ec6eee
-2026-03-11 19:31:30 [    INFO] [predictor.py:254] Loading active model: xgboost_api_test vapi_test_v1.0
-2026-03-11 19:31:30 [    INFO] [ml_models.py:397] Loading model from /private/var/folders/sb/657xm0s104nfd7dwvf5f6pkr0000gn/T/pytest-of-adsa/pytest-61/test_complete_ia_workflow0/test_model.joblib
-2026-03-11 19:31:30 [    INFO] [ml_models.py:407] Model loaded successfully. Type: xgboost, Version: test_v1.0, Features: 46
-2026-03-11 19:31:30 [    INFO] [predictor.py:349] Prediction saved to database for case a530404f-e322-4732-aef4-3eed83ec6eee
-2026-03-11 19:31:30 [    INFO] [predictor.py:185] Prediction completed for case a530404f-e322-4732-aef4-3eed83ec6eee. Probability: 0.3951, Risk: CRITICAL
-2026-03-11 19:31:30 [    INFO] [ia.py:291] Prediction completed for case a530404f-e322-4732-aef4-3eed83ec6eee. Risk: IARiskClass.CRITICAL, Probability: 0.3951
-2026-03-11 19:31:30 [    INFO] [ia.py:448] Dual scoring requested for case a530404f-e322-4732-aef4-3eed83ec6eee by user test.analyst@finaces.test
-2026-03-11 19:31:30 [   ERROR] [ia.py:512] Dual scoring failed for case a530404f-e322-4732-aef4-3eed83ec6eee
-Traceback (most recent call last):
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 457, in dual_scoring
-    mcc_result = await _get_or_compute_mcc_scorecard(
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        case_id, db, force_recompute_mcc
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/api/routes/ia.py", line 826, in _get_or_compute_mcc_scorecard
-    from app.services.scoring_service import ScoringService
-ImportError: cannot import name 'ScoringService' from 'app.services.scoring_service' (/Users/adsa/Documents/aDSa.DEV/FinaCES/finaces-api/app/services/scoring_service.py)
-2026-03-11 19:31:30 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
-2026-03-11 19:31:30 [    INFO] [conftest.py:135] ✓ Test database cleaned up
-2026-03-11 19:31:30 [    INFO] [conftest.py:512] Test session finished with status: 0
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.address`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.address` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.automotive`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.automotive` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.bank`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:86] Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.barcode`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.barcode` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.color`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.color` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.company`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.company` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.credit_card`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.credit_card` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.currency`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.currency` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.date_time`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.date_time` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.geo`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.geo` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.internet`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.internet` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.job`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.job` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.lorem`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.lorem` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.misc`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.misc` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.passport`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.passport` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.person`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.person` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.phone_number`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.phone_number` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.ssn`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.ssn` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [    INFO] [conftest.py:90] Using test database: postgresql+asyncpg://finaces:password@localhost:5433/finaces_test
+2026-04-07 11:46:48 [    INFO] [conftest.py:114] ✓ Test database tables created
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.address`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.address` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.automotive`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.automotive` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.bank`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:86] Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.barcode`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.barcode` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.color`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.color` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.company`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.company` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.credit_card`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.credit_card` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.currency`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.currency` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.date_time`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.date_time` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.geo`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.geo` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.internet`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.internet` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.job`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.job` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.lorem`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.lorem` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.misc`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.misc` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.passport`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.passport` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.person`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.person` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.phone_number`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.phone_number` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.ssn`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.ssn` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:47]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:20]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:50]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:4]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:51]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:12]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:64]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[66:78]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[80:95]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:25]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_end with no data
+2026-04-07 11:46:48 [    INFO] [document_service.py:103] File written: uploads/913d4d2c-8c5c-4211-a247-d473658c9338/a0811a28-458a-4209-98ca-824dc9b4a794_test.pdf (0.02 KB)
+2026-04-07 11:46:48 [ WARNING] [audit_service.py:120] Unknown audit event type 'DOCUMENT_UPLOADED' — logging as SYSTEM_ERROR.
+2026-04-07 11:46:48 [   ERROR] [audit_service.py:422] [AUDIT FALLBACK] 2026-04-07T10:46:48.541173+00:00 | SYSTEM_ERROR | case=913d4d2c-8c5c-4211-a247-d473658c9338 | [EVENT_TYPE_UNKNOWN: DOCUMENT_UPLOADED] Document uploaded: test.pdf (FINANCIAL_STATEMENTS) | DB_ERROR: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.DataError'>: invalid input for query argument $9: 'SYSTEM' (invalid UUID 'SYSTEM': length must be between 32..36 characters, got 6)
+[SQL: INSERT INTO audit_logs (id, case_id, event_type, entity_type, entity_id, description, old_value_json, new_value_json, user_id, session_id, ip_address, duration_ms, created_at) VALUES ($1::UUID, $2::UUID, $3, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::JSONB, $8::JSONB, $9::UUID, $10::VARCHAR, $11::VARCHAR, $12::INTEGER, $13::TIMESTAMP WITH TIME ZONE)]
+[parameters: (UUID('ffdd4aa6-c791-4c67-bd0e-c23439201d54'), UUID('913d4d2c-8c5c-4211-a247-d473658c9338'), 'SYSTEM_ERROR', 'CaseDocument', 'a0811a28-458a-4209-98ca-824dc9b4a794', '[EVENT_TYPE_UNKNOWN: DOCUMENT_UPLOADED] Document uploaded: test.pdf (FINANCIAL_STATEMENTS)', 'null', '"{\\"doc_type\\": \\"FINANCIAL_STATEMENTS\\", \\"fiscal_year\\": 2023, \\"sha256\\": \\"d978a086033a80a034819229fce04aae00f2b7a405d1afa05eb26433c16e0bb9\\", \\"file_size_kb\\": 0.02, \\"reliability_level\\": \\"MEDIUM\\"}"', 'SYSTEM', None, None, None, datetime.datetime(2026, 4, 7, 10, 46, 48, 541173, tzinfo=datetime.timezone.utc))]
+(Background on this error at: https://sqlalche.me/e/20/dbapi)
+2026-04-07 11:46:48 [    INFO] [documents.py:207] Document a0811a28-458a-4209-98ca-824dc9b4a794 uploaded for case 913d4d2c-8c5c-4211-a247-d473658c9338 (FINANCIAL_STATEMENTS)
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.address`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.address` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.automotive`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.automotive` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.bank`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:86] Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.barcode`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.barcode` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.color`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.color` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.company`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.company` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.credit_card`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.credit_card` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.currency`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.currency` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.date_time`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.date_time` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.geo`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.geo` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.internet`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.internet` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.job`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.job` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.lorem`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.lorem` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.misc`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.misc` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.passport`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.passport` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.person`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.person` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.phone_number`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.phone_number` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.ssn`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.ssn` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:47]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:12]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:50]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:4]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:51]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:12]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:64]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[66:78]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[80:95]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:25]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_end with no data
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.address`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.address` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.automotive`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.automotive` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.bank`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:86] Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.barcode`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.barcode` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.color`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.color` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.company`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.company` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.credit_card`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.credit_card` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.currency`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.currency` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.date_time`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.date_time` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.geo`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.geo` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.internet`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.internet` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.job`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.job` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.lorem`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.lorem` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.misc`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.misc` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.passport`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.passport` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.person`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.person` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.phone_number`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.phone_number` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.ssn`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.ssn` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:47]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:20]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:50]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:4]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:51]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:12]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:64]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[66:78]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[80:104]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:14]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_end with no data
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.address`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.address` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.automotive`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.automotive` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.bank`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:86] Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.barcode`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.barcode` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.color`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.color` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.company`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.company` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.credit_card`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.credit_card` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.currency`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.currency` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.date_time`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.date_time` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.geo`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.geo` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.internet`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.internet` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.job`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.job` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.lorem`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.lorem` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.misc`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.misc` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.passport`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.passport` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.person`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.person` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.phone_number`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.phone_number` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.ssn`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.ssn` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:47]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:20]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:50]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:4]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:51]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:12]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:70]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[72:84]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[86:94]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:22020096]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_end with no data
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.address`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.address` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.automotive`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.automotive` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.bank`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:86] Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.barcode`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.barcode` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.color`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.color` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.company`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.company` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.credit_card`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.credit_card` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.currency`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.currency` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.date_time`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.date_time` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.geo`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.geo` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.internet`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.internet` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.job`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.job` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.lorem`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.lorem` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.misc`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.misc` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.passport`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.passport` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.person`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.person` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.phone_number`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.phone_number` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.ssn`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.ssn` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:47]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:20]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:50]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:4]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:51]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:12]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:64]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[66:78]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[80:95]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:34]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_end with no data
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.address`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.address` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.automotive`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.automotive` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.bank`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:86] Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.barcode`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.barcode` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.color`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.color` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.company`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.company` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.credit_card`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.credit_card` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.currency`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.currency` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.date_time`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.date_time` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.geo`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.geo` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.internet`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.internet` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.job`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.job` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.lorem`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.lorem` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.misc`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.misc` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.passport`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.passport` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.person`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.person` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.phone_number`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.phone_number` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.ssn`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.ssn` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:47]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:20]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:50]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:4]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:51]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:12]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:64]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[66:78]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[80:95]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_end with no data
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.address`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.address` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.automotive`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.automotive` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.bank`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:86] Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.barcode`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.barcode` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.color`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.color` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.company`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.company` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.credit_card`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.credit_card` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.currency`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.currency` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.date_time`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.date_time` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.geo`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.geo` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.internet`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.internet` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.job`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.job` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.lorem`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.lorem` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.misc`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.misc` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.passport`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.passport` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.person`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.person` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.phone_number`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.phone_number` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.ssn`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:95] Provider `faker.providers.ssn` has been localized to `en_US`.
+2026-04-07 11:46:48 [   DEBUG] [factory.py:106] Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:47]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:20]
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:48 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:50]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:4]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:51]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:12]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_part_begin with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_header_field with data[0:19]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_header_value with data[21:64]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_header_field with data[66:78]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_header_value with data[80:95]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_header_end with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_headers_finished with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:626] Calling on_part_data with data[0:25]
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_part_end with no data
+2026-04-07 11:46:49 [   DEBUG] [multipart.py:629] Calling on_end with no data
+2026-04-07 11:46:49 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:49 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.address`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.address` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.automotive`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.automotive` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.bank`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:86] Specified locale `en_US` is not available for provider `faker.providers.bank`. Locale reset to `en_GB` for this provider.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.barcode`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.barcode` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.color`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.color` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.company`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.company` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.credit_card`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.credit_card` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.currency`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.currency` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.date_time`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.date_time` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:106] Provider `faker.providers.emoji` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:106] Provider `faker.providers.file` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.geo`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.geo` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.internet`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.internet` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:106] Provider `faker.providers.isbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.job`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.job` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.lorem`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.lorem` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.misc`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.misc` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.passport`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.passport` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.person`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.person` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.phone_number`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.phone_number` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:106] Provider `faker.providers.profile` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:106] Provider `faker.providers.python` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:106] Provider `faker.providers.sbn` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:76] Looking for locale `en_US` in provider `faker.providers.ssn`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:95] Provider `faker.providers.ssn` has been localized to `en_US`.
+2026-04-07 11:46:49 [   DEBUG] [factory.py:106] Provider `faker.providers.user_agent` does not feature localization. Specified locale `en_US` is not utilized for this provider.
+2026-04-07 11:46:49 [    INFO] [audit.py:28] {"event": "security.xsrf_blocked", "timestamp": "2026-04-07T10:46:49.075347+00:00", "ip": "127.0.0.1", "path": "/api/v1/cases/c6a56710-735e-4350-9bc8-baa06352259a/documents", "method": "POST"}
+2026-04-07 11:46:49 [   DEBUG] [selector_events.py:64] Using selector: KqueueSelector
+2026-04-07 11:46:49 [    INFO] [conftest.py:123] ✓ Test database cleaned up
+2026-04-07 11:46:50 [    INFO] [conftest.py:523] Test session finished with status: 1

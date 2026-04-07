@@ -9,18 +9,30 @@ INVALID_MAGIC = b"NOTAMAGICSIGNATURE"
 
 pytestmark = pytest.mark.asyncio
 
-@pytest.fixture
-def mock_case_id():
-    return str(uuid.uuid4())
+import pytest_asyncio
+
+@pytest_asyncio.fixture
+async def mock_case_id(db_session, sample_case_data):
+    from app.db.models import EvaluationCase
+    import uuid
+    case_data = {**sample_case_data, "id": uuid.uuid4()}
+    case_model = EvaluationCase(**case_data)
+    db_session.add(case_model)
+    await db_session.commit()
+    return str(case_model.id)
 
 async def test_upload_valid_document(authenticated_client: AsyncClient, mock_case_id: str):
     # Case 1: Valid document
     file_content = PDF_MAGIC + b"fake pdf content"
     files = {"file": ("test.pdf", file_content, "application/pdf")}
-    data = {"doc_type": "FINANCIAL_STATEMENTS"}
+    data = {
+        "doc_type": "FINANCIAL_STATEMENTS",
+        "fiscal_year": 2023,
+        "auditor_name": "Test Auditor"
+    }
 
     response = await authenticated_client.post(
-        f"/api/v1/{mock_case_id}/documents",
+        f"/api/v1/cases/{mock_case_id}/documents",
         data=data,
         files=files
     )
@@ -31,10 +43,14 @@ async def test_upload_invalid_doc_type(authenticated_client: AsyncClient, mock_c
     # Case 2: Invalid doc_type
     file_content = PDF_MAGIC + b"fake pdf content"
     files = {"file": ("test.pdf", file_content, "application/pdf")}
-    data = {"doc_type": "INVALID_TYPE"}
+    data = {
+        "doc_type": "INVALID_TYPE",
+        "fiscal_year": 2023,
+        "auditor_name": "Test Auditor"
+    }
 
     response = await authenticated_client.post(
-        f"/api/v1/{mock_case_id}/documents",
+        f"/api/v1/cases/{mock_case_id}/documents",
         data=data,
         files=files
     )
@@ -44,10 +60,14 @@ async def test_upload_invalid_extension(authenticated_client: AsyncClient, mock_
     # Case 3: Invalid extension
     file_content = b"random content"
     files = {"file": ("test.exe", file_content, "application/octet-stream")}
-    data = {"doc_type": "FINANCIAL_STATEMENTS"}
+    data = {
+        "doc_type": "FINANCIAL_STATEMENTS",
+        "fiscal_year": 2023,
+        "auditor_name": "Test Auditor"
+    }
 
     response = await authenticated_client.post(
-        f"/api/v1/{mock_case_id}/documents",
+        f"/api/v1/cases/{mock_case_id}/documents",
         data=data,
         files=files
     )
@@ -61,10 +81,14 @@ async def test_upload_file_too_large(authenticated_client: AsyncClient, mock_cas
     # Actually, generating 21MB in memory is fine for a single test.
     file_content = b"x" * (21 * 1024 * 1024)
     files = {"file": ("large_file.csv", file_content, "text/csv")}
-    data = {"doc_type": "FINANCIAL_STATEMENTS"}
+    data = {
+        "doc_type": "FINANCIAL_STATEMENTS",
+        "fiscal_year": 2023,
+        "auditor_name": "Test Auditor"
+    }
 
     response = await authenticated_client.post(
-        f"/api/v1/{mock_case_id}/documents",
+        f"/api/v1/cases/{mock_case_id}/documents",
         data=data,
         files=files
     )
@@ -75,10 +99,14 @@ async def test_upload_magic_bytes_mismatch(authenticated_client: AsyncClient, mo
     # Case 5: Magic bytes mismatch
     file_content = INVALID_MAGIC + b"fake pdf content"
     files = {"file": ("test.pdf", file_content, "application/pdf")}
-    data = {"doc_type": "FINANCIAL_STATEMENTS"}
+    data = {
+        "doc_type": "FINANCIAL_STATEMENTS",
+        "fiscal_year": 2023,
+        "auditor_name": "Test Auditor"
+    }
 
     response = await authenticated_client.post(
-        f"/api/v1/{mock_case_id}/documents",
+        f"/api/v1/cases/{mock_case_id}/documents",
         data=data,
         files=files
     )
@@ -88,10 +116,14 @@ async def test_upload_magic_bytes_mismatch(authenticated_client: AsyncClient, mo
 async def test_upload_empty_file(authenticated_client: AsyncClient, mock_case_id: str):
     # Case 6: Empty file
     files = {"file": ("test.pdf", b"", "application/pdf")}
-    data = {"doc_type": "FINANCIAL_STATEMENTS"}
+    data = {
+        "doc_type": "FINANCIAL_STATEMENTS",
+        "fiscal_year": 2023,
+        "auditor_name": "Test Auditor"
+    }
 
     response = await authenticated_client.post(
-        f"/api/v1/{mock_case_id}/documents",
+        f"/api/v1/cases/{mock_case_id}/documents",
         data=data,
         files=files
     )
@@ -99,12 +131,20 @@ async def test_upload_empty_file(authenticated_client: AsyncClient, mock_case_id
 
 async def test_upload_unauthorized(client: AsyncClient, mock_case_id: str):
     # Case 7: Unauthorized (no jwt override)
+    _XSRF_TEST_TOKEN = "test-xsrf-token-finaces-12345"
+    client.cookies.set("XSRF-TOKEN", _XSRF_TEST_TOKEN)
+    client.headers.update({"X-XSRF-TOKEN": _XSRF_TEST_TOKEN})
+
     file_content = PDF_MAGIC + b"fake pdf content"
     files = {"file": ("test.pdf", file_content, "application/pdf")}
-    data = {"doc_type": "FINANCIAL_STATEMENTS"}
+    data = {
+        "doc_type": "FINANCIAL_STATEMENTS",
+        "fiscal_year": 2023,
+        "auditor_name": "Test Auditor"
+    }
 
     response = await client.post(
-        f"/api/v1/{mock_case_id}/documents",
+        f"/api/v1/cases/{mock_case_id}/documents",
         data=data,
         files=files
     )
@@ -124,11 +164,15 @@ async def test_upload_missing_xsrf(client: AsyncClient, mock_case_id: str, test_
     
     file_content = PDF_MAGIC + b"fake pdf content"
     files = {"file": ("test.pdf", file_content, "application/pdf")}
-    data = {"doc_type": "FINANCIAL_STATEMENTS"}
+    data = {
+        "doc_type": "FINANCIAL_STATEMENTS",
+        "fiscal_year": 2023,
+        "auditor_name": "Test Auditor"
+    }
 
     # Notice: we don't send the X-XSRF-TOKEN header or XSRF-TOKEN cookie!
     response = await client.post(
-        f"/api/v1/{mock_case_id}/documents",
+        f"/api/v1/cases/{mock_case_id}/documents",
         data=data,
         files=files
     )

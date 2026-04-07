@@ -150,12 +150,12 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
 @pytest_asyncio.fixture(autouse=True, scope="session")
 async def mock_fastapi_limiter():
     """Mock FastAPILimiter.init (Redis) + désactive RateLimiter.__call__ en test."""
+    from fastapi import Request, Response
+    async def _mock_limiter(request: Request, response: Response):
+        pass
+
     with patch("fastapi_limiter.FastAPILimiter.init", new_callable=AsyncMock):
-        with patch(
-            "fastapi_limiter.depends.RateLimiter.__call__",
-            new_callable=AsyncMock,
-            return_value=None,
-        ):
+        with patch("fastapi_limiter.depends.RateLimiter.__call__", _mock_limiter):
             yield
 
 
@@ -303,7 +303,7 @@ def sample_case_data(faker_instance: Faker) -> Dict[str, Any]:
         "contract_value": 5000000.0,
         "contract_currency": "USD",
         "contract_duration_months": 24,
-        "status": "IN_ANALYSIS"
+        "status": "DRAFT"
     }
 
 
