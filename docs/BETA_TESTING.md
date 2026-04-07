@@ -42,3 +42,13 @@ La version sera considérée comme prête pour la transition suite à :
 - **Saisie des Bugs** : Créer une Issue sur le repo GitHub avec le label `beta-feedback`.
 - **Formulaire de Feedback** : Questionnaire Google Form / Notion transmis en fin de phase.
 - **Débriefing** : Séance de 30 minutes prévue 1 semaine après le début des tests.
+
+---
+
+## 🚦 Critères Go/No-Go Production
+
+Le passage en production (v1.0) est conditionné par le respect strict des indicateurs suivants :
+
+- [ ] ✅ **0 bug CRITICAL** (Sévérité 🔴)
+- [ ] ✅ **0 bug Bloquant** sur le flux principal Blocs 1→10 (Sévérité 🟠)
+- [ ] ✅ **123/123 tests E2E Playwright** verts sur l'environnement beta
