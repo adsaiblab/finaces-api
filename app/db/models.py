@@ -22,7 +22,7 @@ from app.schemas.enums import (
     Recommendation, DocType, DocStatus, ReliabilityLevel, AuditorOpinion,
     DDVerdict, Referentiel, AdjustmentType, AdjustmentMode, RiskClass,
     OverrideType, OverrideStatus, StressResult, ReportStatus,
-    InterpretationLabel, UserRole, AuditEventType
+    InterpretationLabel, UserRole, AuditEventType, FinalDecision
 )
 
 # ════════════════════════════════════════════════════════════════
