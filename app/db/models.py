@@ -252,10 +252,6 @@ class EvaluationCase(Base):
         Index("ix_evaluation_cases_status", "status"),
         Index("ix_evaluation_cases_bidder_id", "bidder_id"),
         Index("ix_evaluation_cases_updated_at", "updated_at"),
-        CheckConstraint(
-            "status IN ('DRAFT','IN_ANALYSIS','SCORING','COMPLETED','ARCHIVED')",
-            name='ck_evaluation_case_status'
-        ),
     )
 
     def __repr__(self):
@@ -895,11 +891,10 @@ class ExpertReview(Base):
     risk_factors: Mapped[list | dict | None] = mapped_column(JSONB, nullable=True, default=[])
     override_recommendation: Mapped[str | None] = mapped_column(String(50), nullable=True, default="NONE")
 
-    final_decision: Mapped[str] = mapped_column(
-        String,
-        CheckConstraint("final_decision IN ('APPROVED', 'REJECTED', 'ESCALATED')", name='ck_expert_final_decision'),
+    final_decision: Mapped[FinalDecision] = mapped_column(
+        Enum(FinalDecision, native_enum=False, length=50),
         nullable=False,
-        default="ESCALATED"
+        default=FinalDecision.ESCALATED
     )
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
@@ -960,10 +955,6 @@ class MCCGradeReport(Base):
         Index("ix_reports_case_id", "case_id"),
         Index("ix_reports_status", "status"),
         Index("ix_reports_created_at", "created_at"),
-        CheckConstraint(
-            "status IN ('DRAFT', 'FINAL', 'ARCHIVED')",
-            name="ck_report_status"
-        ),
     )
 
     def __repr__(self):
