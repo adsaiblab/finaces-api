@@ -49,20 +49,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# --- FIX: Strip BaseHTTPMiddleware at module level (before any loop is created) ---
+# --- FIX 2: Strip BaseHTTPMiddleware at module level (before any loop is created) ---
 def _strip_base_http_middlewares() -> None:
-    """
-    Remove BaseHTTPMiddleware instances incompatible with async tests.
-    Executing at module level (import time) avoids 'attached to a different loop' errors.
-    """
     app.user_middleware = [
         m for m in app.user_middleware
         if "BaseHTTPMiddleware" not in str(m)
     ]
-    app.middleware_stack = None
     app.middleware_stack = app.build_middleware_stack()
 
 _strip_base_http_middlewares()
+
 
 # Suppress noisy logs during tests
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
@@ -74,9 +70,6 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # Set event loop scope for async tests
 
-# asyncio_default_fixture_loop_scope=session in pytest.ini manages the rest.
-
-# asyncio_default_fixture_loop_scope=function in pytest.ini manages the rest.
 
 
 
@@ -143,19 +136,20 @@ async def test_engine(test_database_url: str):
 @pytest_asyncio.fixture(scope="function")
 async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     """
-    Create async database session for each test using nested transactions (savepoints).
-    Outer transaction is never committed, ensuring full isolation and clean teardown.
+    FIX 3: Simple db_session pattern with explicit rollback.
+    No nested transactions/savepoints (unstable with asyncpg in some contexts).
     """
     async_session = async_sessionmaker(
         test_engine,
         class_=AsyncSession,
-        expire_on_commit=False
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
     )
     async with async_session() as session:
-        await session.begin()           # outer transaction (never committed)
-        await session.begin_nested()    # savepoint isolated per test
         yield session
-        await session.rollback()        # rollback of the savepoint only
+        await session.rollback()
+
 
 
 
