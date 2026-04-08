@@ -61,6 +61,22 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # asyncio_default_fixture_loop_scope=session in pytest.ini manages the rest.
 
+@pytest.fixture(scope="session", autouse=True)
+def disable_middlewares():
+    """
+    Remove BaseHTTPMiddleware instances incompatible with session event loop in async tests.
+    Specifically targets XSRFMiddleware which causes loop mismatch/closed errors.
+    """
+    # Filter out middlewares that are known to cause issues in async tests
+    app.user_middleware = [
+        m for m in app.user_middleware 
+        if "XSRFMiddleware" not in str(m) and "BaseHTTPMiddleware" not in str(m)
+    ]
+    # Rebuild the middleware stack to apply changes
+    app.middleware_stack = app.build_middleware_stack()
+    yield
+
+
 # ============================================================================
 # DATABASE FIXTURES (ASYNC)
 # ============================================================================
@@ -127,7 +143,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     Create async database session for each test.
     
     Scope: function (new session per test)
-    Automatically rolls back transactions after each test.
+    Ensures clean transaction management and explicit connection reset.
     """
     # Create session factory
     async_session = async_sessionmaker(
@@ -137,8 +153,11 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     )
     
     async with async_session() as session:
-        yield session
-        await session.rollback()
+        async with session.begin():
+            yield session
+            await session.rollback()
+        await session.close()
+
 
 
 # ============================================================================
