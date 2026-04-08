@@ -99,7 +99,7 @@ def upgrade() -> None:
     sa.Column('comparison_completed', sa.Boolean(), nullable=False),
     sa.Column('created_at', postgresql.TIMESTAMP(timezone=True), nullable=False),
     sa.Column('updated_at', postgresql.TIMESTAMP(timezone=True), nullable=True),
-    sa.CheckConstraint("status IN ('DRAFT','IN_ANALYSIS','SCORING','COMPLETED','ARCHIVED')", name='ck_evaluation_case_status'),
+    sa.CheckConstraint("status IN ('DRAFT','PENDING_GATE','FINANCIAL_INPUT','NORMALIZATION_DONE','RATIOS_COMPUTED','SCORING_DONE','STRESS_DONE','EXPERT_REVIEWED','CLOSED','ARCHIVED')", name='ck_evaluation_case_status'),
     sa.ForeignKeyConstraint(['bidder_id'], ['bidders.id'], ondelete='RESTRICT'),
     sa.ForeignKeyConstraint(['consortium_id'], ['consortiums.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['policy_version_id'], ['policy_versions.id'], ondelete='RESTRICT'),
