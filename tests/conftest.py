@@ -58,18 +58,6 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 # ============================================================================
 
 # Set event loop scope for async tests
-@pytest.fixture(scope="session")
-@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
-def event_loop():
-    """
-    Custom session-scoped event loop.
-    
-    CRITICAL: Fixes 'Event loop is closed' errors when sharing session-scoped 
-    fixtures (like test_engine) across different test files in CI.
-    """
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 # asyncio_default_fixture_loop_scope=session in pytest.ini manages the rest.
 
