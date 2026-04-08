@@ -75,7 +75,7 @@ async def test_case_with_data(
         contract_value=Decimal("5000000.00"),
         contract_currency="USD",
         contract_duration_months=24,
-        status="IN_ANALYSIS"
+        status="FINANCIAL_INPUT"
     )
     db_session.add(case)
     await db_session.flush()
@@ -258,7 +258,7 @@ class TestFeatureEngineeringEndpoint:
             case_type="SINGLE",
             bidder_id=test_bidder.id,
             market_reference="INSUFFICIENT-001",
-            status="IN_ANALYSIS"
+            status="FINANCIAL_INPUT"
         )
         db_session.add(case)
         await db_session.commit()
@@ -787,7 +787,7 @@ class TestErrorHandling:
             case_type="SINGLE",
             bidder_id=test_bidder.id,
             market_reference=None,  # Missing required field
-            status="IN_ANALYSIS"
+            status="FINANCIAL_INPUT"
         )
         db_session.add(case)
         await db_session.commit()

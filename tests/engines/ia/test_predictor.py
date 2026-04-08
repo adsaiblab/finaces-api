@@ -75,7 +75,7 @@ async def test_case_with_features(
         bidder_id=test_bidder.id,
         market_reference="PRED-TEST-001",
         contract_value=Decimal("3000000.00"),
-        status="SCORING"
+        status="SCORING_DONE"
     )
     db_session.add(case)
     await db_session.flush()

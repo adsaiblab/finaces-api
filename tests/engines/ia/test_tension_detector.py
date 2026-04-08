@@ -68,7 +68,7 @@ async def test_case(
         bidder_id=test_bidder.id,
         market_reference="TENSION-001",
         contract_value=Decimal("2000000.00"),
-        status="SCORING"
+        status="SCORING_DONE"
     )
     db_session.add(case)
     await db_session.commit()
