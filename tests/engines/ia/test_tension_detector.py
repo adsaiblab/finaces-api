@@ -81,10 +81,10 @@ def mcc_scorecard_moderate() -> ScorecardOutputSchema:
     """Mock MCC scorecard with MODERATE risk."""
     return ScorecardOutputSchema(
         system_calculated_score=Decimal("3.5"),
-        system_risk_class="MEDIUM",
+        system_risk_class="MODERATE",
         global_score=Decimal("3.5"),
-        base_risk_class="MEDIUM",
-        final_risk_class="MEDIUM",
+        base_risk_class="MODERATE",
+        final_risk_class="MODERATE",
         pillars=[],
         smart_recommendations=[],
         computed_at=datetime.utcnow()
@@ -332,10 +332,10 @@ class TestTensionSeverity:
         
         mcc = ScorecardOutputSchema(
             system_calculated_score=Decimal("3.0"),
-            system_risk_class="MEDIUM",
+            system_risk_class="MODERATE",
             global_score=Decimal("3.0"),
-            base_risk_class="MEDIUM",
-            final_risk_class="MEDIUM",
+            base_risk_class="MODERATE",
+            final_risk_class="MODERATE",
             pillars=[],
             smart_recommendations=[],
             computed_at=datetime.utcnow()
@@ -579,10 +579,10 @@ class TestEdgeCases:
         # MCC with French risk class
         mcc_french = ScorecardOutputSchema(
             system_calculated_score=Decimal("3.5"),
-            system_risk_class="MEDIUM",
+            system_risk_class="MODERATE",
             global_score=Decimal("3.5"),
-            base_risk_class="MEDIUM",
-            final_risk_class="MEDIUM",
+            base_risk_class="MODERATE",
+            final_risk_class="MODERATE",
             pillars=[],
             smart_recommendations=[],
             computed_at=datetime.utcnow()

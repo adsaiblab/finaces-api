@@ -64,10 +64,10 @@ def test_scoring_engine_pure_math_and_typing():
     assert isinstance(result.final_risk_class, RiskClass)
     
     # 3.970 >= 3.0 (medium_threshold) && < 4.0 (safe_threshold). RiskUtils map says MEDIUM.
-    assert result.final_risk_class == RiskClass.MEDIUM
+    assert result.final_risk_class == RiskClass.MODERATE
     
     # Test Override Mappings (A-01 / P-01)
     # No overrides applied, final risk should equal base.
     assert result.is_overridden is False
     assert result.system_calculated_score == Decimal("3.970")
-    assert result.system_risk_class == RiskClass.MEDIUM
+    assert result.system_risk_class == RiskClass.MODERATE
