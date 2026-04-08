@@ -49,6 +49,21 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# --- FIX: Strip BaseHTTPMiddleware at module level (before any loop is created) ---
+def _strip_base_http_middlewares() -> None:
+    """
+    Remove BaseHTTPMiddleware instances incompatible with async tests.
+    Executing at module level (import time) avoids 'attached to a different loop' errors.
+    """
+    app.user_middleware = [
+        m for m in app.user_middleware
+        if "BaseHTTPMiddleware" not in str(m)
+    ]
+    app.middleware_stack = None
+    app.middleware_stack = app.build_middleware_stack()
+
+_strip_base_http_middlewares()
+
 # Suppress noisy logs during tests
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -61,20 +76,8 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # asyncio_default_fixture_loop_scope=session in pytest.ini manages the rest.
 
-@pytest.fixture(scope="session", autouse=True)
-def disable_middlewares():
-    """
-    Remove BaseHTTPMiddleware instances incompatible with session event loop in async tests.
-    Specifically targets XSRFMiddleware which causes loop mismatch/closed errors.
-    """
-    # Filter out middlewares that are known to cause issues in async tests
-    app.user_middleware = [
-        m for m in app.user_middleware 
-        if "XSRFMiddleware" not in str(m) and "BaseHTTPMiddleware" not in str(m)
-    ]
-    # Rebuild the middleware stack to apply changes
-    app.middleware_stack = app.build_middleware_stack()
-    yield
+# asyncio_default_fixture_loop_scope=function in pytest.ini manages the rest.
+
 
 
 # ============================================================================
@@ -140,23 +143,19 @@ async def test_engine(test_database_url: str):
 @pytest_asyncio.fixture(scope="function")
 async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     """
-    Create async database session for each test.
-    
-    Scope: function (new session per test)
-    Ensures clean transaction management and explicit connection reset.
+    Create async database session for each test using nested transactions (savepoints).
+    Outer transaction is never committed, ensuring full isolation and clean teardown.
     """
-    # Create session factory
     async_session = async_sessionmaker(
         test_engine,
         class_=AsyncSession,
         expire_on_commit=False
     )
-    
     async with async_session() as session:
-        async with session.begin():
-            yield session
-            await session.rollback()
-        await session.close()
+        await session.begin()           # outer transaction (never committed)
+        await session.begin_nested()    # savepoint isolated per test
+        yield session
+        await session.rollback()        # rollback of the savepoint only
 
 
 
