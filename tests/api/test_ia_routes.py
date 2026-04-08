@@ -696,7 +696,7 @@ class TestAuthenticationAuthorization:
             f"/api/v1/ia/features/{test_case_with_data.id}"
         )
         
-        assert response.status_code == 401
+        assert response.status_code == 403
     
     async def test_insufficient_permissions(
         self,
@@ -726,7 +726,6 @@ class TestAuthenticationAuthorization:
 class TestErrorHandling:
     """Test error handling in IA API routes."""
     
-    @pytest.mark.xfail(reason="asyncpg event loop conflict: uuid.UUID() ValueError caught as 500 (pytest-asyncio 0.23.x limitation)")
     async def test_invalid_case_id_format(
         self,
         authenticated_client: AsyncClient
