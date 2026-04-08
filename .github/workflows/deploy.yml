@@ -142,9 +142,9 @@ jobs:
             set -e
             cd /opt/finaces/finaces-api
             echo "📥 Pulling latest image from GHCR..."
-            docker compose -f docker-compose.prod.yml pull api
-            echo "🔄 Restarting api service..."
-            docker compose -f docker-compose.prod.yml up -d --no-build
+            docker compose --env-file .env.production -f docker-compose.prod.yml pull api
+            echo "🔄 Restarting containers..."
+            docker compose --env-file .env.production -f docker-compose.prod.yml up -d --no-build
             echo "🧹 Pruning unused images..."
             docker image prune -f
             echo "✅ Deploy complete."
