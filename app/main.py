@@ -288,6 +288,9 @@ def create_app() -> FastAPI:
     # Master registration
     app.include_router(api_v1_router)
 
+    # Admin routes (separate prefix — not under /api/v1)
+    app.include_router(admin_ia.router)
+
     return app
 
 
