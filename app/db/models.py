@@ -13,7 +13,7 @@ from sqlalchemy import (
     String, Integer, Boolean, Text, ForeignKey,
     UniqueConstraint, Index, CheckConstraint, Numeric, Enum, func, DateTime
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP, UUID
 from app.db.database import Base
 
@@ -42,6 +42,15 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
 
     audit_logs: Mapped[list["AuditLog"]] = relationship(back_populates="user", lazy="selectin")
+
+    @validates('role')
+    def validate_role(self, key, value):
+        """Ensures role is stored as uppercase for Enum compatibility."""
+        if isinstance(value, str):
+            return UserRole(value.upper())
+        elif isinstance(value, UserRole):
+            return value
+        return value
 
     def __repr__(self):
         return f"<User {self.email} role={self.role}>"
