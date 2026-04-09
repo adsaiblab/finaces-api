@@ -90,7 +90,7 @@ _HEADER_NAME  = "X-XSRF-TOKEN"
 # Logique : le XSRF protège les mutations authentifiées.
 # /auth/* est la route qui crée la session — le cookie n'existe pas encore.
 # /health est un endpoint de monitoring sans effet de bord.
-_XSRF_EXEMPT_PREFIXES = ("/auth/", "/health")
+_XSRF_EXEMPT_PREFIXES = ("/auth/", "/health", "/api/v1/auth/")
 
 
 class XSRFMiddleware(BaseHTTPMiddleware):
