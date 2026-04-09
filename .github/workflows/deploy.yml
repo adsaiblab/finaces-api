@@ -145,6 +145,8 @@ jobs:
             docker compose --env-file .env.production -f docker-compose.prod.yml pull api
             echo "🔄 Restarting containers..."
             docker compose --env-file .env.production -f docker-compose.prod.yml up -d --no-build
+            echo "🗄️ Running migrations..."
+            docker compose --env-file .env.production -f docker-compose.prod.yml exec -T api alembic upgrade head
             echo "🧹 Pruning unused images..."
             docker image prune -f
             echo "✅ Deploy complete."
