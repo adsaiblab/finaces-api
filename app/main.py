@@ -281,8 +281,11 @@ def create_app() -> FastAPI:
 
     # 4. Route Healthcheck — Dual support (root for smoke tests, /api/v1 for unified access)
     @app.get("/health", tags=["System"])
+    async def health_check_root():
+        return {"status": "OK", "version": app.version}
+
     @api_v1_router.get("/health", tags=["System"])
-    async def health_check():
+    async def health_check_api():
         return {"status": "OK", "version": app.version}
 
     # Master registration
