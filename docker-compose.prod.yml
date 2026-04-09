@@ -63,17 +63,17 @@ services:
       - "traefik.http.routers.finaces-api.entrypoints=websecure"
       - "traefik.http.routers.finaces-api.rule=Host(`staging.adsa.cloud`) && PathPrefix(`/api`)"
       - "traefik.http.routers.finaces-api.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.finaces-api.priority=10"
+      - "traefik.http.routers.finaces-api.priority=100"
       # Health Check Router
       - "traefik.http.routers.finaces-health.entrypoints=websecure"
       - "traefik.http.routers.finaces-health.rule=Host(`staging.adsa.cloud`) && PathPrefix(`/health`)"
       - "traefik.http.routers.finaces-health.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.finaces-health.priority=10"
+      - "traefik.http.routers.finaces-health.priority=100"
       # Auth Router (legacy support)
       - "traefik.http.routers.finaces-auth.entrypoints=websecure"
       - "traefik.http.routers.finaces-auth.rule=Host(`staging.adsa.cloud`) && PathPrefix(`/auth`)"
       - "traefik.http.routers.finaces-auth.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.finaces-auth.priority=10"
+      - "traefik.http.routers.finaces-auth.priority=100"
       - "traefik.http.services.finaces-api.loadbalancer.server.port=8000"
 
   # ─────────────────────────────────────────────────────────────────────────
