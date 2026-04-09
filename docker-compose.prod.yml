@@ -59,9 +59,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=root_default"
-      - "traefik.http.routers.finaces-api.rule=Host(`staging.adsa.cloud`) && (PathPrefix(`/api`) || PathPrefix(`/health`))"
       - "traefik.http.routers.finaces-api.entrypoints=websecure"
+      - "traefik.http.routers.finaces-api.rule=Host(`staging.adsa.cloud`) && (PathPrefix(`/api`) || PathPrefix(`/health`) || PathPrefix(`/auth`))"
       - "traefik.http.routers.finaces-api.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.finaces-api.priority=10"
       - "traefik.http.services.finaces-api.loadbalancer.server.port=8000"
 
   # ─────────────────────────────────────────────────────────────────────────

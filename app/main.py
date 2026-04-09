@@ -86,11 +86,8 @@ _SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 _COOKIE_NAME  = "XSRF-TOKEN"
 _HEADER_NAME  = "X-XSRF-TOKEN"
 
-# Routes publiques exemptées du check XSRF.
-# Logique : le XSRF protège les mutations authentifiées.
-# /auth/* est la route qui crée la session — le cookie n'existe pas encore.
-# /health est un endpoint de monitoring sans effet de bord.
-_XSRF_EXEMPT_PREFIXES = ("/auth/", "/health", "/api/v1/auth/")
+# Routes publiques exemptées du check XSRF — alignées sur les routers root et /api/v1
+_XSRF_EXEMPT_PREFIXES = ("/auth/", "/health", "/api/v1/auth/", "/api/v1/health")
 
 
 class XSRFMiddleware(BaseHTTPMiddleware):
@@ -253,10 +250,14 @@ def create_app() -> FastAPI:
     add_exception_handlers(app)
 
     # 3. Public routes (no JWT required)
+    # Auth is mounted at root for local dev compatibility (authUrl: http://localhost:8000)
     app.include_router(auth.router)
 
     # 4. Aggregate protected routers under /api/v1
     api_v1_router = APIRouter(prefix="/api/v1")
+
+    # Staging compatibility: frontend staging uses authUrl: .../api/v1/auth
+    api_v1_router.include_router(auth.router)
 
     # Mount validated routers
     api_v1_router.include_router(normalization.router)
@@ -284,8 +285,9 @@ def create_app() -> FastAPI:
     # Admin routes (separate prefix — not under /api/v1)
     app.include_router(admin_ia.router)
 
-    # 4. Route Healthcheck
+    # 4. Route Healthcheck — Dual support (root for smoke tests, /api/v1 for unified access)
     @app.get("/health", tags=["System"])
+    @api_v1_router.get("/health", tags=["System"])
     async def health_check():
         return {"status": "OK", "version": app.version}
 
