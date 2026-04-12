@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List, Literal
 from datetime import datetime
 from uuid import UUID
@@ -13,9 +13,9 @@ class DocumentEvidenceSchema(BaseModel):
     reliability_level: Literal["HIGH", "MEDIUM", "LOW", "UNAUDITED"] = "MEDIUM"
     auditor_opinion: Optional[Literal["UNQUALIFIED", "QUALIFIED", "ADVERSE", "DISCLAIMER"]] = None
     notes: Optional[str] = None
-    red_flags: Optional[list[dict]] = []
+    red_flags: Optional[list[dict]] = Field(default=[], alias="red_flags_json")
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 class DueDiligenceCheckSchema(BaseModel):
     id: Optional[UUID] = None
