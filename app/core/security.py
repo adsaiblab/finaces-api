@@ -52,7 +52,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 # ── FastAPI Security Scheme ────────────────────────────────────────────────────
-_bearer_scheme = HTTPBearer(auto_error=True)
+_bearer_scheme = HTTPBearer(auto_error=False)
 
 _CREDENTIALS_EXCEPTION = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
