@@ -37,11 +37,8 @@ async def process_gate_evaluation(case_id: UUID, db: AsyncSession) -> GateDecisi
     res_ratios = await db.execute(stmt_ratios)
     ratio_set = res_ratios.scalars().first()
 
-    if not ratio_set:
-        logger.warning(f"Gate abort: No ratios available. ID {case_id}")
-        raise MissingFinancialDataError(f"Cannot evaluate Gate block without existing Ratio metrics for Case {case_id}")
-
-    has_negative_equity = bool(ratio_set.negative_equity == 1)
+    # has_negative_equity defaults to False if RatioSet records are missing
+    has_negative_equity = bool(ratio_set.negative_equity == 1) if ratio_set else False
 
     # 2. Document Recovery and Due Diligence Check Lists
     stmt_docs = select(DocumentEvidence).where(DocumentEvidence.case_id == case_id)
