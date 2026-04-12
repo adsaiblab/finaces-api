@@ -104,7 +104,7 @@ class DocumentOut(BaseModel):
     notes: Optional[str] = None
     uploaded_at: Optional[str] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 # ─────────────────────────────────────────────────────────────────

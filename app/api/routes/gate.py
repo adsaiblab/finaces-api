@@ -20,6 +20,6 @@ async def api_compute_gate(case_id: UUID, db: AsyncSession = Depends(get_db), cu
     Verifies documentary compliance, Due Diligence, and financial bottom-up.
     Returns an asynchronous decision interceptable to Scoring.
     """
-    await assert_case_status(case_id=case_id, allowed_statuses=["DRAFT", "IN_ANALYSIS", "SCORING"], db=db)
+    await assert_case_status(case_id=case_id, allowed_statuses=["DRAFT", "PENDING_GATE", "IN_ANALYSIS", "SCORING"], db=db)
     decision = await process_gate_evaluation(case_id=case_id, db=db)
     return decision
