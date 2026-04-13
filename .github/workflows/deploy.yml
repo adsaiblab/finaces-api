@@ -2,7 +2,7 @@ name: CI/CD — FinaCES Backend
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   workflow_dispatch:
 
 # Empêche deux déploiements simultanés — annule le run précédent si un nouveau arrive
