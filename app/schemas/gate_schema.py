@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional, List, Literal
+from typing import Optional, List
+from app.schemas.enums import DocStatus, ReliabilityLevel, AuditorOpinion, DDVerdict
 from datetime import datetime
 from uuid import UUID
 from decimal import Decimal
@@ -9,9 +10,9 @@ class DocumentEvidenceSchema(BaseModel):
     doc_type: str
     fiscal_year: Optional[int] = None
     filename: Optional[str] = None
-    status: Literal["PRESENT", "MISSING", "INCOMPLETE", "REJECTED"] = "PRESENT"
-    reliability_level: Literal["HIGH", "MEDIUM", "LOW", "UNAUDITED"] = "MEDIUM"
-    auditor_opinion: Optional[Literal["UNQUALIFIED", "QUALIFIED", "ADVERSE", "DISCLAIMER"]] = None
+    status: DocStatus = DocStatus.PRESENT
+    reliability_level: ReliabilityLevel = ReliabilityLevel.MEDIUM
+    auditor_opinion: Optional[AuditorOpinion] = None
     notes: Optional[str] = None
     red_flags: Optional[list[dict]] = Field(default_factory=list, alias="red_flags_json")
 
@@ -20,7 +21,7 @@ class DocumentEvidenceSchema(BaseModel):
 class DueDiligenceCheckSchema(BaseModel):
     id: Optional[UUID] = None
     dd_level: int
-    verdict: Literal["OK", "RESERVE", "BLOCKING"]
+    verdict: DDVerdict
     notes: str = ""
     description: Optional[str] = None
 
