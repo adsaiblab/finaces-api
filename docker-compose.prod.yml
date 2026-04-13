@@ -40,9 +40,7 @@ services:
   # FastAPI Backend
   # ─────────────────────────────────────────────────────────────────────────
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/adsaiblab/finaces-api:latest
     restart: unless-stopped
     env_file:
       - .env.production
