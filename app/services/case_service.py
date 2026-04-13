@@ -141,7 +141,7 @@ async def transition_status(
     if not case:
         raise HTTPException(status_code=404, detail=f"Case not found: {case_id}")
 
-    old_status = str(case.status)
+    old_status = case.status.value if hasattr(case.status, 'value') else str(case.status)
     allowed = VALID_TRANSITIONS.get(old_status, [])
 
     if new_status not in allowed:
@@ -190,7 +190,7 @@ async def assert_case_status(
     if not case:
         raise HTTPException(status_code=404, detail=f"Case {case_id} not found.")
 
-    current_status = str(case.status)
+    current_status = case.status.value if hasattr(case.status, 'value') else str(case.status)
     if current_status not in allowed_statuses:
         raise HTTPException(
             status_code=400,
@@ -437,7 +437,8 @@ async def update_recommendation(
         raise HTTPException(status_code=404, detail="Case not found")
 
     # <-- AJOUT P0 (State Machine Guard)
-    if str(case.status) in ["CLOSED", "ARCHIVED"]:
+    current_status = case.status.value if hasattr(case.status, 'value') else str(case.status)
+    if current_status in ["CLOSED", "ARCHIVED"]:
         raise HTTPException(
             status_code=400, 
             detail=f"Operation forbidden. Case is locked in status: {case.status}"
@@ -471,7 +472,8 @@ async def update_conclusion(
         raise HTTPException(status_code=404, detail="Case not found")
 
     # <-- AJOUT P0 (State Machine Guard)
-    if str(case.status) in ["CLOSED", "ARCHIVED"]:
+    current_status = case.status.value if hasattr(case.status, 'value') else str(case.status)
+    if current_status in ["CLOSED", "ARCHIVED"]:
         raise HTTPException(
             status_code=400, 
             detail=f"Operation forbidden. Case is locked in status: {case.status}"
