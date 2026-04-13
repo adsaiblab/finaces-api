@@ -115,7 +115,7 @@ def evaluate_gate(
 
     # 6. Final verdict
     is_passed = True
-    verdict = "PASS"
+    verdict = "PASSED"
 
     if has_negative_equity:
         verdict = "REJECTED"
