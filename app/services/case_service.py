@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 # ════════════════════════════════════════════════════════════════
 
 VALID_TRANSITIONS: dict[str, list[str]] = {
-    "DRAFT":              ["PENDING_GATE", "ARCHIVED"],
+    "DRAFT":              ["PENDING_GATE", "FINANCIAL_INPUT", "ARCHIVED"],
     "PENDING_GATE":       ["FINANCIAL_INPUT", "ARCHIVED"],
     "FINANCIAL_INPUT":    ["NORMALIZATION_DONE"],
     "NORMALIZATION_DONE": ["RATIOS_COMPUTED"],
