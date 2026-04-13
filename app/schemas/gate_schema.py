@@ -7,13 +7,13 @@ from decimal import Decimal
 class DocumentEvidenceSchema(BaseModel):
     id: Optional[UUID] = None
     doc_type: str
-    fiscal_year: int
+    fiscal_year: Optional[int] = None
     filename: Optional[str] = None
     status: Literal["PRESENT", "MISSING", "INCOMPLETE", "REJECTED"] = "PRESENT"
     reliability_level: Literal["HIGH", "MEDIUM", "LOW", "UNAUDITED"] = "MEDIUM"
     auditor_opinion: Optional[Literal["UNQUALIFIED", "QUALIFIED", "ADVERSE", "DISCLAIMER"]] = None
     notes: Optional[str] = None
-    red_flags: Optional[list[dict]] = Field(default=[], alias="red_flags_json")
+    red_flags: Optional[list[dict]] = Field(default_factory=list, alias="red_flags_json")
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
