@@ -15,7 +15,7 @@ class DocumentEvidenceSchema(BaseModel):
     notes: Optional[str] = None
     red_flags: Optional[list[dict]] = Field(default_factory=list, alias="red_flags_json")
 
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True, use_enum_values=True)
 
 class DueDiligenceCheckSchema(BaseModel):
     id: Optional[UUID] = None
@@ -24,7 +24,7 @@ class DueDiligenceCheckSchema(BaseModel):
     notes: str = ""
     description: Optional[str] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 class GateDecisionSchema(BaseModel):
     is_passed: bool
@@ -37,4 +37,4 @@ class GateDecisionSchema(BaseModel):
     reserve_flags: List[str]
     computed_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
