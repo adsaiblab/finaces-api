@@ -27,18 +27,8 @@ async def process_gate_evaluation(case_id: UUID, db: AsyncSession) -> GateDecisi
     """
     logger.info(f"Starting async Gate Evaluation for case {case_id}")
 
-    # 1. Validation of existence of Ratios (otherwise how can we check financial knockouts?)
-    stmt_ratios = (
-        select(RatioSet)
-        .where(RatioSet.case_id == case_id)
-        .order_by(desc(RatioSet.fiscal_year))
-        .limit(1)
-    )
-    res_ratios = await db.execute(stmt_ratios)
-    ratio_set = res_ratios.scalars().first()
-
-    # has_negative_equity defaults to False if RatioSet records are missing
-    has_negative_equity = bool(ratio_set.negative_equity == 1) if ratio_set else False
+    # has_negative_equity comes from DD checks or red flags — not from RatioSet
+    has_negative_equity = False
 
     # 2. Document Recovery and Due Diligence Check Lists
     stmt_docs = select(DocumentEvidence).where(DocumentEvidence.case_id == case_id)
