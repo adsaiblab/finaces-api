@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional, List
+from typing import Optional, List, Literal
 from app.schemas.enums import DocStatus, ReliabilityLevel, AuditorOpinion, DDVerdict
 from datetime import datetime
 from uuid import UUID
@@ -29,7 +29,7 @@ class DueDiligenceCheckSchema(BaseModel):
 
 class GateDecisionSchema(BaseModel):
     is_passed: bool
-    verdict: str
+    verdict: Literal["PASSED", "BLOCKING", "PASS_WITH_RESERVES", "REJECTED"]
     reliability_level: str
     reliability_score: Decimal
     missing_mandatory: List[str]
