@@ -1,4 +1,6 @@
-services:
+# LEÇON APPRISE 13/04/2026 :
+# Tout service qui écrit des fichiers DOIT avoir un volume persistant dès le premier déploiement.
+# Sans volume, docker compose up -d --force-recreate détruit les données du container.
 
   # ─────────────────────────────────────────────────────────────────────────
   # PostgreSQL 15
