@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     VERSION: str = "1.2.0"
 
+    BACKEND_CORS_ORIGINS: list[str] = []
+
     # ── Environment ───────────────────────────────────────────
     ENVIRONMENT: str = Field(
         default="development",
