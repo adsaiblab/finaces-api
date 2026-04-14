@@ -19,7 +19,7 @@ from app.core.config import settings
 # send_default_pii=False  : RGPD — pas d'IP ni d'email dans les events.
 # ─────────────────────────────────────────────────────────────────────────────
 import sentry_sdk
-if getattr(settings, "SENTRY_DSN", None):
+if settings.SENTRY_DSN:
     sentry_sdk.init(
         dsn=settings.SENTRY_DSN,
         environment=settings.ENVIRONMENT,
