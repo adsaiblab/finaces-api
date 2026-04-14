@@ -6,7 +6,7 @@ No hard-coded credentials in source code.
 """
 
 import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, model_validator
 from typing import Self
 
@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     VERSION: str = "1.2.0"
 
     BACKEND_CORS_ORIGINS: list[str] = []
+    SENTRY_DSN: str = ""
 
     # ── Environment ───────────────────────────────────────────
     ENVIRONMENT: str = Field(
@@ -44,8 +45,7 @@ class Settings(BaseSettings):
     def _check_secret_key(self) -> Self:
         """
         Fail fast if the default placeholder SECRET_KEY is used in a
-        non-development environment.  Catches misconfiguration at startup
-        before it can be silently exploited.
+        non-development environment.
         """
         if (
             self.ENVIRONMENT in ("staging", "production")
@@ -58,12 +58,12 @@ class Settings(BaseSettings):
             )
         return self
 
-    model_config = {
-        "env_file": ".env",
-        "env_file_encoding": "utf-8",
-        "case_sensitive": True,
-        "extra": "ignore",
-    }
+    model_config = SettingsConfigDict(
+        env_file=(".env", ".env.production"),
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore",
+    )
 
 
 # Singleton accessible throughout the application
