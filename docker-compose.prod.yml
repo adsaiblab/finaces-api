@@ -44,6 +44,10 @@ services:
     restart: unless-stopped
     env_file:
       - .env.production
+    environment:
+      - FINACES_UPLOAD_DIR=/app/uploads
+    volumes:
+      - /opt/finaces/finaces-api/uploads:/app/uploads
     # ports:
     #  - "8000:8000"  (Plus besoin d'exposer le port à l'hôte, Traefik s'en charge !)
     networks:
