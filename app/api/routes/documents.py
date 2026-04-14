@@ -209,8 +209,8 @@ async def api_upload_document(
         "document_id": doc_id,
         "case_id":     case_id,
         "filename":    original_filename,
-        "doc_type":    doc_type,
-        "doc_type_label": DOC_TYPE_LABELS.get(doc_type, doc_type),
+        "doc_type":    doc_type.value if hasattr(doc_type, 'value') else doc_type,
+        "doc_type_label": DOC_TYPE_LABELS.get(doc_type.value if hasattr(doc_type, 'value') else doc_type, "N/A"),
         "status":      "PRESENT",
     }
 
