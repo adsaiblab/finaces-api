@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.db.models import FinancialStatementNormalized, RatioSet, FinancialStatementRaw
-from app.schemas.normalization_schema import FinancialStatementNormalizedSchema
+from app.schemas.normalization_schema import FinancialStatementRawSchema   # ← Decimal-based, required by ratio engine
 from app.schemas.ratio_schema import RatioSetSchema
 from app.engines.ratio_engine import compute_ratios
 from app.exceptions.finaces_exceptions import MissingFinancialDataError
@@ -44,11 +44,25 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
         logger.warning(f"No normalized financial statements found for case {case_id}")
         raise MissingFinancialDataError(f"No normalized financial statements found for ratio computation.")
 
-    # 2. Conversion ORM -> Pydantic Schema
-    normalized_schemas = [
-        FinancialStatementNormalizedSchema.model_validate(orm)
-        for orm in normalized_statements_orm
-    ]
+    # 2. Fetch the corresponding FinancialStatementRaw records
+    # The engine needs FinancialStatementRawSchema (Decimal-based).
+    # FinancialStatementNormalized only stores USD values; FinancialStatementRaw
+    # stores the source data with Decimal fields that the engine's arithmetic requires.
+    raw_stmt_ids = [orm.raw_statement_id for orm in normalized_statements_orm]
+    raw_result = await db.execute(
+        select(FinancialStatementRaw).where(FinancialStatementRaw.id.in_(raw_stmt_ids))
+    )
+    raw_stmts_by_id = {r.id: r for r in raw_result.scalars().all()}
+
+
+    # Build Decimal-based schemas for the engine + track normalized_statement_id for persistence
+    # We keep (schema, norm_id) pairs since FinancialStatementRawSchema.id = raw id, not norm id
+    schema_pairs: list[tuple] = []
+    for norm_orm in normalized_statements_orm:
+        raw_orm = raw_stmts_by_id.get(norm_orm.raw_statement_id)
+        if raw_orm:
+            schema = FinancialStatementRawSchema.model_validate(raw_orm)
+            schema_pairs.append((schema, norm_orm.id))
 
     # 3. Policy recovery (Policy Injection)
     policy = await _get_active_policy(db)
@@ -57,14 +71,16 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
     ratio_sets_generated = []
     db_entities = []
     
-    for norm_schema in normalized_schemas:
+    for norm_schema, norm_stmt_id in schema_pairs:
         try:
             # Mathematical engine compute iteration per fiscal year statement
             ratio_set_schema = compute_ratios(
-                norm=norm_schema, 
-                case_id=case_id, 
+                norm=norm_schema,
+                case_id=case_id,
                 policy=policy
             )
+            # Override normalized_statement_id: engine uses norm_schema.id (= raw id)
+            ratio_set_schema = ratio_set_schema.model_copy(update={'normalized_statement_id': norm_stmt_id})
             ratio_sets_generated.append(ratio_set_schema)
             
             # 5. Asynchronous Persistence of the RatioSetSchema
