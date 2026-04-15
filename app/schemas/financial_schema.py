@@ -16,8 +16,8 @@ from uuid import UUID
 # ═══════════════════════════════════════════════════════════
 
 class BalanceSheetAssets(BaseModel):
-    total_assets: Decimal
-    current_assets: Decimal
+    total_assets: Optional[Decimal] = None
+    current_assets: Optional[Decimal] = None
     liquid_assets: Decimal
     inventory: Decimal = Decimal("0.0")
     other_noncurrent_assets: Decimal = Decimal("0.0")
@@ -31,10 +31,10 @@ class BalanceSheetAssets(BaseModel):
 
 
 class BalanceSheetLiabilities(BaseModel):
-    total_liabilities: Decimal
-    current_liabilities: Decimal
+    total_liabilities: Optional[Decimal] = None
+    current_liabilities: Optional[Decimal] = None
     long_term_debt: Decimal
-    equity: Decimal
+    equity: Optional[Decimal] = None
     # New fields aligned with SQL
     share_capital: Optional[Decimal] = Decimal("0.0")
     reserves: Optional[Decimal] = Decimal("0.0")
@@ -51,9 +51,9 @@ class BalanceSheetLiabilities(BaseModel):
 class IncomeStatement(BaseModel):
     revenue: Decimal
     gross_profit: Decimal = Decimal("0.0")
-    operating_income: Decimal
-    ebitda: Decimal
-    net_income: Decimal
+    operating_income: Optional[Decimal] = None
+    ebitda: Optional[Decimal] = None
+    net_income: Optional[Decimal] = None
     extraordinary_expenses: Decimal = Decimal("0.0")
     dividends: Decimal = Decimal("0.0")
     # New fields aligned with SQL
