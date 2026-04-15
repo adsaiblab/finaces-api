@@ -68,12 +68,12 @@ async def process_normalization(case_id: UUID, db: AsyncSession) -> List[Financi
         
         if existing_norm:
             # Update fields safely through dump bypass mapping explicitly (excluding internal attributes)
-            for key, value in norm_schema.model_dump(exclude={'id'}).items():
+            for key, value in norm_schema.model_dump(exclude={'id', 'other_noncurrent_assets'}).items():
                 setattr(existing_norm, key, value)
             db_entities.append(existing_norm)
         else:
             # Create a brand new ORM entry
-            new_norm = FinancialStatementNormalized(**norm_schema.model_dump(exclude={'id'}))
+            new_norm = FinancialStatementNormalized(**norm_schema.model_dump(exclude={'id', 'other_noncurrent_assets'}))
             db.add(new_norm)
             db_entities.append(new_norm)
 
