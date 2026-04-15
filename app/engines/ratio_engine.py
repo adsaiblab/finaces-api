@@ -47,31 +47,36 @@ def compute_ratios(norm: FinancialStatementNormalizedSchema, case_id: uuid.UUID,
     Pure Function: Computes all financial ratios from a Pydantic normalized statement.
     Totally decoupled from SQLAlchemy and FastAPI.
     """
+    def _d(val: Any) -> Optional[Decimal]:
+        if val is None:
+            return None
+        return Decimal(str(val))
+
     # Shortcuts
-    ac = norm.current_assets
-    al = norm.liquid_assets
-    ai = norm.non_current_assets
-    at = norm.total_assets
-    pct_val = norm.current_liabilities
-    plt = norm.non_current_liabilities
-    ptot = norm.total_liabilities_and_equity
-    cp = norm.equity
-    ca = norm.revenue
-    rn = norm.net_income
-    ebitda = norm.ebitda
-    cfo = norm.operating_cash_flow
+    ac = _d(norm.current_assets)
+    al = _d(norm.liquid_assets)
+    ai = _d(norm.non_current_assets)
+    at = _d(norm.total_assets)
+    pct_val = _d(norm.current_liabilities)
+    plt = _d(norm.non_current_liabilities)
+    ptot = _d(norm.total_liabilities_and_equity)
+    cp = _d(norm.equity)
+    ca = _d(norm.revenue)
+    rn = _d(norm.net_income)
+    ebitda = _d(norm.ebitda)
+    cfo = _d(norm.operating_cash_flow)
     year = norm.fiscal_year
 
     # Shortcuts from the normalized layer
-    stocks = norm.inventory
-    creances = norm.accounts_receivable
-    fourniss = norm.accounts_payable
-    achats = norm.cost_of_goods_sold
-    charges_f = norm.financial_expenses
-    ebit = norm.operating_income
-    dap = norm.depreciation_and_amortization
-    df_lt = norm.long_term_debt
-    df_ct = norm.short_term_debt
+    stocks = _d(norm.inventory)
+    creances = _d(norm.accounts_receivable)
+    fourniss = _d(norm.accounts_payable)
+    achats = _d(norm.cost_of_goods_sold)
+    charges_f = _d(norm.financial_expenses)
+    ebit = _d(norm.operating_income)
+    dap = _d(norm.depreciation_and_amortization)
+    df_lt = _d(norm.long_term_debt)
+    df_ct = _d(norm.short_term_debt)
 
     # ── LIQUIDITY ─────────────────────────────────────────────
     current_ratio = _safe_divide(ac, pct_val)
