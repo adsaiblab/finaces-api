@@ -446,7 +446,7 @@ def calculate_normalized_aggregates(
         revenue=revenue,
         sold_production=sold_production,
         other_operating_revenue=other_op_revenue,
-        cost_of_goods_sold=cost_of_goods_sold,
+        cost_of_goods_sold=cost_goods_sold,
         external_expenses=external_expenses,
         personnel_expenses=personnel_expenses,
         taxes_and_duties=taxes_and_duties,
