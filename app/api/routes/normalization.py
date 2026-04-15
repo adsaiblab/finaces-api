@@ -75,50 +75,90 @@ async def get_normalized_financials(case_id: str, db: AsyncSession = Depends(get
         raw = raw_stmts.get(stmt.raw_statement_id)
         if raw:
             schema.currency_original = raw.currency_original or "MAD"
-            schema.total_assets_original = float(raw.total_assets or 0)
-            schema.current_assets_original = float(raw.current_assets or 0)
-            schema.liquid_assets_original = float(raw.liquid_assets or 0)
-            schema.inventory_original = float(raw.inventory or 0)
-            schema.accounts_receivable_original = float(raw.accounts_receivable or 0)
-            schema.other_current_assets_original = float(raw.other_current_assets or 0)
-            schema.non_current_assets_original = float(raw.non_current_assets or 0)
-            schema.intangible_assets_original = float(raw.intangible_assets or 0)
-            schema.tangible_assets_original = float(raw.tangible_assets or 0)
-            schema.financial_assets_original = float(raw.financial_assets or 0)
-            schema.other_noncurrent_assets_original = float(getattr(raw, 'other_noncurrent_assets', None) or 0)
-            schema.total_liabilities_and_equity_original = float(raw.total_liabilities_and_equity or 0)
-            schema.equity_original = float(raw.equity or 0)
-            schema.share_capital_original = float(raw.share_capital or 0)
-            schema.reserves_original = float(raw.reserves or 0)
-            schema.retained_earnings_prior_original = float(raw.retained_earnings_prior or 0)
-            schema.current_year_earnings_original = float(raw.current_year_earnings or 0)
-            schema.non_current_liabilities_original = float(raw.non_current_liabilities or 0)
-            schema.long_term_debt_original = float(raw.long_term_debt or 0)
-            schema.long_term_provisions_original = float(raw.long_term_provisions or 0)
-            schema.current_liabilities_original = float(raw.current_liabilities or 0)
-            schema.short_term_debt_original = float(raw.short_term_debt or 0)
-            schema.accounts_payable_original = float(raw.accounts_payable or 0)
-            schema.tax_and_social_liabilities_original = float(raw.tax_and_social_liabilities or 0)
-            schema.other_current_liabilities_original = float(raw.other_current_liabilities or 0)
-            schema.revenue_original = float(raw.revenue or 0)
-            schema.sold_production_original = float(raw.sold_production or 0)
-            schema.other_operating_revenue_original = float(raw.other_operating_revenue or 0)
-            schema.cost_of_goods_sold_original = float(raw.cost_of_goods_sold or 0)
-            schema.personnel_expenses_original = float(raw.personnel_expenses or 0)
-            schema.depreciation_and_amortization_original = float(raw.depreciation_and_amortization or 0)
-            schema.financial_revenue_original = float(raw.financial_revenue or 0)
-            schema.financial_expenses_original = float(raw.financial_expenses or 0)
-            schema.income_before_tax_original = float(raw.income_before_tax or 0)
-            schema.operating_income_original = float(raw.operating_income or 0)
-            schema.net_income_original = float(raw.net_income or 0)
-            schema.ebitda_original = float(raw.ebitda or 0)
-            schema.operating_cash_flow_original = float(getattr(raw, 'operating_cash_flow', None) or 0)
-            schema.investing_cash_flow_original = float(getattr(raw, 'investing_cash_flow', None) or 0)
-            schema.financing_cash_flow_original = float(getattr(raw, 'financing_cash_flow', None) or 0)
-            schema.change_in_cash_original = float(getattr(raw, 'change_in_cash', None) or 0)
-            schema.beginning_cash_original = float(getattr(raw, 'beginning_cash', None) or 0)
-            schema.ending_cash_original = float(getattr(raw, 'ending_cash', None) or 0)
-            schema.capex_original = float(raw.capex or 0) if raw.capex else None
+            rate = float(schema.exchange_rate or 1)
+
+            def _f(val) -> float:
+                return float(val or 0)
+
+            def _raw_or_reverse(raw_val, usd_schema_val) -> float:
+                """Read from raw; if null (aggregate field), reverse from USD using exchange rate."""
+                v = _f(raw_val)
+                if v == 0 and usd_schema_val:
+                    v = _f(usd_schema_val) * rate
+                return v
+
+            # ── Leaf fields: directly read from raw (source currency) ───────
+            liquid     = _f(raw.liquid_assets)
+            inventory  = _f(raw.inventory)
+            accounts_r = _f(raw.accounts_receivable)
+            other_ca   = _f(raw.other_current_assets)
+            intangible = _f(raw.intangible_assets)
+            tangible   = _f(raw.tangible_assets)
+            fin_assets = _f(raw.financial_assets)
+            other_nca  = _f(getattr(raw, 'other_noncurrent_assets', None))
+
+            schema.liquid_assets_original           = liquid
+            schema.inventory_original               = inventory
+            schema.accounts_receivable_original     = accounts_r
+            schema.other_current_assets_original    = other_ca
+            schema.intangible_assets_original       = intangible
+            schema.tangible_assets_original         = tangible
+            schema.financial_assets_original        = fin_assets
+            schema.other_noncurrent_assets_original = other_nca
+
+            # ── Aggregate totals: bottom-up (mirrors engine logic) ──────────
+            cur_assets_raw = _f(raw.current_assets) or (liquid + inventory + accounts_r + other_ca)
+            non_cur_assets_raw = _f(raw.non_current_assets) or (intangible + tangible + fin_assets + other_nca)
+            schema.current_assets_original          = cur_assets_raw
+            schema.non_current_assets_original      = non_cur_assets_raw
+            schema.total_assets_original            = _f(raw.total_assets) or (cur_assets_raw + non_cur_assets_raw)
+
+            # Equity components
+            schema.share_capital_original           = _f(raw.share_capital)
+            schema.reserves_original                = _f(raw.reserves)
+            schema.retained_earnings_prior_original = _f(raw.retained_earnings_prior)
+            schema.current_year_earnings_original   = _f(raw.current_year_earnings)
+            equity_raw = _f(raw.equity) or (_f(raw.share_capital) + _f(raw.reserves) + _f(raw.retained_earnings_prior) + _f(raw.current_year_earnings))
+            schema.equity_original = equity_raw
+
+            # Liabilities
+            schema.long_term_debt_original          = _f(raw.long_term_debt)
+            schema.long_term_provisions_original    = _f(raw.long_term_provisions)
+            ncl_raw = _f(raw.non_current_liabilities) or (_f(raw.long_term_debt) + _f(raw.long_term_provisions))
+            schema.non_current_liabilities_original = ncl_raw
+
+            schema.accounts_payable_original        = _f(raw.accounts_payable)
+            schema.short_term_debt_original         = _f(raw.short_term_debt)
+            schema.tax_and_social_liabilities_original = _f(raw.tax_and_social_liabilities)
+            schema.other_current_liabilities_original  = _f(raw.other_current_liabilities)
+            cl_raw = _f(raw.current_liabilities) or (_f(raw.short_term_debt) + _f(raw.accounts_payable) + _f(raw.tax_and_social_liabilities) + _f(raw.other_current_liabilities))
+            schema.current_liabilities_original     = cl_raw
+
+            tle_raw = _f(raw.total_liabilities_and_equity) or (equity_raw + ncl_raw + cl_raw)
+            schema.total_liabilities_and_equity_original = tle_raw
+
+            # Income Statement
+            schema.revenue_original                        = _f(raw.revenue)
+            schema.sold_production_original                = _f(raw.sold_production)
+            schema.other_operating_revenue_original        = _f(raw.other_operating_revenue)
+            schema.cost_of_goods_sold_original             = _f(raw.cost_of_goods_sold)
+            schema.personnel_expenses_original             = _f(raw.personnel_expenses)
+            schema.depreciation_and_amortization_original  = _f(raw.depreciation_and_amortization)
+            schema.financial_revenue_original              = _f(raw.financial_revenue)
+            schema.financial_expenses_original             = _f(raw.financial_expenses)
+            schema.income_before_tax_original              = _f(raw.income_before_tax)
+            schema.operating_income_original               = _f(raw.operating_income)
+            schema.net_income_original                     = _f(raw.net_income)
+            schema.ebitda_original                         = _f(raw.ebitda)
+
+            # Cash Flow
+            schema.operating_cash_flow_original  = _f(getattr(raw, 'operating_cash_flow', None))
+            schema.investing_cash_flow_original  = _f(getattr(raw, 'investing_cash_flow', None))
+            schema.financing_cash_flow_original  = _f(getattr(raw, 'financing_cash_flow', None))
+            schema.change_in_cash_original       = _f(getattr(raw, 'change_in_cash', None))
+            schema.beginning_cash_original       = _f(getattr(raw, 'beginning_cash', None))
+            schema.ending_cash_original          = _f(getattr(raw, 'ending_cash', None))
+            schema.capex_original                = _f(raw.capex) if raw.capex else None
 
         # ── Mission 5 : Cohérence bilan ─────────────────────────────────
         total_a = float(schema.total_assets or 0)
