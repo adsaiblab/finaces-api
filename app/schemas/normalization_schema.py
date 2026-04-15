@@ -180,19 +180,121 @@ class FinancialStatementNormalizedSchema(BaseModel):
     net_income: Decimal
     ebitda: Decimal
     
-    # Cash Flows
-    operating_cash_flow: Decimal
-    investing_cash_flow: Decimal = Decimal("0.0")
-    financing_cash_flow: Decimal = Decimal("0.0")
-    change_in_cash: Decimal = Decimal("0.0")
-    beginning_cash: Decimal = Decimal("0.0")
-    ending_cash: Decimal = Decimal("0.0")
-    
-    # Info
-    headcount: Optional[int] = None
-    backlog_value: Optional[Decimal] = None
+    # capex, backlog...
     capex: Optional[Decimal] = None
+    capex_original: Optional[Decimal] = None
+    backlog_value: Optional[Decimal] = None
+    backlog_value_original: Optional[Decimal] = None
     is_consolidated: bool
+    
+    # Currency context for UI
+    currency_original: str = "MAD"
+    
+    # Assets (USD vs ORIGINAL)
+    total_assets: Decimal
+    total_assets_original: Decimal = Decimal("0.0")
+    current_assets: Decimal
+    current_assets_original: Decimal = Decimal("0.0")
+    liquid_assets: Decimal
+    liquid_assets_original: Decimal = Decimal("0.0")
+    inventory: Decimal = Decimal("0.0")
+    inventory_original: Decimal = Decimal("0.0")
+    accounts_receivable: Decimal = Decimal("0.0")
+    accounts_receivable_original: Decimal = Decimal("0.0")
+    other_current_assets: Decimal = Decimal("0.0")
+    other_current_assets_original: Decimal = Decimal("0.0")
+    non_current_assets: Decimal
+    non_current_assets_original: Decimal = Decimal("0.0")
+    intangible_assets: Decimal = Decimal("0.0")
+    intangible_assets_original: Decimal = Decimal("0.0")
+    tangible_assets: Decimal = Decimal("0.0")
+    tangible_assets_original: Decimal = Decimal("0.0")
+    financial_assets: Decimal = Decimal("0.0")
+    financial_assets_original: Decimal = Decimal("0.0")
+    other_noncurrent_assets: Decimal = Decimal("0.0")
+    other_noncurrent_assets_original: Decimal = Decimal("0.0")
+    
+    # Liabilities & Equity (USD vs ORIGINAL)
+    total_liabilities_and_equity: Decimal
+    total_liabilities_and_equity_original: Decimal = Decimal("0.0")
+    equity: Decimal
+    equity_original: Decimal = Decimal("0.0")
+    share_capital: Decimal = Decimal("0.0")
+    share_capital_original: Decimal = Decimal("0.0")
+    reserves: Decimal = Decimal("0.0")
+    reserves_original: Decimal = Decimal("0.0")
+    retained_earnings_prior: Decimal = Decimal("0.0")
+    retained_earnings_prior_original: Decimal = Decimal("0.0")
+    current_year_earnings: Decimal = Decimal("0.0")
+    current_year_earnings_original: Decimal = Decimal("0.0")
+    non_current_liabilities: Decimal
+    non_current_liabilities_original: Decimal = Decimal("0.0")
+    long_term_debt: Decimal = Decimal("0.0")
+    long_term_debt_original: Decimal = Decimal("0.0")
+    long_term_provisions: Decimal = Decimal("0.0")
+    long_term_provisions_original: Decimal = Decimal("0.0")
+    current_liabilities: Decimal
+    current_liabilities_original: Decimal = Decimal("0.0")
+    short_term_debt: Decimal = Decimal("0.0")
+    short_term_debt_original: Decimal = Decimal("0.0")
+    accounts_payable: Decimal = Decimal("0.0")
+    accounts_payable_original: Decimal = Decimal("0.0")
+    tax_and_social_liabilities: Decimal = Decimal("0.0")
+    tax_and_social_liabilities_original: Decimal = Decimal("0.0")
+    other_current_liabilities: Decimal = Decimal("0.0")
+    other_current_liabilities_original: Decimal = Decimal("0.0")
+    
+    # Income Statement (USD vs ORIGINAL)
+    revenue: Decimal
+    revenue_original: Decimal = Decimal("0.0")
+    sold_production: Decimal = Decimal("0.0")
+    sold_production_original: Decimal = Decimal("0.0")
+    other_operating_revenue: Decimal = Decimal("0.0")
+    other_operating_revenue_original: Decimal = Decimal("0.0")
+    cost_of_goods_sold: Decimal = Decimal("0.0")
+    cost_of_goods_sold_original: Decimal = Decimal("0.0")
+    external_expenses: Decimal = Decimal("0.0")
+    external_expenses_original: Decimal = Decimal("0.0")
+    personnel_expenses: Decimal = Decimal("0.0")
+    personnel_expenses_original: Decimal = Decimal("0.0")
+    taxes_and_duties: Decimal = Decimal("0.0")
+    taxes_and_duties_original: Decimal = Decimal("0.0")
+    depreciation_and_amortization: Decimal = Decimal("0.0")
+    depreciation_and_amortization_original: Decimal = Decimal("0.0")
+    other_operating_expenses: Decimal = Decimal("0.0")
+    other_operating_expenses_original: Decimal = Decimal("0.0")
+    operating_income: Decimal = Decimal("0.0")
+    operating_income_original: Decimal = Decimal("0.0")
+    financial_revenue: Decimal = Decimal("0.0")
+    financial_revenue_original: Decimal = Decimal("0.0")
+    financial_expenses: Decimal = Decimal("0.0")
+    financial_expenses_original: Decimal = Decimal("0.0")
+    financial_income: Decimal = Decimal("0.0")
+    financial_income_original: Decimal = Decimal("0.0")
+    income_before_tax: Decimal = Decimal("0.0")
+    income_before_tax_original: Decimal = Decimal("0.0")
+    extraordinary_income: Decimal = Decimal("0.0")
+    extraordinary_income_original: Decimal = Decimal("0.0")
+    income_tax: Decimal = Decimal("0.0")
+    income_tax_original: Decimal = Decimal("0.0")
+    net_income: Decimal
+    net_income_original: Decimal = Decimal("0.0")
+    ebitda: Decimal
+    ebitda_original: Decimal = Decimal("0.0")
+    
+    # Cash Flows (USD vs ORIGINAL)
+    operating_cash_flow: Decimal
+    operating_cash_flow_original: Decimal = Decimal("0.0")
+    investing_cash_flow: Decimal = Decimal("0.0")
+    investing_cash_flow_original: Decimal = Decimal("0.0")
+    financing_cash_flow: Decimal = Decimal("0.0")
+    financing_cash_flow_original: Decimal = Decimal("0.0")
+    change_in_cash: Decimal = Decimal("0.0")
+    change_in_cash_original: Decimal = Decimal("0.0")
+    beginning_cash: Decimal = Decimal("0.0")
+    beginning_cash_original: Decimal = Decimal("0.0")
+    ending_cash: Decimal = Decimal("0.0")
+    ending_cash_original: Decimal = Decimal("0.0")
     
     adjustments_count: int = 0
     normalized_json: str

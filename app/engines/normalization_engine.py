@@ -239,23 +239,66 @@ def calculate_normalized_aggregates(
 
     net_income = ar.get("net_income") or Decimal("0.0")
 
-    # 3. VALIDATION ÉQUILIBRE BILAN (Devise Originale)
-    # Guard : Données insuffisantes
-    if total_assets == Decimal("0.0") and total_liabilities_and_equity == Decimal("0.0"):
-        raise EngineComputationError(
-            message="Insufficient data: all aggregates are zero.",
-            details={"error_code": "INSUFFICIENT_DATA", "case_id": str(raw.case_id)}
-        )
+    # ════════════════════════════════════════════════════════════════
+    # 4. CAPTURE ORIGINALES (Devise source, avant conversion)
+    # ════════════════════════════════════════════════════════════════
+    total_assets_original            = total_assets
+    current_assets_original          = current_assets
+    non_current_assets_original      = non_current_assets
+    liquid_assets_original           = liquid_assets
+    inventory_original               = inventory
+    accounts_receiv_original         = accounts_receiv
+    other_curr_assets_original       = other_curr_assets
+    intangible_assets_original       = intangible_assets
+    tangible_assets_original         = tangible_assets
+    financial_assets_original        = financial_assets
+    other_non_curr_original          = other_non_curr
 
-    if total_assets and total_liabilities_and_equity:
-        diff_pct = _safe_divide(abs(total_assets - total_liabilities_and_equity), max(total_assets, total_liabilities_and_equity))
-        if diff_pct and diff_pct > Decimal("0.01"):
-            raise EngineComputationError(
-                message=f"Unbalanced balance sheet by {float(diff_pct):.1%}. Submission locked.",
-                details={"error_code": "UNBALANCED_BALANCE_SHEET", "diff": float(diff_pct)}
-            )
+    tle_original                     = total_liabilities_and_equity
+    equity_original                  = equity
+    share_capital_original           = share_capital
+    reserves_original                = reserves
+    retained_prior_original          = retained_prior
+    current_earnings_original        = current_earnings
+    non_current_liab_original        = non_current_liabilities
+    current_liab_original            = current_liabilities
+    long_term_debt_original          = long_term_debt
+    long_term_prov_original          = long_term_prov
+    short_term_debt_original         = short_term_debt
+    accounts_payable_original        = accounts_payable
+    tax_social_liab_original         = tax_social_liab
+    other_curr_liab_original         = other_curr_liab
 
-    # 4. CONVERSION USD
+    revenue_original                 = revenue
+    sold_production_original         = sold_production
+    other_op_revenue_original        = other_op_revenue
+    cost_goods_sold_original         = cost_goods_sold
+    external_expenses_original       = external_expenses
+    personnel_expenses_original      = personnel_expenses
+    taxes_and_duties_original        = taxes_and_duties
+    depreciation_amort_original      = depreciation_amort
+    operating_income_original        = operating_income
+    financial_revenue_original       = financial_revenue
+    financial_expenses_original       = financial_expenses
+    financial_income_original        = financial_income
+    income_before_tax_original       = income_before_tax
+    extraordinary_inc_original       = extraordinary_inc
+    income_tax_original              = income_tax
+    net_income_original              = net_income
+    ebitda_original                  = ebitda
+
+    op_cash_flow_original            = op_cash_flow
+    inv_cash_flow_original           = inv_cash_flow
+    fin_cash_flow_original           = fin_cash_flow
+    beginning_cash_original          = beginning_cash
+    ending_cash_original             = ending_cash
+    change_in_cash_original          = ending_cash - beginning_cash
+    backlog_value_original           = backlog_value
+    capex_original                   = capex
+
+    # ════════════════════════════════════════════════════════════════
+    # 5. CONVERSION USD
+    # ════════════════════════════════════════════════════════════════
     rate = raw.exchange_rate_to_usd or Decimal("1.0")
     if rate <= 0:
         raise EngineComputationError(f"exchange_rate_to_usd invalide : {rate}")
@@ -341,8 +384,9 @@ def calculate_normalized_aggregates(
         raw_statement_id=raw.id,
         fiscal_year=raw.fiscal_year,
         currency_usd="USD",
+        currency_original=raw.currency_original,
         exchange_rate=rate,
-        # Assets
+        # Assets USD
         total_assets=total_assets,
         current_assets=current_assets,
         liquid_assets=liquid_assets,
@@ -353,8 +397,21 @@ def calculate_normalized_aggregates(
         intangible_assets=intangible_assets,
         tangible_assets=tangible_assets,
         financial_assets=financial_assets,
-        other_noncurrent_assets=other_non_curr,
-        # Liabilities & Equity
+        other_noncurrent_assets=other_noncurrent_assets,
+        # Assets ORIGINAL
+        total_assets_original=total_assets_original,
+        current_assets_original=current_assets_original,
+        liquid_assets_original=liquid_assets_original,
+        inventory_original=inventory_original,
+        accounts_receivable_original=accounts_receiv_original,
+        other_current_assets_original=other_curr_assets_original,
+        non_current_assets_original=non_current_assets_original,
+        intangible_assets_original=intangible_assets_original,
+        tangible_assets_original=tangible_assets_original,
+        financial_assets_original=financial_assets_original,
+        other_noncurrent_assets_original=other_non_curr_original,
+
+        # Liabilities & Equity USD
         total_liabilities_and_equity=total_liabilities_and_equity,
         equity=equity,
         share_capital=share_capital,
@@ -369,11 +426,27 @@ def calculate_normalized_aggregates(
         accounts_payable=accounts_payable,
         tax_and_social_liabilities=tax_social_liab,
         other_current_liabilities=other_curr_liab,
-        # Income Statement
+        # Liabilities & Equity ORIGINAL
+        total_liabilities_and_equity_original=tle_original,
+        equity_original=equity_original,
+        share_capital_original=share_capital_original,
+        reserves_original=reserves_original,
+        retained_earnings_prior_original=retained_prior_original,
+        current_year_earnings_original=current_earnings_original,
+        non_current_liabilities_original=non_current_liab_original,
+        long_term_debt_original=long_term_debt_original,
+        long_term_provisions_original=long_term_prov_original,
+        current_liabilities_original=current_liab_original,
+        short_term_debt_original=short_term_debt_original,
+        accounts_payable_original=accounts_payable_original,
+        tax_and_social_liabilities_original=tax_social_liab_original,
+        other_current_liabilities_original=other_curr_liab_original,
+
+        # Income Statement USD
         revenue=revenue,
         sold_production=sold_production,
         other_operating_revenue=other_op_revenue,
-        cost_of_goods_sold=cost_goods_sold,
+        cost_of_goods_sold=cost_of_goods_sold,
         external_expenses=external_expenses,
         personnel_expenses=personnel_expenses,
         taxes_and_duties=taxes_and_duties,
@@ -387,17 +460,46 @@ def calculate_normalized_aggregates(
         income_tax=income_tax,
         net_income=net_income,
         ebitda=ebitda,
-        # Cash Flow
+        # Income Statement ORIGINAL
+        revenue_original=revenue_original,
+        sold_production_original=sold_production_original,
+        other_operating_revenue_original=other_op_revenue_original,
+        cost_of_goods_sold_original=cost_goods_sold_original,
+        external_expenses_original=external_expenses_original,
+        personnel_expenses_original=personnel_expenses_original,
+        taxes_and_duties_original=taxes_and_duties_original,
+        depreciation_and_amortization_original=depreciation_amort_original,
+        operating_income_original=operating_income_original,
+        financial_revenue_original=financial_revenue_original,
+        financial_expenses_original=financial_expenses_original,
+        financial_income_original=financial_income_original,
+        income_before_tax_original=income_before_tax_original,
+        extraordinary_income_original=extraordinary_inc_original,
+        income_tax_original=income_tax_original,
+        net_income_original=net_income_original,
+        ebitda_original=ebitda_original,
+
+        # Cash Flow USD
         operating_cash_flow=op_cash_flow,
         investing_cash_flow=inv_cash_flow,
         financing_cash_flow=fin_cash_flow,
         change_in_cash=change_in_cash,
         beginning_cash=beginning_cash,
         ending_cash=ending_cash,
+        # Cash Flow ORIGINAL
+        operating_cash_flow_original=op_cash_flow_original,
+        investing_cash_flow_original=inv_cash_flow_original,
+        financing_cash_flow_original=fin_cash_flow_original,
+        change_in_cash_original=change_in_cash_original,
+        beginning_cash_original=beginning_cash_original,
+        ending_cash_original=ending_cash_original,
+
         # Others
         headcount=headcount,
         backlog_value=backlog_value,
+        backlog_value_original=backlog_value_original,
         capex=capex,
+        capex_original=capex_original,
         is_consolidated=raw.is_consolidated,
         adjustments_count=len(adjustments),
         normalized_json=normalized_json
