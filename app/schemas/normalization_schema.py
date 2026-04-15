@@ -34,42 +34,77 @@ class FinancialStatementRawSchema(BaseModel):
     referentiel: Optional[str] = "IFRS"  # Défaut IFRS si NULL en DB
     is_consolidated: bool = False
     
-    # Raw values can potentially be None depending on the dataset
+    # Assets Details
     liquid_assets: Optional[Decimal] = None
     inventory: Optional[Decimal] = None
     accounts_receivable: Optional[Decimal] = None
     other_current_assets: Optional[Decimal] = None
-    current_assets: Optional[Decimal] = None
+    current_assets: Optional[Decimal] = None # Aggregate
     
     intangible_assets: Optional[Decimal] = None
     tangible_assets: Optional[Decimal] = None
     financial_assets: Optional[Decimal] = None
-    non_current_assets: Optional[Decimal] = None
+    other_noncurrent_assets: Optional[Decimal] = None
+    non_current_assets: Optional[Decimal] = None # Aggregate
     
-    total_assets: Optional[Decimal] = None
+    total_assets: Optional[Decimal] = None # Aggregate
 
-    equity: Optional[Decimal] = None
-    
+    # Liabilities & Equity Details
+    equity: Optional[Decimal] = None # Aggregate
+    share_capital: Optional[Decimal] = None
+    reserves: Optional[Decimal] = None
+    retained_earnings_prior: Optional[Decimal] = None
+    current_year_earnings: Optional[Decimal] = None
+
+    non_current_liabilities: Optional[Decimal] = None # Aggregate
     long_term_debt: Optional[Decimal] = None
     long_term_provisions: Optional[Decimal] = None
-    non_current_liabilities: Optional[Decimal] = None
     
+    current_liabilities: Optional[Decimal] = None # Aggregate
     short_term_debt: Optional[Decimal] = None
     accounts_payable: Optional[Decimal] = None
     tax_and_social_liabilities: Optional[Decimal] = None
     other_current_liabilities: Optional[Decimal] = None
-    current_liabilities: Optional[Decimal] = None
     
-    total_liabilities_and_equity: Optional[Decimal] = None
+    total_liabilities_and_equity: Optional[Decimal] = None # Aggregate
 
+    # Income Statement Details
     revenue: Optional[Decimal] = None
     sold_production: Optional[Decimal] = None
-    operating_income: Optional[Decimal] = None
+    other_operating_revenue: Optional[Decimal] = None
+    cost_of_goods_sold: Optional[Decimal] = None
+    external_expenses: Optional[Decimal] = None
+    personnel_expenses: Optional[Decimal] = None
+    taxes_and_duties: Optional[Decimal] = None
     depreciation_and_amortization: Optional[Decimal] = None
-    ebitda: Optional[Decimal] = None
+    other_operating_expenses: Optional[Decimal] = None
+    operating_income: Optional[Decimal] = None
+    financial_revenue: Optional[Decimal] = None
+    financial_expenses: Optional[Decimal] = None
+    financial_income: Optional[Decimal] = None
+    income_before_tax: Optional[Decimal] = None
+    extraordinary_income: Optional[Decimal] = None
+    extraordinary_expenses: Optional[Decimal] = None
+    income_tax: Optional[Decimal] = None
     net_income: Optional[Decimal] = None
+    ebitda: Optional[Decimal] = None
+    gross_profit: Optional[Decimal] = None
+
+    # Cash Flows
     operating_cash_flow: Optional[Decimal] = None
-    change_in_working_capital: Optional[Decimal] = None
+    investing_cash_flow: Optional[Decimal] = None
+    financing_cash_flow: Optional[Decimal] = None
+    free_cash_flow: Optional[Decimal] = None
+    change_in_cash: Optional[Decimal] = None
+    beginning_cash: Optional[Decimal] = None
+    ending_cash: Optional[Decimal] = None
+
+    # Operational Metrics
+    headcount: Optional[int] = None
+    backlog_value: Optional[Decimal] = None
+    dividends_distributed: Optional[Decimal] = None
+    capex: Optional[Decimal] = None
+    source_notes: Optional[str] = None
 
     @field_validator(
         'revenue', 
@@ -107,6 +142,7 @@ class FinancialStatementNormalizedSchema(BaseModel):
     intangible_assets: Decimal = Decimal("0.0")
     tangible_assets: Decimal = Decimal("0.0")
     financial_assets: Decimal = Decimal("0.0")
+    other_noncurrent_assets: Decimal = Decimal("0.0")
     
     # Liabilities & Equity
     total_liabilities_and_equity: Decimal

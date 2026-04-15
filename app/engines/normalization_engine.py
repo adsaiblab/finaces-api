@@ -122,33 +122,30 @@ def calculate_normalized_aggregates(
     
     ar = AdjustedRawState(raw, adjustments)
 
-    # 1. EXTRACTION DES COMPOSANTS (Devise Originale)
-    # --- Assets ---
+    # 1. EXTRACTION EXHAUSTIVE DEPUIS AdjustedRawState (Devise Originale)
+    # Assets
     liquid_assets      = ar.get("liquid_assets") or Decimal("0.0")
     inventory          = ar.get("inventory") or Decimal("0.0")
     accounts_receiv    = ar.get("accounts_receivable") or Decimal("0.0")
     other_curr_assets  = ar.get("other_current_assets") or Decimal("0.0")
-    
     intangible_assets  = ar.get("intangible_assets") or Decimal("0.0")
     tangible_assets    = ar.get("tangible_assets") or Decimal("0.0")
     financial_assets   = ar.get("financial_assets") or Decimal("0.0")
     other_non_curr     = ar.get("other_noncurrent_assets") or Decimal("0.0")
 
-    # --- Liabilities ---
+    # Liabilities & Equity
     share_capital      = ar.get("share_capital") or Decimal("0.0")
     reserves           = ar.get("reserves") or Decimal("0.0")
     retained_prior     = ar.get("retained_earnings_prior") or Decimal("0.0")
     current_earnings   = ar.get("current_year_earnings") or Decimal("0.0")
-    
+    long_term_debt     = ar.get("long_term_debt") or Decimal("0.0")
+    long_term_prov     = ar.get("long_term_provisions") or Decimal("0.0")
     short_term_debt    = ar.get("short_term_debt") or Decimal("0.0")
     accounts_payable   = ar.get("accounts_payable") or Decimal("0.0")
     tax_social_liab    = ar.get("tax_and_social_liabilities") or Decimal("0.0")
     other_curr_liab    = ar.get("other_current_liabilities") or Decimal("0.0")
-    
-    long_term_debt     = ar.get("long_term_debt") or Decimal("0.0")
-    long_term_prov     = ar.get("long_term_provisions") or Decimal("0.0")
 
-    # --- P&L ---
+    # Income Statement
     revenue            = ar.get("revenue") or Decimal("0.0")
     sold_production    = ar.get("sold_production") or Decimal("0.0")
     other_op_revenue   = ar.get("other_operating_revenue") or Decimal("0.0")
@@ -165,11 +162,10 @@ def calculate_normalized_aggregates(
     extraordinary_inc  = ar.get("extraordinary_income") or Decimal("0.0")
     income_tax         = ar.get("income_tax") or Decimal("0.0")
 
-    # --- Cash Flows & Meta ---
+    # Cash Flows & Meta
     op_cash_flow       = ar.get("operating_cash_flow") or Decimal("0.0")
     inv_cash_flow      = ar.get("investing_cash_flow") or Decimal("0.0")
     fin_cash_flow      = ar.get("financing_cash_flow") or Decimal("0.0")
-    change_in_cash     = ar.get("change_in_cash") or Decimal("0.0")
     beginning_cash     = ar.get("beginning_cash") or Decimal("0.0")
     ending_cash        = ar.get("ending_cash") or Decimal("0.0")
     backlog_value      = ar.get("backlog_value") or Decimal("0.0")
@@ -177,62 +173,86 @@ def calculate_normalized_aggregates(
     headcount          = ar.get("headcount")
 
     # 2. CALCULS D'AGRÉGATS BOTTOM-UP (Devise Originale)
-    # Construction des Actifs
-    non_current_assets = ar.get("non_current_assets")
-    if not non_current_assets:
-        non_current_assets = _safe_sum(intangible_assets, tangible_assets, financial_assets, other_non_curr)
-    non_current_assets = non_current_assets or Decimal("0.0")
-    
-    current_assets = ar.get("current_assets")
-    if not current_assets:
-        current_assets = _safe_sum(liquid_assets, inventory, accounts_receiv, other_curr_assets)
-    current_assets = current_assets or Decimal("0.0")
-    
-    total_assets = ar.get("total_assets")
-    if not total_assets:
-        total_assets = _safe_sum(current_assets, non_current_assets)
-    total_assets = total_assets or Decimal("0.0")
+    # Règle : recalcule UNIQUEMENT si l'agrégat est à 0.00 et que des détails sont fournis.
 
-    # Reconstruction des Passifs
-    equity_calc = ar.get("equity")
-    if not equity_calc:
-        equity_calc = _safe_sum(share_capital, reserves, retained_prior, current_earnings)
-    equity = equity_calc or Decimal("0.0")
+    # Non Current Assets
+    nc_base = ar.get("non_current_assets")
+    if not nc_base:
+        details = [intangible_assets, tangible_assets, financial_assets, other_non_curr]
+        if any(v != Decimal("0.0") for v in details):
+            nc_base = _safe_sum(*details)
+    non_current_assets = nc_base or Decimal("0.0")
 
-    current_liabilities = ar.get("current_liabilities")
-    if not current_liabilities:
-        current_liabilities = _safe_sum(short_term_debt, accounts_payable, tax_social_liab, other_curr_liab)
-    current_liabilities = current_liabilities or Decimal("0.0")
+    # Current Assets
+    ac_base = ar.get("current_assets")
+    if not ac_base:
+        details = [liquid_assets, inventory, accounts_receiv, other_curr_assets]
+        if any(v != Decimal("0.0") for v in details):
+            ac_base = _safe_sum(*details)
+    current_assets = ac_base or Decimal("0.0")
 
-    non_current_liabilities = ar.get("non_current_liabilities")
-    if not non_current_liabilities:
-        non_current_liabilities = _safe_sum(long_term_debt, long_term_prov)
-    non_current_liabilities = non_current_liabilities or Decimal("0.0")
+    # Total Assets
+    ta_base = ar.get("total_assets")
+    if not ta_base:
+        ta_base = _safe_sum(current_assets, non_current_assets)
+    total_assets = ta_base or Decimal("0.0")
 
-    total_liabilities_and_equity = ar.get("total_liabilities_and_equity")
-    if not total_liabilities_and_equity:
-        total_liabilities_and_equity = _safe_sum(equity, non_current_liabilities, current_liabilities)
-    total_liabilities_and_equity = total_liabilities_and_equity or Decimal("0.0")
+    # Equity
+    eq_base = ar.get("equity")
+    if not eq_base:
+        details = [share_capital, reserves, retained_prior, current_earnings]
+        if any(v != Decimal("0.0") for v in details):
+            eq_base = _safe_sum(*details)
+    equity = eq_base or Decimal("0.0")
 
-    # Reconstruction du P&L
+    # Current Liabilities
+    cl_base = ar.get("current_liabilities")
+    if not cl_base:
+        details = [short_term_debt, accounts_payable, tax_social_liab, other_curr_liab]
+        if any(v != Decimal("0.0") for v in details):
+            cl_base = _safe_sum(*details)
+    current_liabilities = cl_base or Decimal("0.0")
+
+    # Non Current Liabilities
+    ncl_base = ar.get("non_current_liabilities")
+    if not ncl_base:
+        details = [long_term_debt, long_term_prov]
+        if any(v != Decimal("0.0") for v in details):
+            ncl_base = _safe_sum(*details)
+    non_current_liabilities = ncl_base or Decimal("0.0")
+
+    # Total Liabilities & Equity
+    tle_base = ar.get("total_liabilities_and_equity")
+    if not tle_base:
+        tle_base = _safe_sum(equity, non_current_liabilities, current_liabilities)
+    total_liabilities_and_equity = tle_base or Decimal("0.0")
+
+    # Income Statement Aggregates
     if not revenue:
         revenue = sold_production or Decimal("0.0")
 
-    net_income = ar.get("net_income") or Decimal("0.0")
-    
     ebitda = ar.get("ebitda")
     if not ebitda:
         if operating_income and depreciation_amort:
             ebitda = operating_income + depreciation_amort
     ebitda = ebitda or Decimal("0.0")
 
+    net_income = ar.get("net_income") or Decimal("0.0")
+
     # 3. VALIDATION ÉQUILIBRE BILAN (Devise Originale)
+    # Guard : Données insuffisantes
+    if total_assets == Decimal("0.0") and total_liabilities_and_equity == Decimal("0.0"):
+        raise EngineComputationError(
+            message="Insufficient data: all aggregates are zero.",
+            details={"error_code": "INSUFFICIENT_DATA", "case_id": str(raw.case_id)}
+        )
+
     if total_assets and total_liabilities_and_equity:
         diff_pct = _safe_divide(abs(total_assets - total_liabilities_and_equity), max(total_assets, total_liabilities_and_equity))
         if diff_pct and diff_pct > Decimal("0.01"):
             raise EngineComputationError(
-                message=f"Unbalanced balance sheet by {float(diff_pct):.1%}. Submission locked.", 
-                details={"error_code": "UNBALANCED_BALANCE_SHEET"}
+                message=f"Unbalanced balance sheet by {float(diff_pct):.1%}. Submission locked.",
+                details={"error_code": "UNBALANCED_BALANCE_SHEET", "diff": float(diff_pct)}
             )
 
     # 4. CONVERSION USD
@@ -245,7 +265,7 @@ def calculate_normalized_aggregates(
             return Decimal("0.0")
         return (val / rate).quantize(Decimal("0.01"))
 
-    # Conversion unitaire par champ (lisibilité maximale)
+    # Conversion exhaustive (un champ par ligne pour plus de lisibilité)
     total_assets                  = _to_usd(total_assets)
     current_assets                = _to_usd(current_assets)
     non_current_assets            = _to_usd(non_current_assets)
@@ -256,6 +276,7 @@ def calculate_normalized_aggregates(
     intangible_assets             = _to_usd(intangible_assets)
     tangible_assets               = _to_usd(tangible_assets)
     financial_assets              = _to_usd(financial_assets)
+    other_noncurrent_assets       = _to_usd(other_non_curr)
 
     total_liabilities_and_equity  = _to_usd(total_liabilities_and_equity)
     equity                        = _to_usd(equity)
@@ -293,26 +314,26 @@ def calculate_normalized_aggregates(
     op_cash_flow                  = _to_usd(op_cash_flow)
     inv_cash_flow                 = _to_usd(inv_cash_flow)
     fin_cash_flow                 = _to_usd(fin_cash_flow)
-    change_in_cash                = _to_usd(change_in_cash)
     beginning_cash                = _to_usd(beginning_cash)
     ending_cash                   = _to_usd(ending_cash)
+    change_in_cash                = ending_cash - beginning_cash
     backlog_value                 = _to_usd(backlog_value)
     capex                         = _to_usd(capex)
 
-    # 5. GÉNÉRATION JSON & RETOUR (Full USD)
+    # 5. CONSTRUCTION DU SCHÉMA DE SORTIE
     normalized_json = _build_normalized_json(raw, {
         "total_assets":            total_assets,
         "current_assets":          current_assets,
-        "liquid_assets":          liquid_assets,
-        "non_current_assets":       non_current_assets,
-        "total_liabilities_and_equity":           total_liabilities_and_equity,
-        "current_liabilities":              current_liabilities,
-        "non_current_liabilities":              non_current_liabilities,
-        "equity":       equity,
-        "revenue":       revenue,
-        "net_income":           net_income,
-        "ebitda":                 ebitda,
-        "operating_cash_flow": op_cash_flow,
+        "liquid_assets":           liquid_assets,
+        "non_current_assets":      non_current_assets,
+        "total_liabilities_and_equity": total_liabilities_and_equity,
+        "current_liabilities":     current_liabilities,
+        "non_current_liabilities": non_current_liabilities,
+        "equity":                  equity,
+        "revenue":                 revenue,
+        "net_income":              net_income,
+        "ebitda":                  ebitda,
+        "operating_cash_flow":     op_cash_flow,
     })
 
     return FinancialStatementNormalizedSchema(
@@ -321,6 +342,7 @@ def calculate_normalized_aggregates(
         fiscal_year=raw.fiscal_year,
         currency_usd="USD",
         exchange_rate=rate,
+        # Assets
         total_assets=total_assets,
         current_assets=current_assets,
         liquid_assets=liquid_assets,
@@ -331,6 +353,8 @@ def calculate_normalized_aggregates(
         intangible_assets=intangible_assets,
         tangible_assets=tangible_assets,
         financial_assets=financial_assets,
+        other_noncurrent_assets=other_non_curr,
+        # Liabilities & Equity
         total_liabilities_and_equity=total_liabilities_and_equity,
         equity=equity,
         share_capital=share_capital,
@@ -345,6 +369,7 @@ def calculate_normalized_aggregates(
         accounts_payable=accounts_payable,
         tax_and_social_liabilities=tax_social_liab,
         other_current_liabilities=other_curr_liab,
+        # Income Statement
         revenue=revenue,
         sold_production=sold_production,
         other_operating_revenue=other_op_revenue,
@@ -362,12 +387,14 @@ def calculate_normalized_aggregates(
         income_tax=income_tax,
         net_income=net_income,
         ebitda=ebitda,
+        # Cash Flow
         operating_cash_flow=op_cash_flow,
         investing_cash_flow=inv_cash_flow,
         financing_cash_flow=fin_cash_flow,
         change_in_cash=change_in_cash,
         beginning_cash=beginning_cash,
         ending_cash=ending_cash,
+        # Others
         headcount=headcount,
         backlog_value=backlog_value,
         capex=capex,
