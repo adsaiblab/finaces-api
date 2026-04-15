@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from decimal import Decimal
-from typing import Optional, Literal, Annotated
+from typing import Optional, Literal, Annotated, List
 from datetime import datetime
 from uuid import UUID
 
@@ -10,13 +10,40 @@ class AdjustmentSchema(BaseModel):
     fiscal_year: int = Field(..., ge=1900, le=2100)
     adj_type: Literal["RECLASS", "CORRECTION", "ESTIMATE", "CURRENCY", "OTHER"]
     field: str = Field(..., min_length=1, max_length=100)
-    amount_before: Decimal = Decimal("0.0")
-    amount_after: Decimal = Decimal("0.0")
+    amount_before: float = 0.0
+    amount_after: float = 0.0
     mode: Literal['replace', 'add'] = 'add'
     justification: str = Field(..., min_length=1, max_length=2000)
     source_ref: Optional[str] = Field(None, max_length=500)
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class AdjustmentOut(BaseModel):
+    """Schéma de sortie pour un ajustement/retraitement appliqué."""
+    line_item: str
+    original_value: float
+    adjusted_value: float
+    delta: float
+    reason: str
+    standard: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class BalanceSheetCoherence(BaseModel):
+    """Indicateurs de cohérence comptable du bilan normalisé."""
+    assets_liabilities_balanced: bool
+    ebitda_coherent: bool
+    cash_flow_coherent: bool
+    coherence_score: float
+
+
+class RatioReadiness(BaseModel):
+    """Certification de disponibilité des champs pour le calcul de ratios avancés."""
+    basic_ratios_ready: bool
+    advanced_ratios_ready: bool
+    missing_fields: List[str]
 
 
 from datetime import date
@@ -129,181 +156,188 @@ class FinancialStatementNormalizedSchema(BaseModel):
     raw_statement_id: UUID
     fiscal_year: int
     currency_usd: str = "USD"
-    exchange_rate: Annotated[Decimal, Field(ge=0)]
+    exchange_rate: float
     
     # Assets
-    total_assets: Decimal
-    current_assets: Decimal
-    liquid_assets: Decimal
-    inventory: Decimal = Decimal("0.0")
-    accounts_receivable: Decimal = Decimal("0.0")
-    other_current_assets: Decimal = Decimal("0.0")
-    non_current_assets: Decimal
-    intangible_assets: Decimal = Decimal("0.0")
-    tangible_assets: Decimal = Decimal("0.0")
-    financial_assets: Decimal = Decimal("0.0")
-    other_noncurrent_assets: Decimal = Decimal("0.0")
+    total_assets: float
+    current_assets: float
+    liquid_assets: float
+    inventory: float = 0.0
+    accounts_receivable: float = 0.0
+    other_current_assets: float = 0.0
+    non_current_assets: float
+    intangible_assets: float = 0.0
+    tangible_assets: float = 0.0
+    financial_assets: float = 0.0
+    other_noncurrent_assets: float = 0.0
     
     # Liabilities & Equity
-    total_liabilities_and_equity: Decimal
-    equity: Decimal
-    share_capital: Decimal = Decimal("0.0")
-    reserves: Decimal = Decimal("0.0")
-    retained_earnings_prior: Decimal = Decimal("0.0")
-    current_year_earnings: Decimal = Decimal("0.0")
-    non_current_liabilities: Decimal
-    long_term_debt: Decimal = Decimal("0.0")
-    long_term_provisions: Decimal = Decimal("0.0")
-    current_liabilities: Decimal
-    short_term_debt: Decimal = Decimal("0.0")
-    accounts_payable: Decimal = Decimal("0.0")
-    tax_and_social_liabilities: Decimal = Decimal("0.0")
-    other_current_liabilities: Decimal = Decimal("0.0")
+    total_liabilities_and_equity: float
+    equity: float
+    share_capital: float = 0.0
+    reserves: float = 0.0
+    retained_earnings_prior: float = 0.0
+    current_year_earnings: float = 0.0
+    non_current_liabilities: float
+    long_term_debt: float = 0.0
+    long_term_provisions: float = 0.0
+    current_liabilities: float
+    short_term_debt: float = 0.0
+    accounts_payable: float = 0.0
+    tax_and_social_liabilities: float = 0.0
+    other_current_liabilities: float = 0.0
     
     # Income Statement
-    revenue: Decimal
-    sold_production: Decimal = Decimal("0.0")
-    other_operating_revenue: Decimal = Decimal("0.0")
-    cost_of_goods_sold: Decimal = Decimal("0.0")
-    external_expenses: Decimal = Decimal("0.0")
-    personnel_expenses: Decimal = Decimal("0.0")
-    taxes_and_duties: Decimal = Decimal("0.0")
-    depreciation_and_amortization: Decimal = Decimal("0.0")
-    other_operating_expenses: Decimal = Decimal("0.0")
-    operating_income: Decimal = Decimal("0.0")
-    financial_revenue: Decimal = Decimal("0.0")
-    financial_expenses: Decimal = Decimal("0.0")
-    financial_income: Decimal = Decimal("0.0")
-    income_before_tax: Decimal = Decimal("0.0")
-    extraordinary_income: Decimal = Decimal("0.0")
-    income_tax: Decimal = Decimal("0.0")
-    net_income: Decimal
-    ebitda: Decimal
+    revenue: float
+    sold_production: float = 0.0
+    other_operating_revenue: float = 0.0
+    cost_of_goods_sold: float = 0.0
+    external_expenses: float = 0.0
+    personnel_expenses: float = 0.0
+    taxes_and_duties: float = 0.0
+    depreciation_and_amortization: float = 0.0
+    other_operating_expenses: float = 0.0
+    operating_income: float = 0.0
+    financial_revenue: float = 0.0
+    financial_expenses: float = 0.0
+    financial_income: float = 0.0
+    income_before_tax: float = 0.0
+    extraordinary_income: float = 0.0
+    income_tax: float = 0.0
+    net_income: float
+    ebitda: float
     
     # capex, backlog...
-    capex: Optional[Decimal] = None
-    capex_original: Optional[Decimal] = None
-    backlog_value: Optional[Decimal] = None
-    backlog_value_original: Optional[Decimal] = None
+    capex: Optional[float] = None
+    capex_original: Optional[float] = None
+    backlog_value: Optional[float] = None
+    backlog_value_original: Optional[float] = None
     is_consolidated: bool
     
     # Currency context for UI
     currency_original: str = "MAD"
     
     # Assets (USD vs ORIGINAL)
-    total_assets: Decimal
-    total_assets_original: Decimal = Decimal("0.0")
-    current_assets: Decimal
-    current_assets_original: Decimal = Decimal("0.0")
-    liquid_assets: Decimal
-    liquid_assets_original: Decimal = Decimal("0.0")
-    inventory: Decimal = Decimal("0.0")
-    inventory_original: Decimal = Decimal("0.0")
-    accounts_receivable: Decimal = Decimal("0.0")
-    accounts_receivable_original: Decimal = Decimal("0.0")
-    other_current_assets: Decimal = Decimal("0.0")
-    other_current_assets_original: Decimal = Decimal("0.0")
-    non_current_assets: Decimal
-    non_current_assets_original: Decimal = Decimal("0.0")
-    intangible_assets: Decimal = Decimal("0.0")
-    intangible_assets_original: Decimal = Decimal("0.0")
-    tangible_assets: Decimal = Decimal("0.0")
-    tangible_assets_original: Decimal = Decimal("0.0")
-    financial_assets: Decimal = Decimal("0.0")
-    financial_assets_original: Decimal = Decimal("0.0")
-    other_noncurrent_assets: Decimal = Decimal("0.0")
-    other_noncurrent_assets_original: Decimal = Decimal("0.0")
+    total_assets: float
+    total_assets_original: float = 0.0
+    current_assets: float
+    current_assets_original: float = 0.0
+    liquid_assets: float
+    liquid_assets_original: float = 0.0
+    inventory: float = 0.0
+    inventory_original: float = 0.0
+    accounts_receivable: float = 0.0
+    accounts_receivable_original: float = 0.0
+    other_current_assets: float = 0.0
+    other_current_assets_original: float = 0.0
+    non_current_assets: float
+    non_current_assets_original: float = 0.0
+    intangible_assets: float = 0.0
+    intangible_assets_original: float = 0.0
+    tangible_assets: float = 0.0
+    tangible_assets_original: float = 0.0
+    financial_assets: float = 0.0
+    financial_assets_original: float = 0.0
+    other_noncurrent_assets: float = 0.0
+    other_noncurrent_assets_original: float = 0.0
     
     # Liabilities & Equity (USD vs ORIGINAL)
-    total_liabilities_and_equity: Decimal
-    total_liabilities_and_equity_original: Decimal = Decimal("0.0")
-    equity: Decimal
-    equity_original: Decimal = Decimal("0.0")
-    share_capital: Decimal = Decimal("0.0")
-    share_capital_original: Decimal = Decimal("0.0")
-    reserves: Decimal = Decimal("0.0")
-    reserves_original: Decimal = Decimal("0.0")
-    retained_earnings_prior: Decimal = Decimal("0.0")
-    retained_earnings_prior_original: Decimal = Decimal("0.0")
-    current_year_earnings: Decimal = Decimal("0.0")
-    current_year_earnings_original: Decimal = Decimal("0.0")
-    non_current_liabilities: Decimal
-    non_current_liabilities_original: Decimal = Decimal("0.0")
-    long_term_debt: Decimal = Decimal("0.0")
-    long_term_debt_original: Decimal = Decimal("0.0")
-    long_term_provisions: Decimal = Decimal("0.0")
-    long_term_provisions_original: Decimal = Decimal("0.0")
-    current_liabilities: Decimal
-    current_liabilities_original: Decimal = Decimal("0.0")
-    short_term_debt: Decimal = Decimal("0.0")
-    short_term_debt_original: Decimal = Decimal("0.0")
-    accounts_payable: Decimal = Decimal("0.0")
-    accounts_payable_original: Decimal = Decimal("0.0")
-    tax_and_social_liabilities: Decimal = Decimal("0.0")
-    tax_and_social_liabilities_original: Decimal = Decimal("0.0")
-    other_current_liabilities: Decimal = Decimal("0.0")
-    other_current_liabilities_original: Decimal = Decimal("0.0")
+    total_liabilities_and_equity: float
+    total_liabilities_and_equity_original: float = 0.0
+    equity: float
+    equity_original: float = 0.0
+    share_capital: float = 0.0
+    share_capital_original: float = 0.0
+    reserves: float = 0.0
+    reserves_original: float = 0.0
+    retained_earnings_prior: float = 0.0
+    retained_earnings_prior_original: float = 0.0
+    current_year_earnings: float = 0.0
+    current_year_earnings_original: float = 0.0
+    non_current_liabilities: float
+    non_current_liabilities_original: float = 0.0
+    long_term_debt: float = 0.0
+    long_term_debt_original: float = 0.0
+    long_term_provisions: float = 0.0
+    long_term_provisions_original: float = 0.0
+    current_liabilities: float
+    current_liabilities_original: float = 0.0
+    short_term_debt: float = 0.0
+    short_term_debt_original: float = 0.0
+    accounts_payable: float = 0.0
+    accounts_payable_original: float = 0.0
+    tax_and_social_liabilities: float = 0.0
+    tax_and_social_liabilities_original: float = 0.0
+    other_current_liabilities: float = 0.0
+    other_current_liabilities_original: float = 0.0
     
     # Income Statement (USD vs ORIGINAL)
-    revenue: Decimal
-    revenue_original: Decimal = Decimal("0.0")
-    sold_production: Decimal = Decimal("0.0")
-    sold_production_original: Decimal = Decimal("0.0")
-    other_operating_revenue: Decimal = Decimal("0.0")
-    other_operating_revenue_original: Decimal = Decimal("0.0")
-    cost_of_goods_sold: Decimal = Decimal("0.0")
-    cost_of_goods_sold_original: Decimal = Decimal("0.0")
-    external_expenses: Decimal = Decimal("0.0")
-    external_expenses_original: Decimal = Decimal("0.0")
-    personnel_expenses: Decimal = Decimal("0.0")
-    personnel_expenses_original: Decimal = Decimal("0.0")
-    taxes_and_duties: Decimal = Decimal("0.0")
-    taxes_and_duties_original: Decimal = Decimal("0.0")
-    depreciation_and_amortization: Decimal = Decimal("0.0")
-    depreciation_and_amortization_original: Decimal = Decimal("0.0")
-    other_operating_expenses: Decimal = Decimal("0.0")
-    other_operating_expenses_original: Decimal = Decimal("0.0")
-    operating_income: Decimal = Decimal("0.0")
-    operating_income_original: Decimal = Decimal("0.0")
-    financial_revenue: Decimal = Decimal("0.0")
-    financial_revenue_original: Decimal = Decimal("0.0")
-    financial_expenses: Decimal = Decimal("0.0")
-    financial_expenses_original: Decimal = Decimal("0.0")
-    financial_income: Decimal = Decimal("0.0")
-    financial_income_original: Decimal = Decimal("0.0")
-    income_before_tax: Decimal = Decimal("0.0")
-    income_before_tax_original: Decimal = Decimal("0.0")
-    extraordinary_income: Decimal = Decimal("0.0")
-    extraordinary_income_original: Decimal = Decimal("0.0")
-    income_tax: Decimal = Decimal("0.0")
-    income_tax_original: Decimal = Decimal("0.0")
-    net_income: Decimal
-    net_income_original: Decimal = Decimal("0.0")
-    ebitda: Decimal
-    ebitda_original: Decimal = Decimal("0.0")
+    revenue: float
+    revenue_original: float = 0.0
+    sold_production: float = 0.0
+    sold_production_original: float = 0.0
+    other_operating_revenue: float = 0.0
+    other_operating_revenue_original: float = 0.0
+    cost_of_goods_sold: float = 0.0
+    cost_of_goods_sold_original: float = 0.0
+    external_expenses: float = 0.0
+    external_expenses_original: float = 0.0
+    personnel_expenses: float = 0.0
+    personnel_expenses_original: float = 0.0
+    taxes_and_duties: float = 0.0
+    taxes_and_duties_original: float = 0.0
+    depreciation_and_amortization: float = 0.0
+    depreciation_and_amortization_original: float = 0.0
+    other_operating_expenses: float = 0.0
+    other_operating_expenses_original: float = 0.0
+    operating_income: float = 0.0
+    operating_income_original: float = 0.0
+    financial_revenue: float = 0.0
+    financial_revenue_original: float = 0.0
+    financial_expenses: float = 0.0
+    financial_expenses_original: float = 0.0
+    financial_income: float = 0.0
+    financial_income_original: float = 0.0
+    income_before_tax: float = 0.0
+    income_before_tax_original: float = 0.0
+    extraordinary_income: float = 0.0
+    extraordinary_income_original: float = 0.0
+    income_tax: float = 0.0
+    income_tax_original: float = 0.0
+    net_income: float
+    net_income_original: float = 0.0
+    ebitda: float
+    ebitda_original: float = 0.0
     
     # Cash Flows (USD vs ORIGINAL)
-    operating_cash_flow: Decimal
-    operating_cash_flow_original: Decimal = Decimal("0.0")
-    investing_cash_flow: Decimal = Decimal("0.0")
-    investing_cash_flow_original: Decimal = Decimal("0.0")
-    financing_cash_flow: Decimal = Decimal("0.0")
-    financing_cash_flow_original: Decimal = Decimal("0.0")
-    change_in_cash: Decimal = Decimal("0.0")
-    change_in_cash_original: Decimal = Decimal("0.0")
-    beginning_cash: Decimal = Decimal("0.0")
-    beginning_cash_original: Decimal = Decimal("0.0")
-    ending_cash: Decimal = Decimal("0.0")
-    ending_cash_original: Decimal = Decimal("0.0")
-    
+    operating_cash_flow: float
+    operating_cash_flow_original: float = 0.0
+    investing_cash_flow: float = 0.0
+    investing_cash_flow_original: float = 0.0
+    financing_cash_flow: float = 0.0
+    financing_cash_flow_original: float = 0.0
+    change_in_cash: float = 0.0
+    change_in_cash_original: float = 0.0
+    beginning_cash: float = 0.0
+    beginning_cash_original: float = 0.0
+    ending_cash: float = 0.0
+    ending_cash_original: float = 0.0
+
     adjustments_count: int = 0
+    adjustments: List[AdjustmentOut] = []
     normalized_json: str
+
+    # Mission 5 — Validation cohérence bilan
+    coherence: Optional[BalanceSheetCoherence] = None
+
+    # Mission 6 — Certification champs pour ratios
+    ratio_readiness: Optional[RatioReadiness] = None
 
     @model_validator(mode='after')
     def check_accounting_equation(self):
         liabilities_and_equity = self.equity + self.non_current_liabilities + self.current_liabilities
         diff = abs(self.total_assets - liabilities_and_equity)
-        if diff > Decimal("1.0"):
+        if diff > 1.0:
             raise ValueError(
                 f"Accounting equation violated: Total Assets ({self.total_assets}) "
                 f"!= Equity + Liabilities ({liabilities_and_equity})"
