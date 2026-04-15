@@ -41,20 +41,26 @@ async def api_normalize_case(case_id: UUID, db: AsyncSession = Depends(get_db), 
 
 @router.get("/{case_id}/normalized-financials", response_model=List[FinancialStatementNormalizedSchema])
 async def get_normalized_financials(case_id: str, db: AsyncSession = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    """Returns normalized financial statements for a case, enriched with coherence and ratio readiness."""
+    """Returns normalized financial statements for a case, enriched with coherence and ratio readiness.
+    
+    _original fields are reconstructed from FinancialStatementRaw (source MAD values)
+    since the normalized table only stores USD-converted values.
+    """
     from app.db.models import FinancialStatementNormalized, FinancialStatementRaw
     from app.schemas.normalization_schema import BalanceSheetCoherence, RatioReadiness, AdjustmentOut
 
-    raw_ids = await db.execute(
-        select(FinancialStatementRaw.id).where(FinancialStatementRaw.case_id == uuid_mod.UUID(case_id))
+    # Fetch raw statements indexed by id for O(1) lookup
+    raw_result = await db.execute(
+        select(FinancialStatementRaw).where(FinancialStatementRaw.case_id == uuid_mod.UUID(case_id))
     )
-    raw_id_list = [r[0] for r in raw_ids.fetchall()]
-    if not raw_id_list:
+    raw_stmts = {r.id: r for r in raw_result.scalars().all()}
+
+    if not raw_stmts:
         return []
 
     result = await db.execute(
         select(FinancialStatementNormalized).where(
-            FinancialStatementNormalized.raw_statement_id.in_(raw_id_list)
+            FinancialStatementNormalized.raw_statement_id.in_(list(raw_stmts.keys()))
         )
     )
     statements = result.scalars().all()
@@ -63,6 +69,56 @@ async def get_normalized_financials(case_id: str, db: AsyncSession = Depends(get
     enriched = []
     for stmt in statements:
         schema = FinancialStatementNormalizedSchema.model_validate(stmt)
+
+        # ── Reconstruction des valeurs _original depuis FinancialStatementRaw ──
+        # La table normalized ne stocke que les USD. Les valeurs MAD viennent du raw.
+        raw = raw_stmts.get(stmt.raw_statement_id)
+        if raw:
+            schema.currency_original = raw.currency_original or "MAD"
+            schema.total_assets_original = float(raw.total_assets or 0)
+            schema.current_assets_original = float(raw.current_assets or 0)
+            schema.liquid_assets_original = float(raw.liquid_assets or 0)
+            schema.inventory_original = float(raw.inventory or 0)
+            schema.accounts_receivable_original = float(raw.accounts_receivable or 0)
+            schema.other_current_assets_original = float(raw.other_current_assets or 0)
+            schema.non_current_assets_original = float(raw.non_current_assets or 0)
+            schema.intangible_assets_original = float(raw.intangible_assets or 0)
+            schema.tangible_assets_original = float(raw.tangible_assets or 0)
+            schema.financial_assets_original = float(raw.financial_assets or 0)
+            schema.other_noncurrent_assets_original = float(getattr(raw, 'other_noncurrent_assets', None) or 0)
+            schema.total_liabilities_and_equity_original = float(raw.total_liabilities_and_equity or 0)
+            schema.equity_original = float(raw.equity or 0)
+            schema.share_capital_original = float(raw.share_capital or 0)
+            schema.reserves_original = float(raw.reserves or 0)
+            schema.retained_earnings_prior_original = float(raw.retained_earnings_prior or 0)
+            schema.current_year_earnings_original = float(raw.current_year_earnings or 0)
+            schema.non_current_liabilities_original = float(raw.non_current_liabilities or 0)
+            schema.long_term_debt_original = float(raw.long_term_debt or 0)
+            schema.long_term_provisions_original = float(raw.long_term_provisions or 0)
+            schema.current_liabilities_original = float(raw.current_liabilities or 0)
+            schema.short_term_debt_original = float(raw.short_term_debt or 0)
+            schema.accounts_payable_original = float(raw.accounts_payable or 0)
+            schema.tax_and_social_liabilities_original = float(raw.tax_and_social_liabilities or 0)
+            schema.other_current_liabilities_original = float(raw.other_current_liabilities or 0)
+            schema.revenue_original = float(raw.revenue or 0)
+            schema.sold_production_original = float(raw.sold_production or 0)
+            schema.other_operating_revenue_original = float(raw.other_operating_revenue or 0)
+            schema.cost_of_goods_sold_original = float(raw.cost_of_goods_sold or 0)
+            schema.personnel_expenses_original = float(raw.personnel_expenses or 0)
+            schema.depreciation_and_amortization_original = float(raw.depreciation_and_amortization or 0)
+            schema.financial_revenue_original = float(raw.financial_revenue or 0)
+            schema.financial_expenses_original = float(raw.financial_expenses or 0)
+            schema.income_before_tax_original = float(raw.income_before_tax or 0)
+            schema.operating_income_original = float(raw.operating_income or 0)
+            schema.net_income_original = float(raw.net_income or 0)
+            schema.ebitda_original = float(raw.ebitda or 0)
+            schema.operating_cash_flow_original = float(getattr(raw, 'operating_cash_flow', None) or 0)
+            schema.investing_cash_flow_original = float(getattr(raw, 'investing_cash_flow', None) or 0)
+            schema.financing_cash_flow_original = float(getattr(raw, 'financing_cash_flow', None) or 0)
+            schema.change_in_cash_original = float(getattr(raw, 'change_in_cash', None) or 0)
+            schema.beginning_cash_original = float(getattr(raw, 'beginning_cash', None) or 0)
+            schema.ending_cash_original = float(getattr(raw, 'ending_cash', None) or 0)
+            schema.capex_original = float(raw.capex or 0) if raw.capex else None
 
         # ── Mission 5 : Cohérence bilan ─────────────────────────────────
         total_a = float(schema.total_assets or 0)
