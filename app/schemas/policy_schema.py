@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from decimal import Decimal
-from typing import Optional, Any
+from typing import Optional, Any, Union
 
 class GateRequirementsSchema(BaseModel):
     required_doc_types: list[str] = ["FINANCIAL_STATEMENTS", "AUDITOR_OPINION"]
@@ -105,7 +105,7 @@ class PolicyConfigurationSchema(BaseModel):
     max_score_if_missing_pillar: str = "MODERATE" # Default mapped fallback RiskClass string
     
     # Benchmarks & Comparisons
-    sector_benchmarks: dict[str, dict[str, dict[str, Decimal | str]]] = Field(
+    sector_benchmarks: dict[str, dict[str, dict[str, Union[Decimal, float, str]]]] = Field(
         default_factory=lambda: {
             "BTP": {
                 "debt_to_equity": {"max_tolerated": 4.0, "name": "Debt to Equity (D/E)"},

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from decimal import Decimal
 from decimal import Decimal
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -53,7 +53,7 @@ class RatioSetSchema(BaseModel):
     negative_equity: Optional[int] = None
     negative_operating_cash_flow: Optional[int] = None
     
-    coherence_alerts_json: Optional[List[Dict[str, Any]] | Dict[str, Any] | list | dict] = Field(default_factory=list)
+    coherence_alerts_json: Union[List[Dict[str, Any]], Dict[str, Any], list, dict, None] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
     # Financial Intelligence Phase 2
@@ -92,7 +92,7 @@ class RatioValue(BaseModel):
     status: str = "GREEN"  # GREEN|YELLOW|ORANGE|RED
     unit: str = "x"
     variation_pct: float = 0.0
-    analyst_note: str | None = None
+    analyst_note: Optional[str] = None
 
 
 class LiquidityGroup(BaseModel):
@@ -134,8 +134,8 @@ class ZScoreGroup(BaseModel):
 class RatioSetEnrichedOut(BaseModel):
     id: str
     case_id: str
-    sector_code: str | None = None
-    coherence_status: str | None = None
+    sector_code: Optional[str] = None
+    coherence_status: Optional[str] = None
     liquidity: LiquidityGroup
     solvency: SolvencyGroup
     profitability: ProfitabilityGroup
