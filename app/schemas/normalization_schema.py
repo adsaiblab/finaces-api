@@ -309,6 +309,7 @@ class NormalizedStatementUIResponse(NormalizedStatementDBInsert):
     change_in_cash_original: float = 0.0
     beginning_cash_original: float = 0.0
     ending_cash_original: float = 0.0
+    free_cash_flow_original: float = 0.0
 
     adjustments: List[AdjustmentOut] = []
 
