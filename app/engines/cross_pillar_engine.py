@@ -117,5 +117,42 @@ def generate_cross_pillar_patterns(
                 severity=severity,
                 description=msg
             ))
+
+    # ── 5. NEGATIVE_EQUITY (CRITICAL) ──────────────────────────────────
+    # Technical insolvency according to equity flag
+    if latest_ratio.negative_equity == 1:
+        alerts.append(AlertSchema(
+            pattern="NEGATIVE_EQUITY",
+            severity="CRITICAL",
+            description="Insolvabilité technique : Les capitaux propres sont négatifs, signalant une faillite technique ou légale nécessitant une recapitalisation urgente."
+        ))
+
+    # ── 6. EARNINGS_QUALITY (CRITICAL) ─────────────────────────────────
+    # Profit/Cash Disconnection (Enron-style)
+    # Double Barrier: Net Margin >= 0.5% (Materiality) AND CFO < 0
+    nm = latest_ratio.net_margin
+    cfo_neg = latest_ratio.negative_operating_cash_flow
+    if nm is not None and nm >= Decimal("0.005") and cfo_neg == 1:
+        # Calculate Cash Burn Ratio if flow is available
+        burn_ratio_mention = ""
+        if latest_norm and latest_norm.operating_cash_flow and latest_norm.net_income and latest_norm.net_income > 0:
+            burn_ratio = abs(latest_norm.operating_cash_flow / latest_norm.net_income)
+            burn_ratio_mention = f" Pour chaque 1 MAD de bénéfice affiché, l'entreprise a réellement décaissé {burn_ratio:.2f} MAD de cash opérationnel."
+
+        alerts.append(AlertSchema(
+            pattern="EARNINGS_QUALITY",
+            severity="CRITICAL",
+            description="Divergence de cash : L'entreprise affiche un bénéfice significatif mais détruit sa trésorerie opérationnelle." + burn_ratio_mention
+        ))
+
+    # ── 7. MATURITY_MISMATCH (WARNING) ─────────────────────────────────
+    # Structural imbalance: Negative Working Capital (FDR)
+    wc = latest_ratio.working_capital
+    if wc is not None and wc < 0:
+        alerts.append(AlertSchema(
+            pattern="MATURITY_MISMATCH",
+            severity="WARNING",
+            description="Déséquilibre structurel : Le fonds de roulement (FDR) est négatif, indiquant que des actifs lourds sont financés par de la dette court terme (risque de transformation)."
+        ))
                 
     return alerts
