@@ -13,13 +13,11 @@ def generate_cross_pillar_patterns(
     """
     Pure Function detecting complex cross-period and cross-pillar financial patterns.
     Follows P3-CROSS-PILLAR rules for FinaCES.
-    All messages are in English for consistency with the financial module.
     """
     alerts = []
     if not ratio_sets or not normalized_statements:
         return alerts
         
-    # Sort by year to ensure correct trend analysis
     ratio_sets.sort(key=lambda x: x.fiscal_year)
     normalized_statements.sort(key=lambda x: x.fiscal_year)
     
@@ -38,9 +36,10 @@ def generate_cross_pillar_patterns(
         alerts.append(AlertSchema(
             pattern="FALSE_LIQUIDITY",
             severity="WARNING",
-            description="Illusory Liquidity: High current ratio masked by low immediate liquidity (funds blocked in inventory or slow receivables).",
-            affected_ratios=["Current Ratio", "Cash Ratio", "Inventory Turnover"],
-            suggested_action="Perform an aging analysis of accounts receivable and audit inventory obsolescence."
+            description="High risk of Illusory Liquidity detected.",
+            note="The current ratio suggests stability, but cash is severely restricted. Large portions of your working capital are likely trapped in slow-moving inventory or overdue receivables.",
+            affected_ratios=["Current Ratio", "Cash Ratio", "DIO"],
+            suggested_action="Perform an aging analysis of accounts receivable and audit inventory for obsolescence."
         ))
         
     # ── 2. HIDDEN_OVERLEVERAGE (CRITICAL) ─────────────────────────────
@@ -50,9 +49,10 @@ def generate_cross_pillar_patterns(
         alerts.append(AlertSchema(
             pattern="HIDDEN_OVERLEVERAGE",
             severity="CRITICAL",
-            description="Critical Leverage: Return on Equity (ROE) is artificially inflated by excessive debt levels.",
-            affected_ratios=["ROE", "Gearing", "Debt-to-Equity"],
-            suggested_action="Review debt structure and consider equity injection to stabilize the solvency profile."
+            description="Critical Debt-Driven ROE Inflation.",
+            note="The impressive Return on Equity is currently driven by excessive debt rather than operational efficiency. This high gearing profile creates a 'tower of cards' vulnerability to interest rate shifts.",
+            affected_ratios=["ROE", "Gearing", "Interest Coverage"],
+            suggested_action="Review debt structure immediately and consider equity injection to de-risk the balance sheet."
         ))
         
     # ── 3. TOXIC_WCR (CRITICAL) ───────────────────────────────────────
@@ -62,51 +62,46 @@ def generate_cross_pillar_patterns(
         alerts.append(AlertSchema(
             pattern="TOXIC_WCR",
             severity="CRITICAL",
-            description="Operational Asphyxiation: WCR weight (>30% Revenue) is consuming all resources and destroying operating cash flow.",
+            description="Operational Cash Asphyxiation.",
+            note="WCR weight (>30% Revenue) is consuming all operational resources. The company is actively destroying cash flow to finance its daily operations, signaling imminent liquidity distress.",
             affected_ratios=["WCR % Revenue", "Operating Cash Flow"],
-            suggested_action="Optimize the cash conversion cycle and renegotiate supplier payment terms."
+            suggested_action="Optimize the cash conversion cycle and negotiate stricter terms for receivables collection."
         ))
         
     # ── 4. SCISSORS_EFFECT (Graded) ───────────────────────────────────
     if len(ratio_sets) >= 2:
-        first_ratio = ratio_sets[0]
-        first_norm = next((n for n in normalized_statements if n.fiscal_year == first_ratio.fiscal_year), None)
+        first_ratio, last_ratio = ratio_sets[0], ratio_sets[-1]
+        p1_active, p2_active = False, False
         
-        proxy1_active = False
-        proxy2_active = False
-        
-        eb_latest, eb_first = latest_ratio.ebitda_margin, first_ratio.ebitda_margin
-        bfr_latest, bfr_first = latest_ratio.working_capital_requirement_pct_revenue, first_ratio.working_capital_requirement_pct_revenue
+        eb_latest, eb_first = last_ratio.ebitda_margin, first_ratio.ebitda_margin
+        bfr_latest, bfr_first = last_ratio.working_capital_requirement_pct_revenue, first_ratio.working_capital_requirement_pct_revenue
         
         if eb_latest is not None and eb_first is not None and bfr_latest is not None and bfr_first is not None:
             if eb_latest < (eb_first - th.scissors_margin_drop) and bfr_latest > (bfr_first + th.scissors_wcr_rise):
-                proxy1_active = True
+                p1_active = True
                 
-        if latest_norm and first_norm:
-            def _get_fixed_costs(n):
-                return (Decimal(str(n.personnel_expenses)) + Decimal(str(n.external_expenses)) + 
-                        Decimal(str(n.taxes_and_duties)) + Decimal(str(n.depreciation_and_amortization)))
-            fc_latest, fc_first = _get_fixed_costs(latest_norm), _get_fixed_costs(first_norm)
-            d_rev_first, d_rev_latest = Decimal(str(first_norm.revenue)), Decimal(str(latest_norm.revenue))
-            if d_rev_first > 0 and d_rev_latest < (d_rev_first * Decimal("0.95")):
-                if fc_latest >= (fc_first * Decimal("0.98")):
-                    proxy2_active = True
+        def _get_fixed_costs(n):
+            return (Decimal(str(n.personnel_expenses)) + Decimal(str(n.external_expenses)) + 
+                    Decimal(str(n.taxes_and_duties)) + Decimal(str(n.depreciation_and_amortization)))
+        fc_latest, fc_first = _get_fixed_costs(latest_norm), _get_fixed_costs(normalized_statements[0])
+        rev_latest, rev_first = Decimal(str(latest_norm.revenue)), Decimal(str(normalized_statements[0].revenue))
+        if rev_first > 0 and rev_latest < (rev_first * Decimal("0.95")):
+            if fc_latest >= (fc_first * Decimal("0.98")):
+                p2_active = True
         
-        if proxy1_active or proxy2_active:
-            severity = "CRITICAL" if (proxy1_active and proxy2_active) else "WARNING"
-            if proxy1_active and proxy2_active:
-                msg = "Double Scissors Confirmed: Simultaneous degradation of margins, WCR weight, and fixed cost structure."
-            elif proxy1_active:
-                msg = "Margin/WCR Scissors: Declining profitability coupled with rising working capital financing needs."
-            else:
-                msg = "Revenue/Fixed Costs Scissors: Sharp decline in activity without proportional reduction in structural costs."
+        if p1_active or p2_active:
+            severity = "CRITICAL" if (p1_active and p2_active) else "WARNING"
+            headline = "Double Scissors Effect Confirmed." if (p1_active and p2_active) else "Severe Scissors Effect Pattern Detected."
+            analysis = "Simultaneous collapse of operating margins and sharp rise in working capital finance needs." if p1_active else "Sharp revenue decline coupled with a rigid, non-reducing fixed cost structure."
+            if p1_active and p2_active: analysis = "Critical divergence where revenue/margins fall while costs and WCR rise simultaneously."
                 
             alerts.append(AlertSchema(
                 pattern="SCISSORS_EFFECT",
                 severity=severity,
-                description=msg,
-                affected_ratios=["EBITDA Margin", "WCR % Revenue", "Revenue"],
-                suggested_action="Implement an emergency cost-reduction plan and pivot to higher-margin activities."
+                description=headline,
+                note=analysis,
+                affected_ratios=["EBITDA Margin", "Revenue", "WCR % Revenue"],
+                suggested_action="Implement urgent structural cost reductions and pivot toward high-margin revenue streams."
             ))
 
     # ── 5. NEGATIVE_EQUITY (CRITICAL) ──────────────────────────────────
@@ -114,9 +109,10 @@ def generate_cross_pillar_patterns(
         alerts.append(AlertSchema(
             pattern="NEGATIVE_EQUITY",
             severity="CRITICAL",
-            description="Technical Insolvency: Total equity is negative, signaling technical or legal bankruptcy requiring urgent recapitalization.",
-            affected_ratios=["Total Equity", "Financial Autonomy"],
-            suggested_action="Immediate mandatory recapitalization required to restore the legal existence of the entity."
+            description="Technical & Legal Insolvency.",
+            note="Total equity has fallen below zero. The entity is technically bankrupt and, in most jurisdictions, requires immediate legal action or mandatory recapitalization to continue operating.",
+            affected_ratios=["Equity", "Financial Autonomy"],
+            suggested_action="Initiate mandatory recapitalization and legal review of solvency status."
         ))
 
     # ── 6. EARNINGS_QUALITY (CRITICAL) ─────────────────────────────────
@@ -125,14 +121,15 @@ def generate_cross_pillar_patterns(
         burn_ratio_mention = ""
         if latest_norm and latest_norm.operating_cash_flow and latest_norm.net_income and latest_norm.net_income > 0:
             burn_ratio = abs(latest_norm.operating_cash_flow / latest_norm.net_income)
-            burn_ratio_mention = f" Severity confirmed: for every 1 MAD of accounting profit reported, the company actually burned {burn_ratio:.2f} MAD in operating cash."
+            burn_ratio_mention = f" For every 1 MAD of accounting profit, the company burned {burn_ratio:.2f} MAD in actual cash."
 
         alerts.append(AlertSchema(
             pattern="EARNINGS_QUALITY",
             severity="CRITICAL",
-            description="Cash Divergence: The company reports significant accounting profits but is destroying its operating cash (Enron-style alert)." + burn_ratio_mention,
+            description="Major Profit/Cash Flow Divergence.",
+            note=f"High-risk 'Enron' pattern: The company reports healthy accounting profits but is destroying cash at an operational level.{burn_ratio_mention}",
             affected_ratios=["Net Margin", "Operating Cash Flow"],
-            suggested_action="Audit revenue recognition policies and verify lead-to-cash cycle efficiency."
+            suggested_action="Audit revenue recognition policies and investigate potential accrual manipulation."
         ))
 
     # ── 7. MATURITY_MISMATCH (WARNING) ─────────────────────────────────
@@ -141,9 +138,10 @@ def generate_cross_pillar_patterns(
         alerts.append(AlertSchema(
             pattern="MATURITY_MISMATCH",
             severity="WARNING",
-            description="Structural Imbalance: Working Capital is negative, indicating that long-term assets are being financed by short-term debt (transformation risk).",
+            description="Structural Financing Imbalance.",
+            note="Working capital is negative, meaning long-term assets are being financed by short-term bank debt. This mismatch creates extreme vulnerability to sudden credit line cancellations.",
             affected_ratios=["Working Capital", "Gearing"],
-            suggested_action="Consolidate short-term debt into medium/long-term financing to secure the top-of-balance-sheet balance."
+            suggested_action="Secure long-term financing to stabilize the balance sheet and reduce transformation risk."
         ))
                 
     return alerts
