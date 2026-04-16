@@ -84,6 +84,7 @@ class RatioSetSchema(BaseModel):
     cash_flow_capacity_variation_pct: Optional[float] = None
     cash_flow_capacity_margin_pct_variation_pct: Optional[float] = None
     debt_repayment_years_variation_pct: Optional[float] = None
+    z_score_altman_variation_pct: Optional[float] = None
 
     
     negative_equity: Optional[int] = None
