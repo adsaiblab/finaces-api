@@ -69,7 +69,7 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
             ratio_sets_generated.append(ratio_set_schema)
             
             # 5. Asynchronous Persistence of the RatioSetSchema
-            exclude_keys = {'id', 'created_at'} | {k for k in ratio_set_schema.model_fields.keys() if k.endswith('_variation_pct')}
+            exclude_keys = {'id', 'created_at', 'z_score_breakdown'} | {k for k in ratio_set_schema.model_fields.keys() if k.endswith('_variation_pct')}
             
             existing_stmt = select(RatioSet).where(
                 RatioSet.normalized_statement_id == ratio_set_schema.normalized_statement_id,
@@ -83,7 +83,7 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
                     setattr(existing_ratio_set, key, value)
                 db_entities.append(existing_ratio_set)
             else:
-                exclude_keys_insert = {'id'} | {k for k in ratio_set_schema.model_fields.keys() if k.endswith('_variation_pct')}
+                exclude_keys_insert = {'id', 'z_score_breakdown'} | {k for k in ratio_set_schema.model_fields.keys() if k.endswith('_variation_pct')}
                 new_ratio_set = RatioSet(**ratio_set_schema.model_dump(exclude=exclude_keys_insert))
                 db.add(new_ratio_set)
                 db_entities.append(new_ratio_set)
