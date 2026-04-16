@@ -66,14 +66,16 @@ async def process_normalization(case_id: UUID, db: AsyncSession) -> List[Financi
         existing_result = await db.execute(existing_stmt)
         existing_norm = existing_result.scalars().first()
         
-        # Dynamically drop columns that don't exist in the DB schema
-        dumped_data = norm_schema.model_dump(exclude={'id', 'other_noncurrent_assets', 'other_noncurrent_assets_original'})
-        valid_data = {k: v for k, v in dumped_data.items() if not k.endswith("_original")}
+        # Dynamically drop ANY column that doesn't exist in the actual PostgreSQL DB schema
+        valid_db_columns = FinancialStatementNormalized.__table__.columns.keys()
+        dumped_data = norm_schema.model_dump(exclude={'id'})
+        valid_data = {k: v for k, v in dumped_data.items() if k in valid_db_columns}
 
         if existing_norm:
             # Update fields safely through dump bypass mapping explicitly (excluding internal attributes)
             for key, value in valid_data.items():
-                setattr(existing_norm, key, value)
+                if key != 'id': # double safety
+                    setattr(existing_norm, key, value)
             db_entities.append(existing_norm)
         else:
             # Create a brand new ORM entry
