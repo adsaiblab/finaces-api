@@ -69,6 +69,8 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
             ratio_sets_generated.append(ratio_set_schema)
             
             # 5. Asynchronous Persistence of the RatioSetSchema
+            exclude_keys = {'id', 'created_at'} | {k for k in ratio_set_schema.model_fields.keys() if k.endswith('_variation_pct')}
+            
             existing_stmt = select(RatioSet).where(
                 RatioSet.normalized_statement_id == ratio_set_schema.normalized_statement_id,
                 RatioSet.fiscal_year == ratio_set_schema.fiscal_year
@@ -77,11 +79,12 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
             existing_ratio_set = existing_result.scalars().first()
             
             if existing_ratio_set:
-                for key, value in ratio_set_schema.model_dump(exclude={'id', 'created_at'}).items():
+                for key, value in ratio_set_schema.model_dump(exclude=exclude_keys).items():
                     setattr(existing_ratio_set, key, value)
                 db_entities.append(existing_ratio_set)
             else:
-                new_ratio_set = RatioSet(**ratio_set_schema.model_dump(exclude={'id'}))
+                exclude_keys_insert = {'id'} | {k for k in ratio_set_schema.model_fields.keys() if k.endswith('_variation_pct')}
+                new_ratio_set = RatioSet(**ratio_set_schema.model_dump(exclude=exclude_keys_insert))
                 db.add(new_ratio_set)
                 db_entities.append(new_ratio_set)
                 
@@ -105,7 +108,17 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
         
     logger.info(f"Async ratio computation committed successfully for case {case_id} ({len(ratio_sets_generated)} years processed)")
 
-    # 6. Cross-pillar pattern detection (needs all years — runs AFTER all individual computations)
+    # 6. Compute Variations (P3)
+    from app.engines.ratio_engine import compute_variations
+    ratio_sets_generated.sort(key=lambda x: x.fiscal_year)
+    for i in range(1, len(ratio_sets_generated)):
+        current = ratio_sets_generated[i]
+        previous = ratio_sets_generated[i-1]
+        variations = compute_variations(current, previous)
+        for k, v in variations.items():
+            setattr(current, k, v)
+
+    # 7. Cross-pillar pattern detection (needs all years — runs AFTER all individual computations)
     from app.engines.ratio_engine import generate_cross_pillar_patterns
     cross_pillar_alerts = generate_cross_pillar_patterns(ratio_sets_generated, policy)
     if cross_pillar_alerts and ratio_sets_generated:

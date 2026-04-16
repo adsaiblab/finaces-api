@@ -60,6 +60,31 @@ class RatioSetSchema(BaseModel):
     cash_flow_capacity: Optional[Decimal] = None
     cash_flow_capacity_margin_pct: Optional[Decimal] = None
     debt_repayment_years: Optional[Decimal] = None
+
+    # Variations for Decimal fields
+    current_ratio_variation_pct: Optional[float] = None
+    quick_ratio_variation_pct: Optional[float] = None
+    cash_ratio_variation_pct: Optional[float] = None
+    working_capital_variation_pct: Optional[float] = None
+    debt_to_equity_variation_pct: Optional[float] = None
+    financial_autonomy_variation_pct: Optional[float] = None
+    gearing_variation_pct: Optional[float] = None
+    interest_coverage_variation_pct: Optional[float] = None
+    net_margin_variation_pct: Optional[float] = None
+    ebitda_margin_variation_pct: Optional[float] = None
+    operating_margin_variation_pct: Optional[float] = None
+    roa_variation_pct: Optional[float] = None
+    roe_variation_pct: Optional[float] = None
+    dso_days_variation_pct: Optional[float] = None
+    dpo_days_variation_pct: Optional[float] = None
+    dio_days_variation_pct: Optional[float] = None
+    cash_conversion_cycle_variation_pct: Optional[float] = None
+    working_capital_requirement_variation_pct: Optional[float] = None
+    working_capital_requirement_pct_revenue_variation_pct: Optional[float] = None
+    cash_flow_capacity_variation_pct: Optional[float] = None
+    cash_flow_capacity_margin_pct_variation_pct: Optional[float] = None
+    debt_repayment_years_variation_pct: Optional[float] = None
+
     
     negative_equity: Optional[int] = None
     negative_operating_cash_flow: Optional[int] = None

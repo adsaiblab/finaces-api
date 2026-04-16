@@ -42,6 +42,18 @@ def _safe_sum(*values: Optional[Decimal], strict: bool = False) -> Optional[Deci
 # ENGINE CALCULATION RATIOS (PURE FUNCTION)
 # ════════════════════════════════════════════════════════════════
 
+def compute_variations(current: RatioSetSchema, previous: RatioSetSchema) -> dict:
+    """Calcule (N - N-1) / |N-1| * 100 pour chaque champ numérique."""
+    variations = {}
+    for field in current.model_fields:
+        cur_val = getattr(current, field)
+        prev_val = getattr(previous, field)
+        if isinstance(cur_val, Decimal) and isinstance(prev_val, Decimal) and prev_val != 0:
+            variations[f"{field}_variation_pct"] = float(
+                ((cur_val - prev_val) / abs(prev_val)) * 100
+            )
+    return variations
+
 def compute_ratios(norm: NormalizedStatementUIResponse, case_id: uuid.UUID, policy: PolicyConfigurationSchema) -> RatioSetSchema:
     """
     Pure Function: Computes all financial ratios from a Pydantic normalized statement.
