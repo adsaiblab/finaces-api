@@ -6,7 +6,7 @@ from typing import List, Dict, Optional, Any
 from app.schemas.normalization_schema import (
     FinancialStatementRawSchema,
     AdjustmentSchema,
-    FinancialStatementNormalizedSchema,
+    NormalizedStatementUIResponse,
 )
 from app.exceptions.finaces_exceptions import (
     MissingFinancialDataError,
@@ -114,7 +114,7 @@ class AdjustedRawState:
 def calculate_normalized_aggregates(
     raw: FinancialStatementRawSchema, 
     adjustments: List[AdjustmentSchema]
-) -> FinancialStatementNormalizedSchema:
+) -> NormalizedStatementUIResponse:
     """
     Phase 3 — Pure normalization engine.
     READS pre-calculated aggregates from Raw (guaranteed by Phase 2).
@@ -323,7 +323,7 @@ def calculate_normalized_aggregates(
     })
 
     # ── 5. SCHÉMA FINAL ──
-    return FinancialStatementNormalizedSchema(
+    return NormalizedStatementUIResponse(
         id=uuid.uuid4(),
         raw_statement_id=raw.id,
         fiscal_year=raw.fiscal_year,

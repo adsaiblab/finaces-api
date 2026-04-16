@@ -150,7 +150,7 @@ class FinancialStatementRawSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class FinancialStatementNormalizedSchema(BaseModel):
+class NormalizedStatementDBInsert(BaseModel):
     """Schema representing the output of the normalization engine."""
     id: Optional[UUID] = Field(default=None, description="Will be generated if None")
     raw_statement_id: UUID
@@ -209,129 +209,11 @@ class FinancialStatementNormalizedSchema(BaseModel):
     
     # capex, backlog...
     capex: Optional[float] = None
-    capex_original: Optional[float] = None
     backlog_value: Optional[float] = None
-    backlog_value_original: Optional[float] = None
     is_consolidated: bool
-    
-    # Currency context for UI
-    currency_original: str = "MAD"
-    
-    # Assets (USD vs ORIGINAL)
-    total_assets: float
-    total_assets_original: float = 0.0
-    current_assets: float
-    current_assets_original: float = 0.0
-    liquid_assets: float
-    liquid_assets_original: float = 0.0
-    inventory: float = 0.0
-    inventory_original: float = 0.0
-    accounts_receivable: float = 0.0
-    accounts_receivable_original: float = 0.0
-    other_current_assets: float = 0.0
-    other_current_assets_original: float = 0.0
-    non_current_assets: float
-    non_current_assets_original: float = 0.0
-    intangible_assets: float = 0.0
-    intangible_assets_original: float = 0.0
-    tangible_assets: float = 0.0
-    tangible_assets_original: float = 0.0
-    financial_assets: float = 0.0
-    financial_assets_original: float = 0.0
-    other_noncurrent_assets: float = 0.0
-    other_noncurrent_assets_original: float = 0.0
-    
-    # Liabilities & Equity (USD vs ORIGINAL)
-    total_liabilities_and_equity: float
-    total_liabilities_and_equity_original: float = 0.0
-    equity: float
-    equity_original: float = 0.0
-    share_capital: float = 0.0
-    share_capital_original: float = 0.0
-    reserves: float = 0.0
-    reserves_original: float = 0.0
-    retained_earnings_prior: float = 0.0
-    retained_earnings_prior_original: float = 0.0
-    current_year_earnings: float = 0.0
-    current_year_earnings_original: float = 0.0
-    non_current_liabilities: float
-    non_current_liabilities_original: float = 0.0
-    long_term_debt: float = 0.0
-    long_term_debt_original: float = 0.0
-    long_term_provisions: float = 0.0
-    long_term_provisions_original: float = 0.0
-    current_liabilities: float
-    current_liabilities_original: float = 0.0
-    short_term_debt: float = 0.0
-    short_term_debt_original: float = 0.0
-    accounts_payable: float = 0.0
-    accounts_payable_original: float = 0.0
-    tax_and_social_liabilities: float = 0.0
-    tax_and_social_liabilities_original: float = 0.0
-    other_current_liabilities: float = 0.0
-    other_current_liabilities_original: float = 0.0
-    
-    # Income Statement (USD vs ORIGINAL)
-    revenue: float
-    revenue_original: float = 0.0
-    sold_production: float = 0.0
-    sold_production_original: float = 0.0
-    other_operating_revenue: float = 0.0
-    other_operating_revenue_original: float = 0.0
-    cost_of_goods_sold: float = 0.0
-    cost_of_goods_sold_original: float = 0.0
-    external_expenses: float = 0.0
-    external_expenses_original: float = 0.0
-    personnel_expenses: float = 0.0
-    personnel_expenses_original: float = 0.0
-    taxes_and_duties: float = 0.0
-    taxes_and_duties_original: float = 0.0
-    depreciation_and_amortization: float = 0.0
-    depreciation_and_amortization_original: float = 0.0
-    other_operating_expenses: float = 0.0
-    other_operating_expenses_original: float = 0.0
-    operating_income: float = 0.0
-    operating_income_original: float = 0.0
-    financial_revenue: float = 0.0
-    financial_revenue_original: float = 0.0
-    financial_expenses: float = 0.0
-    financial_expenses_original: float = 0.0
-    financial_income: float = 0.0
-    financial_income_original: float = 0.0
-    income_before_tax: float = 0.0
-    income_before_tax_original: float = 0.0
-    extraordinary_income: float = 0.0
-    extraordinary_income_original: float = 0.0
-    income_tax: float = 0.0
-    income_tax_original: float = 0.0
-    net_income: float
-    net_income_original: float = 0.0
-    ebitda: float
-    ebitda_original: float = 0.0
-    
-    # Cash Flows (USD vs ORIGINAL)
-    operating_cash_flow: float
-    operating_cash_flow_original: float = 0.0
-    investing_cash_flow: float = 0.0
-    investing_cash_flow_original: float = 0.0
-    financing_cash_flow: float = 0.0
-    financing_cash_flow_original: float = 0.0
-    change_in_cash: float = 0.0
-    change_in_cash_original: float = 0.0
-    beginning_cash: float = 0.0
-    beginning_cash_original: float = 0.0
-    ending_cash: float = 0.0
-    ending_cash_original: float = 0.0
 
     adjustments_count: int = 0
-    adjustments: List[AdjustmentOut] = []
     normalized_json: str
-
-    # Mission 5 — Validation cohérence bilan
-    coherence: Optional[BalanceSheetCoherence] = None
-
-    # Mission 6 — Certification champs pour ratios
-    ratio_readiness: Optional[RatioReadiness] = None
 
     @model_validator(mode='after')
     def check_accounting_equation(self):
@@ -345,3 +227,78 @@ class FinancialStatementNormalizedSchema(BaseModel):
         return self
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class NormalizedStatementUIResponse(NormalizedStatementDBInsert):
+    # Optional original fields
+    capex_original: Optional[float] = None
+    backlog_value_original: Optional[float] = None
+    
+    # Currency context for UI
+    currency_original: str = "MAD"
+    
+    # Assets (USD vs ORIGINAL)
+    total_assets_original: float = 0.0
+    current_assets_original: float = 0.0
+    liquid_assets_original: float = 0.0
+    inventory_original: float = 0.0
+    accounts_receivable_original: float = 0.0
+    other_current_assets_original: float = 0.0
+    non_current_assets_original: float = 0.0
+    intangible_assets_original: float = 0.0
+    tangible_assets_original: float = 0.0
+    financial_assets_original: float = 0.0
+    other_noncurrent_assets_original: float = 0.0
+    
+    # Liabilities & Equity (USD vs ORIGINAL)
+    total_liabilities_and_equity_original: float = 0.0
+    equity_original: float = 0.0
+    share_capital_original: float = 0.0
+    reserves_original: float = 0.0
+    retained_earnings_prior_original: float = 0.0
+    current_year_earnings_original: float = 0.0
+    non_current_liabilities_original: float = 0.0
+    long_term_debt_original: float = 0.0
+    long_term_provisions_original: float = 0.0
+    current_liabilities_original: float = 0.0
+    short_term_debt_original: float = 0.0
+    accounts_payable_original: float = 0.0
+    tax_and_social_liabilities_original: float = 0.0
+    other_current_liabilities_original: float = 0.0
+    
+    # Income Statement (USD vs ORIGINAL)
+    revenue_original: float = 0.0
+    sold_production_original: float = 0.0
+    other_operating_revenue_original: float = 0.0
+    cost_of_goods_sold_original: float = 0.0
+    external_expenses_original: float = 0.0
+    personnel_expenses_original: float = 0.0
+    taxes_and_duties_original: float = 0.0
+    depreciation_and_amortization_original: float = 0.0
+    other_operating_expenses_original: float = 0.0
+    operating_income_original: float = 0.0
+    financial_revenue_original: float = 0.0
+    financial_expenses_original: float = 0.0
+    financial_income_original: float = 0.0
+    income_before_tax_original: float = 0.0
+    extraordinary_income_original: float = 0.0
+    income_tax_original: float = 0.0
+    net_income_original: float = 0.0
+    ebitda_original: float = 0.0
+    
+    # Cash Flows (USD vs ORIGINAL)
+    operating_cash_flow_original: float = 0.0
+    investing_cash_flow_original: float = 0.0
+    financing_cash_flow_original: float = 0.0
+    change_in_cash_original: float = 0.0
+    beginning_cash_original: float = 0.0
+    ending_cash_original: float = 0.0
+
+    adjustments: List[AdjustmentOut] = []
+
+    # Mission 5 — Validation cohérence bilan
+    coherence: Optional[BalanceSheetCoherence] = None
+
+    # Mission 6 — Certification champs pour ratios
+    ratio_readiness: Optional[RatioReadiness] = None
+

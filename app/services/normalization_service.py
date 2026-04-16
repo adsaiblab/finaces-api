@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.db.models import FinancialStatementRaw, FinancialStatementNormalized
-from app.schemas.normalization_schema import FinancialStatementRawSchema, FinancialStatementNormalizedSchema
+from app.schemas.normalization_schema import FinancialStatementRawSchema, NormalizedStatementUIResponse, NormalizedStatementDBInsert
 from app.engines.normalization_engine import calculate_normalized_aggregates
 from app.exceptions.finaces_exceptions import MissingFinancialDataError
 from app.schemas.policy_schema import PolicyConfigurationSchema
@@ -14,7 +14,7 @@ from app.services.policy_service import get_active_policy
 
 logger = logging.getLogger(__name__)
 
-async def process_normalization(case_id: UUID, db: AsyncSession) -> List[FinancialStatementNormalizedSchema]:
+async def process_normalization(case_id: UUID, db: AsyncSession) -> List[NormalizedStatementUIResponse]:
     """
     Asynchronous Orchestrator:
     1. Retrieves raw data via SQLAlchemy 2.0 Async.
@@ -66,20 +66,23 @@ async def process_normalization(case_id: UUID, db: AsyncSession) -> List[Financi
         existing_result = await db.execute(existing_stmt)
         existing_norm = existing_result.scalars().first()
         
-        # Dynamically drop ANY column that doesn't exist in the actual PostgreSQL DB schema
-        valid_db_columns = FinancialStatementNormalized.__table__.columns.keys()
-        dumped_data = norm_schema.model_dump(exclude={'id'})
-        valid_data = {k: v for k, v in dumped_data.items() if k in valid_db_columns}
+        # Extraire uniquement les champs DB avant insertion
+        db_insert = NormalizedStatementDBInsert.model_validate(
+            norm_schema.model_dump(), from_attributes=False
+        )
+
+        # Persister avec seulement les champs DB
+        stmt_data = db_insert.model_dump(exclude={'id'}, exclude_none=False)
 
         if existing_norm:
-            # Update fields safely through dump bypass mapping explicitly (excluding internal attributes)
-            for key, value in valid_data.items():
+            # Update fields safely
+            for key, value in stmt_data.items():
                 if key != 'id': # double safety
                     setattr(existing_norm, key, value)
             db_entities.append(existing_norm)
         else:
             # Create a brand new ORM entry
-            new_norm = FinancialStatementNormalized(**valid_data)
+            new_norm = FinancialStatementNormalized(**stmt_data)
             db.add(new_norm)
             db_entities.append(new_norm)
 

@@ -2,7 +2,7 @@ import uuid
 from decimal import Decimal, ROUND_HALF_UP
 from typing import List, Dict, Optional, Any
 
-from app.schemas.normalization_schema import FinancialStatementNormalizedSchema
+from app.schemas.normalization_schema import NormalizedStatementUIResponse
 from app.schemas.ratio_schema import RatioSetSchema, AlertSchema, ZScoreBreakdown
 from app.schemas.policy_schema import PolicyConfigurationSchema
 
@@ -42,7 +42,7 @@ def _safe_sum(*values: Optional[Decimal], strict: bool = False) -> Optional[Deci
 # ENGINE CALCULATION RATIOS (PURE FUNCTION)
 # ════════════════════════════════════════════════════════════════
 
-def compute_ratios(norm: FinancialStatementNormalizedSchema, case_id: uuid.UUID, policy: PolicyConfigurationSchema) -> RatioSetSchema:
+def compute_ratios(norm: NormalizedStatementUIResponse, case_id: uuid.UUID, policy: PolicyConfigurationSchema) -> RatioSetSchema:
     """
     Pure Function: Computes all financial ratios from a Pydantic normalized statement.
     Totally decoupled from SQLAlchemy and FastAPI.

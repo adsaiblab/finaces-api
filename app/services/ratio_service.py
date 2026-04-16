@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.db.models import FinancialStatementNormalized, RatioSet, FinancialStatementRaw
-from app.schemas.normalization_schema import FinancialStatementNormalizedSchema
+from app.schemas.normalization_schema import NormalizedStatementUIResponse
 from app.schemas.ratio_schema import RatioSetSchema
 from app.engines.ratio_engine import compute_ratios
 from app.exceptions.finaces_exceptions import MissingFinancialDataError
@@ -47,7 +47,7 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
     # 2. Conversion ORM -> Pydantic Schema (pipeline architecture respected)
     # The engine handles the float -> Decimal casting internally for absolute algebraic security.
     normalized_schemas = [
-        FinancialStatementNormalizedSchema.model_validate(orm)
+        NormalizedStatementUIResponse.model_validate(orm)
         for orm in normalized_statements_orm
     ]
 

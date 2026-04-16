@@ -8,7 +8,7 @@ from sqlalchemy import select
 from app.db.models import EvaluationCase, FinancialStatementNormalized, FinancialStatementRaw, StressScenario, DocumentEvidence, DueDiligenceCheck
 from app.schemas.stress_schema import StressScenarioInputSchema, StressResultSchema, StressDecision
 from app.schemas.scoring_schema import ScorecardInputSchema
-from app.schemas.normalization_schema import FinancialStatementNormalizedSchema
+from app.schemas.normalization_schema import NormalizedStatementUIResponse
 from app.schemas.gate_schema import DocumentEvidenceSchema, DueDiligenceCheckSchema
 from app.schemas.policy_schema import PolicyConfigurationSchema
 

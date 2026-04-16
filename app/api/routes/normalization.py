@@ -9,7 +9,7 @@ import uuid as uuid_mod
 
 from app.db.database import get_db
 from app.services.normalization_service import process_normalization
-from app.schemas.normalization_schema import FinancialStatementNormalizedSchema
+from app.schemas.normalization_schema import NormalizedStatementUIResponse
 from app.exceptions.finaces_exceptions import FinaCESBaseException
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ router = APIRouter(
     tags=["Normalization Workflow"]
 )
 
-@router.post("/{case_id}/normalize", response_model=List[FinancialStatementNormalizedSchema])
+@router.post("/{case_id}/normalize", response_model=List[NormalizedStatementUIResponse])
 async def api_normalize_case(case_id: UUID, db: AsyncSession = Depends(get_db), current_user: dict = Depends(get_current_user)):
     """
     Starts the asynchronous normalization calculation for a given folder.
@@ -39,7 +39,7 @@ async def api_normalize_case(case_id: UUID, db: AsyncSession = Depends(get_db), 
         )
 
 
-@router.get("/{case_id}/normalized-financials", response_model=List[FinancialStatementNormalizedSchema])
+@router.get("/{case_id}/normalized-financials", response_model=List[NormalizedStatementUIResponse])
 async def get_normalized_financials(case_id: str, db: AsyncSession = Depends(get_db), current_user: dict = Depends(get_current_user)):
     """Returns normalized financial statements for a case, enriched with coherence and ratio readiness.
     
@@ -68,7 +68,7 @@ async def get_normalized_financials(case_id: str, db: AsyncSession = Depends(get
     # Post-processing : enrichissement de chaque bilan normalisé
     enriched = []
     for stmt in statements:
-        schema = FinancialStatementNormalizedSchema.model_validate(stmt)
+        schema = NormalizedStatementUIResponse.model_validate(stmt)
 
         # ── Reconstruction des valeurs _original depuis FinancialStatementRaw ──
         # La table normalized ne stocke que les USD. Les valeurs MAD viennent du raw.
