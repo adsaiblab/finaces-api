@@ -207,9 +207,18 @@ class NormalizedStatementDBInsert(BaseModel):
     net_income: float
     ebitda: float
     
-    # capex, backlog...
+    # Cash Flows
+    operating_cash_flow: Optional[float] = None
+    investing_cash_flow: Optional[float] = None
+    financing_cash_flow: Optional[float] = None
+    change_in_cash: Optional[float] = None
+    beginning_cash: Optional[float] = None
+    ending_cash: Optional[float] = None
+
+    # capex, backlog, headcount...
     capex: Optional[float] = None
     backlog_value: Optional[float] = None
+    headcount: Optional[int] = None
     is_consolidated: bool
 
     adjustments_count: int = 0
