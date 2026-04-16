@@ -114,21 +114,17 @@ def calculate_financial_aggregates(data: dict) -> dict:
     elif operating_income is not None:
         ebitda = operating_income  # fallback if D&A not provided
 
-    net_financial_result = None
-    # [IRB Fix] Le mapper UI envoie le vrai revenu positif dans "financial_income" au lieu de "financial_revenue"
-    fin_rev_input = d.get("financial_revenue")
-    if fin_rev_input is None:
-        fin_rev_input = d.get("financial_income")
-        
-    fin_rev = _d(fin_rev_input)
+    # financial_income = saisie directe utilisateur (produits financiers)
+    # financial_expenses = saisie directe utilisateur (charges financières)
+    # net_financial_result = financial_income - financial_expenses (calculé, NON persisté)
+    fin_income = _d(d.get("financial_income"))
     fin_exp = _d(d.get("financial_expenses"))
-    
-    if fin_rev is not None:
-        d["financial_revenue"] = fin_rev # On redirige la donnée vers le bon champ DB
 
-    if fin_rev is not None or fin_exp is not None:
-        net_financial_result = (fin_rev or Decimal("0")) - (fin_exp or Decimal("0"))
-        d["financial_income"] = net_financial_result # Le 'Net Financial Result' prend la place de financial_income
+    # On préserve financial_income tel quel en DB — c'est une saisie pure
+    # net_financial_result est uniquement utilisé pour calculer income_before_tax
+    net_financial_result = None
+    if fin_income is not None or fin_exp is not None:
+        net_financial_result = (fin_income or Decimal("0")) - (fin_exp or Decimal("0"))
 
     income_before_tax = None
     if operating_income is not None:
