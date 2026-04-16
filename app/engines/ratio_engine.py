@@ -276,14 +276,16 @@ def generate_alerts(ratio_set: RatioSetSchema, policy: PolicyConfigurationSchema
     
     alert_labels = policy.alert_labels
 
-    def _add(key: str, value: Optional[Decimal], severity: str, note: str = ""):
+    def _add(key: str, value: Optional[Decimal], severity: str, note: str = "", affected: List[str] = [], action: str = ""):
         alerts.append(AlertSchema(
             key=key,
             label=alert_labels.get(key, key),
             year=year,
             value=value,
             severity=severity,
-            note=note
+            note=note,
+            affected_ratios=affected or [alert_labels.get(key, key)],
+            suggested_action=action or "Verify the underlying financial normalization data for potential entry errors."
         ))
 
     if ratio_set.negative_equity:

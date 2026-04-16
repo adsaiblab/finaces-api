@@ -17,6 +17,8 @@ class AlertSchema(BaseModel):
     # Used for advanced cross-pillar patterns
     pattern: Optional[str] = None
     description: Optional[str] = None
+    affected_ratios: List[str] = Field(default_factory=list)
+    suggested_action: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
