@@ -88,14 +88,16 @@ def generate_cross_pillar_patterns(
             
             # Helper to approximate fixed costs: Personnel + External + Taxes + Amort.
             def _get_fixed_costs(n):
-                return (n.personnel_expenses + n.external_expenses + 
-                        n.taxes_and_duties + n.depreciation_and_amortization)
+                return (Decimal(str(n.personnel_expenses)) + Decimal(str(n.external_expenses)) + 
+                        Decimal(str(n.taxes_and_duties)) + Decimal(str(n.depreciation_and_amortization)))
             
             fc_latest = _get_fixed_costs(latest_norm)
             fc_first = _get_fixed_costs(first_norm)
             
-            # Revenue drop > 5% (hardcoded safety or policy)
-            if rev_first > 0 and rev_latest < (rev_first * Decimal("0.95")):
+            # Revenue drop > 5% (handled as Decimal)
+            d_rev_first = Decimal(str(rev_first))
+            d_rev_latest = Decimal(str(rev_latest))
+            if d_rev_first > 0 and d_rev_latest < (d_rev_first * Decimal("0.95")):
                 if fc_latest >= (fc_first * Decimal("0.98")): # Stable or rising
                     proxy2_active = True
         
