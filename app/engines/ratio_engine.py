@@ -316,39 +316,4 @@ def generate_alerts(ratio_set: RatioSetSchema, policy: PolicyConfigurationSchema
 
     return alerts
 
-def generate_cross_pillar_patterns(ratio_sets: List[RatioSetSchema], policy: PolicyConfigurationSchema) -> List[AlertSchema]: # <-- UPDATE SIGNATURE
-    """Pure Function detecting cross-period patterns."""
-    alerts = []
-    if not ratio_sets:
-        return alerts
-        
-    latest = max(ratio_sets, key=lambda x: x.fiscal_year)
-    th = policy.cross_pillar # <-- LOAD THRESHOLDS
-    
-    cr = latest.current_ratio
-    qr = latest.quick_ratio
-    if cr and cr > th.false_liquidity_cr_min and qr and qr < th.false_liquidity_qr_max:
-        alerts.append(AlertSchema(pattern="FALSE_LIQUIDITY", description="High Current Ratio but very low Quick/Cash Ratio (Liquidity locked in inventory)."))
-        
-    roe = latest.roe
-    dte = latest.debt_to_equity
-    if roe and roe >= th.overleverage_roe_min and dte and dte > th.overleverage_dte_min:
-        alerts.append(AlertSchema(pattern="HIDDEN_OVERLEVERAGE", description="High financial profitability (ROE) artificially driven by excessive debt."))
-        
-    bfr_pct = latest.working_capital_requirement_pct_revenue
-    cfo = latest.negative_operating_cash_flow
-    if bfr_pct and bfr_pct > th.toxic_wcr_pct_min and cfo == 1:
-        alerts.append(AlertSchema(pattern="TOXIC_WCR", description="Critical WCR weight (>30% of revenue) destroying operating cash flow."))
-        
-    if len(ratio_sets) >= 2:
-        first = min(ratio_sets, key=lambda x: x.fiscal_year)
-        eb_latest = latest.ebitda_margin
-        eb_first = first.ebitda_margin
-        bfr_latest = latest.working_capital_requirement_pct_revenue
-        bfr_first = first.working_capital_requirement_pct_revenue
-        
-        if eb_latest is not None and eb_first is not None and bfr_latest is not None and bfr_first is not None:
-            if eb_latest < (eb_first - th.scissors_margin_drop) and bfr_latest > (bfr_first + th.scissors_wcr_rise):
-                alerts.append(AlertSchema(pattern="SCISSORS_EFFECT", description="Simultaneous margin degradation and WCR increase blocking cash flow."))
-                
     return alerts
