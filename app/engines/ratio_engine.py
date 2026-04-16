@@ -177,19 +177,31 @@ def compute_ratios(norm: NormalizedStatementUIResponse, case_id: uuid.UUID, poli
         if diff_pct and diff_pct > policy.ratio.balance_sheet_tolerance_pct: # <-- FIX
             coherence_alerts.append({
                 "code": "UNBALANCED_BALANCE_SHEET",
-                "message": f"Unbalanced balance sheet: gap {float(diff_pct):.1%}",
+                "label": "Unbalanced Balance Sheet",
+                "message": f"Balance sheet gap: {float(diff_pct):.1%}",
+                "severity": "HIGH",
+                "affected_ratios": ["total_assets", "total_liabilities_and_equity"],
+                "suggested_action": "Verify original financial statements for data consistency."
             })
 
     if current_ratio is not None and current_ratio < policy.ratio.very_low_current_ratio: # <-- FIX
         coherence_alerts.append({
             "code": "VERY_LOW_CURRENT_RATIO",
-            "message": f"Very low Current Ratio: {float(current_ratio):.3f}",
+            "label": "Very Low Current Ratio",
+            "message": f"Current ratio: {float(current_ratio):.3f} — below critical threshold",
+            "severity": "HIGH",
+            "affected_ratios": ["current_ratio", "cash_ratio"],
+            "suggested_action": "Verify the structure of current assets."
         })
 
     if cp is not None and cp < Decimal("0.0"):
         coherence_alerts.append({
             "code": "NEGATIVE_EQUITY",
+            "label": "Negative Equity",
             "message": "Negative equity — critical financial situation",
+            "severity": "CRITICAL",
+            "affected_ratios": ["equity", "financial_autonomy"],
+            "suggested_action": "Urgent recapitalization required."
         })
 
     # ── FINANCIAL INTELLIGENCE: ALTMAN Z-SCORE (EM) ─────────
