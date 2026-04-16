@@ -20,6 +20,17 @@ class AlertSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class ZScoreBreakdown(BaseModel):
+    """Intermediate Z-Score component values (Altman EM model)."""
+    x1: Optional[Decimal] = None  # Working capital / Total assets
+    x2: Optional[Decimal] = None  # Net income / Total assets
+    x3: Optional[Decimal] = None  # EBIT / Total assets
+    x4: Optional[Decimal] = None  # Equity / Total liabilities
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class RatioSetSchema(BaseModel):
     """Schema representing the calculated ratios for a given fiscal year."""
     id: Optional[UUID] = Field(default=None, description="Will be generated if None")
@@ -59,6 +70,7 @@ class RatioSetSchema(BaseModel):
     # Financial Intelligence Phase 2
     z_score_altman: Optional[Decimal] = None
     z_score_zone: Optional[str] = None
+    z_score_breakdown: Optional[ZScoreBreakdown] = None  # X1-X4 detail, never persisted to DB
 
     @model_validator(mode='after')
     def validate_ratio_coherence(self) -> 'RatioSetSchema':

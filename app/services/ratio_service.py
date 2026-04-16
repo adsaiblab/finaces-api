@@ -104,5 +104,16 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
         )
         
     logger.info(f"Async ratio computation committed successfully for case {case_id} ({len(ratio_sets_generated)} years processed)")
-    
+
+    # 6. Cross-pillar pattern detection (needs all years — runs AFTER all individual computations)
+    from app.engines.ratio_engine import generate_cross_pillar_patterns
+    cross_pillar_alerts = generate_cross_pillar_patterns(ratio_sets_generated, policy)
+    if cross_pillar_alerts and ratio_sets_generated:
+        # Attach cross-pillar alerts to the most recent year's schema
+        latest = max(ratio_sets_generated, key=lambda r: r.fiscal_year)
+        existing_alerts = list(latest.coherence_alerts_json or [])
+        for alert in cross_pillar_alerts:
+            existing_alerts.append(alert.model_dump(exclude_none=True))
+        latest.coherence_alerts_json = existing_alerts
+
     return ratio_sets_generated

@@ -3,7 +3,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import List, Dict, Optional, Any
 
 from app.schemas.normalization_schema import FinancialStatementNormalizedSchema
-from app.schemas.ratio_schema import RatioSetSchema, AlertSchema
+from app.schemas.ratio_schema import RatioSetSchema, AlertSchema, ZScoreBreakdown
 from app.schemas.policy_schema import PolicyConfigurationSchema
 
 # ════════════════════════════════════════════════════════════════
@@ -246,6 +246,7 @@ def compute_ratios(norm: FinancialStatementNormalizedSchema, case_id: uuid.UUID,
         negative_operating_cash_flow=cfo_neg,
         z_score_altman=z_score_altman,
         z_score_zone=z_score_zone,
+        z_score_breakdown=ZScoreBreakdown(x1=x1, x2=x2, x3=x3, x4=x4) if (z_limits and x1 is not None) else None,
         coherence_alerts_json=coherence_alerts
     )
 
