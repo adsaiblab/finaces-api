@@ -155,12 +155,20 @@ async def get_normalized_financials(case_id: str, db: AsyncSession = Depends(get
             schema.ebitda_original                         = _f(raw.ebitda)
 
             # Cash Flow
-            schema.operating_cash_flow_original  = _f(getattr(raw, 'operating_cash_flow', None))
-            schema.investing_cash_flow_original  = _f(getattr(raw, 'investing_cash_flow', None))
-            schema.financing_cash_flow_original  = _f(getattr(raw, 'financing_cash_flow', None))
-            schema.change_in_cash_original       = _f(getattr(raw, 'change_in_cash', None))
-            schema.beginning_cash_original       = _f(getattr(raw, 'beginning_cash', None))
-            schema.ending_cash_original          = _f(getattr(raw, 'ending_cash', None))
+            cfo_raw = _f(getattr(raw, 'operating_cash_flow', None))
+            cfi_raw = _f(getattr(raw, 'investing_cash_flow', None))
+            cff_raw = _f(getattr(raw, 'financing_cash_flow', None))
+            beg_cash_raw = _f(getattr(raw, 'beginning_cash', None))
+            
+            chic_raw = _f(getattr(raw, 'change_in_cash', None)) or (cfo_raw + cfi_raw + cff_raw)
+            end_cash_raw = _f(getattr(raw, 'ending_cash', None)) or (beg_cash_raw + chic_raw)
+
+            schema.operating_cash_flow_original  = cfo_raw
+            schema.investing_cash_flow_original  = cfi_raw
+            schema.financing_cash_flow_original  = cff_raw
+            schema.change_in_cash_original       = chic_raw
+            schema.beginning_cash_original       = beg_cash_raw
+            schema.ending_cash_original          = end_cash_raw
             schema.capex_original                = _f(raw.capex) if raw.capex else None
 
         # ── Mission 5 : Cohérence bilan ─────────────────────────────────

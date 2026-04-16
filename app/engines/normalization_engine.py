@@ -196,6 +196,12 @@ def calculate_normalized_aggregates(
 
     # ── 1b. BOTTOM-UP RECALCULATION (CASH FLOW) ──
     # Si le service n'a pas encore persisté le calcul, le moteur le fait pour le DTO
+    if (change_in_cash_original is None or change_in_cash_original == Decimal("0.0")) and \
+       (operating_cash_flow_original is not None or investing_cash_flow_original is not None or financing_cash_flow_original is not None):
+        change_in_cash_original = (operating_cash_flow_original or Decimal("0.0")) + \
+                                  (investing_cash_flow_original or Decimal("0.0")) + \
+                                  (financing_cash_flow_original or Decimal("0.0"))
+
     if (ending_cash_original is None or ending_cash_original == Decimal("0.0")) and \
        (beginning_cash_original is not None or change_in_cash_original is not None):
         ending_cash_original = (beginning_cash_original or Decimal("0.0")) + (change_in_cash_original or Decimal("0.0"))
