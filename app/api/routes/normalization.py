@@ -153,6 +153,9 @@ async def get_normalized_financials(case_id: str, db: AsyncSession = Depends(get
             schema.operating_income_original               = _f(raw.operating_income)
             schema.net_income_original                     = _f(raw.net_income)
             schema.ebitda_original                         = _f(raw.ebitda)
+            schema.extraordinary_expenses_original         = _f(raw.extraordinary_expenses)
+            schema.dividends_original                      = _f(raw.dividends_distributed)
+            schema.gross_profit_original                   = _f(raw.gross_profit)
 
             # Cash Flow
             cfo_raw = _f(getattr(raw, 'operating_cash_flow', None))
@@ -162,6 +165,7 @@ async def get_normalized_financials(case_id: str, db: AsyncSession = Depends(get
             
             chic_raw = _f(getattr(raw, 'change_in_cash', None)) or (cfo_raw + cfi_raw + cff_raw)
             end_cash_raw = _f(getattr(raw, 'ending_cash', None)) or (beg_cash_raw + chic_raw)
+            fcf_raw = _f(getattr(raw, 'free_cash_flow', None))
 
             schema.operating_cash_flow_original  = cfo_raw
             schema.investing_cash_flow_original  = cfi_raw
@@ -169,6 +173,7 @@ async def get_normalized_financials(case_id: str, db: AsyncSession = Depends(get
             schema.change_in_cash_original       = chic_raw
             schema.beginning_cash_original       = beg_cash_raw
             schema.ending_cash_original          = end_cash_raw
+            schema.free_cash_flow_original       = fcf_raw
             schema.capex_original                = _f(raw.capex) if raw.capex else None
 
         # ── Mission 5 : Cohérence bilan ─────────────────────────────────

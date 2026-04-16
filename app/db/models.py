@@ -459,6 +459,7 @@ class FinancialStatementNormalized(Base):
     intangible_assets: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     tangible_assets: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     financial_assets: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    other_noncurrent_assets: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
 
     # ── Liabilities & Equity ──────────────────────────────────────
     total_liabilities_and_equity: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
@@ -495,6 +496,9 @@ class FinancialStatementNormalized(Base):
     income_tax: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     net_income: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     ebitda: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    extraordinary_expenses: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    dividends: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    gross_profit: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
 
     # ── Cash Flows ────────────────────────────────────────────────
     operating_cash_flow: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
@@ -503,6 +507,7 @@ class FinancialStatementNormalized(Base):
     change_in_cash: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     beginning_cash: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     ending_cash: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    free_cash_flow: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
 
     # ── Operational ───────────────────────────────────────────────
     headcount: Mapped[int | None] = mapped_column(Integer, nullable=True)

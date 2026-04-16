@@ -206,6 +206,9 @@ class NormalizedStatementDBInsert(BaseModel):
     income_tax: float = 0.0
     net_income: float
     ebitda: float
+    extraordinary_expenses: float = 0.0
+    dividends: float = 0.0
+    gross_profit: float = 0.0
     
     # Cash Flows
     operating_cash_flow: Optional[float] = None
@@ -214,6 +217,7 @@ class NormalizedStatementDBInsert(BaseModel):
     change_in_cash: Optional[float] = None
     beginning_cash: Optional[float] = None
     ending_cash: Optional[float] = None
+    free_cash_flow: float = 0.0
 
     # capex, backlog, headcount...
     capex: Optional[float] = None
@@ -278,6 +282,9 @@ class NormalizedStatementUIResponse(NormalizedStatementDBInsert):
     # Income Statement (USD vs ORIGINAL)
     revenue_original: float = 0.0
     sold_production_original: float = 0.0
+    extraordinary_expenses_original: float = 0.0
+    dividends_original: float = 0.0
+    gross_profit_original: float = 0.0
     other_operating_revenue_original: float = 0.0
     cost_of_goods_sold_original: float = 0.0
     external_expenses_original: float = 0.0
