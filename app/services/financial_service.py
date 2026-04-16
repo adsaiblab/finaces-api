@@ -150,11 +150,19 @@ def calculate_financial_aggregates(data: dict) -> dict:
     # ── D. CASH FLOW ──────────────────────────────────────────────────
     # operating_cash_flow is directly entered by user — not calculated
     # change_in_cash = operating + investing + financing
+    # ending_cash = beginning_cash + change_in_cash
     cfo = _d(d.get("operating_cash_flow"))
     cfi = _d(d.get("investing_cash_flow"))
     cff = _d(d.get("financing_cash_flow"))
+    beg_cash = _d(d.get("beginning_cash"))
+
+    chic = None
     if cfo is not None or cfi is not None or cff is not None:
-        d["change_in_cash"] = (cfo or Decimal("0")) + (cfi or Decimal("0")) + (cff or Decimal("0"))
+        chic = (cfo or Decimal("0")) + (cfi or Decimal("0")) + (cff or Decimal("0"))
+        d["change_in_cash"] = chic
+
+    if beg_cash is not None or chic is not None:
+        d["ending_cash"] = (beg_cash or Decimal("0")) + (chic or Decimal("0"))
 
     return d
 

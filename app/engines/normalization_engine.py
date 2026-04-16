@@ -194,6 +194,12 @@ def calculate_normalized_aggregates(
     backlog_value_original = ar.get("backlog_value")
     headcount = ar.get("headcount")
 
+    # ── 1b. BOTTOM-UP RECALCULATION (CASH FLOW) ──
+    # Si le service n'a pas encore persisté le calcul, le moteur le fait pour le DTO
+    if (ending_cash_original is None or ending_cash_original == Decimal("0.0")) and \
+       (beginning_cash_original is not None or change_in_cash_original is not None):
+        ending_cash_original = (beginning_cash_original or Decimal("0.0")) + (change_in_cash_original or Decimal("0.0"))
+
     if operating_cash_flow_original is None and net_income_original is not None and depreciation_and_amortization_original is not None:
         operating_cash_flow_original = net_income_original + depreciation_and_amortization_original
 
