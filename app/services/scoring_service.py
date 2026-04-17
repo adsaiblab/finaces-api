@@ -1,11 +1,12 @@
 import logging
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, update
 from sqlalchemy.orm import selectinload
 from decimal import Decimal
 
-from app.db.models import RatioSet, Scorecard, GateResult
+from app.db.models import RatioSet, Scorecard, GateResult, EvaluationCase
+from app.schemas.enums import CaseStatus
 from app.schemas.scoring_schema import ScorecardInputSchema, ScorecardOutputSchema
 from app.schemas.ratio_schema import RatioSetSchema
 from app.engines.scoring_engine import compute_pure_scorecard
@@ -105,7 +106,7 @@ async def process_scoring(case_id: UUID, db: AsyncSession) -> ScorecardOutputSch
         solvency_score=pillar_scores["solvency_score"],
         profitability_score=pillar_scores["profitability_score"],
         capacity_score=pillar_scores["capacity_score"],
-        quality_score=Decimal(str(gate_orm.reliability_score)) if gate_orm.reliability_score is not None else Decimal("0.0"),
+        quality_score=round(Decimal(str(gate_orm.reliability_score)) / 20, 2) if gate_orm.reliability_score is not None else Decimal("0.0"),
         is_gate_blocking=gate_orm.is_gate_blocking,
         gate_blocking_reasons=gate_orm.blocking_reasons_json or [],
         has_negative_equity=bool(ratio_set_orm.negative_equity == 1),
@@ -152,6 +153,13 @@ async def process_scoring(case_id: UUID, db: AsyncSession) -> ScorecardOutputSch
         )
         db.add(new_scorecard)
         target_scorecard = new_scorecard
+
+    # Finalize status transition (MCC-Grade Pipeline stability)
+    await db.execute(
+        update(EvaluationCase)
+        .where(EvaluationCase.id == case_id)
+        .values(status=CaseStatus.SCORING_DONE)
+    )
 
     await db.commit()
     await db.refresh(target_scorecard)

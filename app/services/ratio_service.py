@@ -95,8 +95,17 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
             logger.error(f"Computation failure during Pure Ratio Builder mapping on case {case_id}: {str(e)}")
             raise
 
-    # Save transaction
+    # Finalize status transition (MCC-Grade Pipeline stability)
+    # We update the status BEFORE the single final commit to ensure atomicity.
+    await db.execute(
+        update(EvaluationCase)
+        .where(EvaluationCase.id == case_id)
+        .values(status=CaseStatus.RATIOS_COMPUTED)
+    )
+    
+    # Save transaction (Atomic: RatioSets + CaseStatus)
     await db.commit()
+
     for entity in db_entities:
         await db.refresh(entity)
         # ─ Audit Trail (MCC-Grade Compliance) ─────────────────────
@@ -109,8 +118,6 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
             description=f"Ratios computed successfully for fiscal year {entity.fiscal_year}"
         )
         
-    logger.info(f"Async ratio computation committed successfully for case {case_id} ({len(ratio_sets_generated)} years processed)")
-
     # 6. Compute Variations (P3)
     from app.engines.ratio_engine import compute_variations
     ratio_sets_generated.sort(key=lambda x: x.fiscal_year)
@@ -131,13 +138,5 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
         for alert in cross_pillar_alerts:
             existing_alerts.append(alert.model_dump(exclude_none=True))
         latest.coherence_alerts_json = existing_alerts
-
-    # Finalize status transition (MCC-Grade Pipeline stability)
-    await db.execute(
-        update(EvaluationCase)
-        .where(EvaluationCase.id == case_id)
-        .values(status=CaseStatus.RATIOS_COMPUTED)
-    )
-    await db.commit()
 
     return ratio_sets_generated

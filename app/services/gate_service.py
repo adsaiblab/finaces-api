@@ -1,9 +1,9 @@
 import logging
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
-
-from app.db.models import RatioSet, DocumentEvidence, DueDiligenceCheck, GateResult
+from sqlalchemy import select, desc, update
+from app.db.models import RatioSet, DocumentEvidence, DueDiligenceCheck, GateResult, EvaluationCase
+from app.schemas.enums import CaseStatus
 from app.schemas.gate_schema import DocumentEvidenceSchema, DueDiligenceCheckSchema, GateDecisionSchema
 from app.engines.gate_engine import evaluate_gate
 from app.exceptions.finaces_exceptions import MissingFinancialDataError
@@ -89,6 +89,13 @@ async def process_gate_evaluation(case_id: UUID, db: AsyncSession) -> GateDecisi
         )
         db.add(new_gate)
         target_gate = new_gate
+
+    # Finalize status transition (MCC-Gate Pipeline stability)
+    await db.execute(
+        update(EvaluationCase)
+        .where(EvaluationCase.id == case_id)
+        .values(status=CaseStatus.PENDING_GATE)
+    )
 
     await db.commit()
     await db.refresh(target_gate)
