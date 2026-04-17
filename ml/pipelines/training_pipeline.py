@@ -249,6 +249,10 @@ class ModelTrainer:
         # Store hyperparameters
         self.training_history['hyperparameters'] = hyperparams
         
+        # Capture evaluation history (Convergence)
+        if eval_set:
+            self.training_history['convergence'] = model.evals_result()
+        
         return model
     
     def _train_lightgbm(
@@ -293,6 +297,10 @@ class ModelTrainer:
         
         # Store hyperparameters
         self.training_history['hyperparameters'] = hyperparams
+        
+        # Capture evaluation history (Convergence)
+        if eval_set:
+            self.training_history['convergence'] = model.evals_result_
         
         return model
     

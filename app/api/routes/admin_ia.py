@@ -1,7 +1,7 @@
 import uuid
 import logging
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
@@ -81,12 +81,13 @@ async def list_training_runs(
 async def build_dataset(
     dataset_name: str,
     target_column: str = "mcc_score",
+    query_filter: Optional[Dict] = None,
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ):
     try:
         return await IATrainingService.build_training_dataset(
-            db, dataset_name, target_column
+            db, dataset_name, target_column, query_filter
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -98,14 +99,70 @@ async def build_dataset(
 )
 async def launch_training(
     dataset_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
     model_type: str = "xgboost",
     hyperparameters: Optional[Dict] = None,
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ):
-    return await IATrainingService.launch_training(
+    run = await IATrainingService.launch_training(
         db, dataset_id, model_type, hyperparameters
     )
+    # Trigger actual training in background
+    background_tasks.add_task(IATrainingService.run_training_background, run.id)
+    return run
+
+@router.get(
+    "/runs/{run_id}/convergence",
+    summary="Get convergence data for a training run"
+)
+async def get_run_convergence(
+    run_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict = Depends(get_current_user)
+):
+    """
+    Returns the convergence history (LogLoss per iteration) for a run.
+    Data is extracted from run.metrics['convergence'].
+    """
+    stmt = select(IATrainingRun.metrics).where(IATrainingRun.id == run_id)
+    metrics = await db.scalar(stmt)
+    
+    if not metrics or 'convergence' not in metrics:
+        return []
+        
+    convergence_raw = metrics['convergence']
+    # Convergence in XGBoost/LightGBM is like: {'validation_0': {'logloss': [...]}}
+    # Frontend expects: [{iteration: 0, train: 0.5, val: 0.6}, ...]
+    
+    formatted_data = []
+    
+    # Heuristic mapping for standard XGB/LGB evals_result
+    # validation_0 is usually train, validation_1 is usually val
+    train_key = 'validation_0'
+    val_key = 'validation_1'
+    
+    metric_name = 'logloss' if 'logloss' in convergence_raw.get(train_key, {}) else \
+                  'binary_logloss' if 'binary_logloss' in convergence_raw.get(train_key, {}) else \
+                  'rmse' if 'rmse' in convergence_raw.get(train_key, {}) else None
+                  
+    if not metric_name and convergence_raw:
+        # Fallback to first available metric name
+        first_group = list(convergence_raw.values())[0]
+        if first_group:
+            metric_name = list(first_group.keys())[0]
+
+    if metric_name:
+        train_vals = convergence_raw.get(train_key, {}).get(metric_name, [])
+        val_vals = convergence_raw.get(val_key, {}).get(metric_name, [])
+        
+        for i, t_val in enumerate(train_vals):
+            point = {"epoch": i, "train_loss": float(t_val)}
+            if i < len(val_vals):
+                point["val_loss"] = float(val_vals[i])
+            formatted_data.append(point)
+            
+    return formatted_data
 
 @router.post(
     "/deploy/{run_id}",

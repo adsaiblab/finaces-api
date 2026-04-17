@@ -34,8 +34,25 @@ class IATrainingService:
         query_filter: Optional[Dict] = None
     ) -> IATrainingDataset:
         """
-        Collects features and targets from historical cases.
+        Collects features and targets from historical cases or synthetic generator.
         """
+        source_type = (query_filter or {}).get("source", "REAL")
+        
+        if source_type == "SYNTHETIC":
+            # Simulation of a large synthetic dataset
+            n_samples = (query_filter or {}).get("n_samples", 3000)
+            dataset = IATrainingDataset(
+                dataset_name=dataset_name,
+                sample_size=n_samples,
+                features_list=["current_ratio", "debt_to_equity", "net_margin", "ebitda_margin", "roe", "roa"], # Representative list
+                target_column=target_column,
+                query_filter=query_filter
+            )
+            db.add(dataset)
+            await db.commit()
+            await db.refresh(dataset)
+            return dataset
+
         # 1. Identity cases with both features and valid outcomes (scorecards)
         stmt = (
             select(IAFeatures, Scorecard)
@@ -47,17 +64,18 @@ class IATrainingService:
         rows = result.all()
         
         if not rows:
-            raise ValueError("No historical data available with both features and scorecards.")
+            raise ValueError("No historical data available with both features and scorecards. Use source='SYNTHETIC' for bootstrap.")
             
         # 2. Extract features and labels
-        # Assuming features are stored in a dict in IAFeatures.features
-        # and target is in Scorecard.overall_score or similar
         all_features_list = []
         if rows:
-            # We take the features schema from the first record
             first_features = rows[0][0].features
             if isinstance(first_features, dict):
-                all_features_list = list(first_features.keys())
+                # Ensure we handle nested structure if needed
+                if 'features' in first_features:
+                    all_features_list = list(first_features['features'].keys())
+                else:
+                    all_features_list = list(first_features.keys())
 
         dataset = IATrainingDataset(
             dataset_name=dataset_name,
@@ -81,9 +99,16 @@ class IATrainingService:
         hyperparameters: Optional[Dict] = None
     ) -> IATrainingRun:
         """
-        Triggers the ML training pipeline for a given dataset.
+        Creates a training run record. Actual execution is triggered by the router
+        via BackgroundTasks to avoid HTTP timeouts.
         """
-        # 1. Create the run record
+        # 1. Verify dataset exists
+        dataset_stmt = select(IATrainingDataset).where(IATrainingDataset.id == dataset_id)
+        dataset = await db.scalar(dataset_stmt)
+        if not dataset:
+            raise ValueError(f"Dataset {dataset_id} not found.")
+
+        # 2. Create the run record
         run = IATrainingRun(
             dataset_id=dataset_id,
             model_type=model_type,
@@ -94,42 +119,92 @@ class IATrainingService:
         db.add(run)
         await db.commit()
         await db.refresh(run)
-
-        try:
-            # 2. Prepare Data (In a real scenario, we'd fetch from files or DB)
-            trainer = ModelTrainer(output_dir="ml/models")
-            
-            # NOTE: For now, we simulate the run logic, as training should probably 
-            # happen in a background task or worker.
-            # In a production grade app, we would use Celery/Arq here.
-            
-            # Mock success for now since we are building the plumbing
-            run.status = "COMPLETED"
-            run.completed_at = datetime.now(timezone.utc)
-            run.metrics = {
-                "auc": 0.85,
-                "f1_score": 0.78,
-                "accuracy": 0.82
-            }
-            run.model_artifact_path = f"ml/models/{model_type}_run_{run.id}.joblib"
-            
-        except Exception as e:
-            logger.error(f"Training failed: {str(e)}")
-            run.status = "FAILED"
-            run.error_log = str(e)
-            run.completed_at = datetime.now(timezone.utc)
-            
-            # Log admin event
-            event = IAAdminEvent(
-                event_type="TRAINING_FAILED",
-                severity="CRITICAL",
-                message=f"Training run {run.id} failed: {str(e)}",
-                metadata_json={"run_id": str(run.id)}
-            )
-            db.add(event)
-
-        await db.commit()
+        
         return run
+
+    @staticmethod
+    async def run_training_background(run_id: uuid.UUID):
+        """
+        Actual background task for ML training.
+        Creates its own session to ensure thread-safety and session availability.
+        """
+        from app.db.database import async_session_maker
+        from app.db.models import IATrainingRun, IATrainingDataset
+        
+        async with async_session_maker() as db:
+            run_stmt = (
+                select(IATrainingRun)
+                .options(selectinload(IATrainingRun.dataset))
+                .where(IATrainingRun.id == run_id)
+            )
+            run = await db.scalar(run_stmt)
+            if not run:
+                logger.error(f"Background training failed: Run {run_id} not found.")
+                return
+
+            try:
+                # 1. Determine data source from dataset query_filter
+                source = (run.dataset.query_filter or {}).get("source", "REAL")
+                n_samples = (run.dataset.query_filter or {}).get("n_samples", 3000)
+                
+                logger.info(f"Starting training run {run.id} (Source: {source}, Model: {run.model_type})")
+                
+                # 2. Configure Trainer
+                trainer = ModelTrainer(output_dir="ml/models")
+                
+                # 3. Run Pipeline
+                # If source is synthetic, we pass n_samples. If REAL, it's already using DB.
+                data_kwargs = {}
+                if source == "SYNTHETIC":
+                    data_kwargs["n_samples"] = n_samples
+                    data_source_id = "synthetic"
+                else:
+                    # For real data, we might need a db_session inside prepare_data
+                    # but DataLoader.load_dataset currently handles finaces_db
+                    data_source_id = "finaces_db"
+                    data_kwargs["db_session"] = db
+                
+                results = trainer.run_complete_pipeline(
+                    data_source=data_source_id,
+                    model_type=run.model_type,
+                    **data_kwargs
+                )
+                
+                # 4. Update Run Record
+                run.status = "COMPLETED"
+                run.completed_at = datetime.now(timezone.utc)
+                
+                # Enriched metrics including convergence
+                run.metrics = {
+                    "accuracy": results['metrics'].get('accuracy'),
+                    "f1_score": results['metrics'].get('f1_score'),
+                    "auc": results['metrics'].get('roc_auc'),
+                    "precision": results['metrics'].get('precision'),
+                    "recall": results['metrics'].get('recall'),
+                    "threshold": results['metrics'].get('threshold'),
+                    "feature_importance": results.get('feature_importance', []),
+                    "convergence": results.get('training_history', {}).get('convergence', {})
+                }
+                run.model_artifact_path = str(results['model_path'])
+                
+                logger.info(f"✓ Training run {run.id} completed successfully")
+
+            except Exception as e:
+                logger.exception(f"Training failed for run {run.id}")
+                run.status = "FAILED"
+                run.error_log = str(e)
+                run.completed_at = datetime.now(timezone.utc)
+                
+                # Log admin event
+                event = IAAdminEvent(
+                    event_type="TRAINING_FAILED",
+                    severity="CRITICAL",
+                    message=f"Training run {run.id} failed: {str(e)}",
+                    metadata_json={"run_id": str(run.id)}
+                )
+                db.add(event)
+
+            await db.commit()
 
     @staticmethod
     async def deploy_model(
