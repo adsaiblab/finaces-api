@@ -258,7 +258,7 @@ class TensionDetector:
         )
         
         # Persist tension record
-        await self._save_tension(analysis, db)
+        await self._save_tension(analysis, ia_result.model_version, db)
         
         logger.info(
             f"Tension analysis completed for case {case_id}. "
@@ -717,6 +717,7 @@ class TensionDetector:
     async def _save_tension(
         self,
         analysis: TensionAnalysis,
+        model_version: str,
         db: AsyncSession
     ) -> None:
         """
@@ -724,6 +725,7 @@ class TensionDetector:
         
         Args:
             analysis: Complete tension analysis result
+            model_version: AI Model version
             db: Database session
         """
         tension = IATension(
@@ -731,7 +733,10 @@ class TensionDetector:
             mcc_risk_class=analysis.mcc_risk_class,
             ia_risk_class=analysis.ia_risk_class,
             tension_type=analysis.tension_type.value,
-            explanation=analysis.explanation
+            tension_severity=analysis.tension_severity.value,
+            explanation=analysis.explanation,
+            model_version=model_version,
+            prediction_source="ML_ENGINE"
         )
         
         db.add(tension)
