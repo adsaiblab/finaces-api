@@ -25,7 +25,7 @@ async def api_compute_ratios(case_id: UUID, db: AsyncSession = Depends(get_db), 
     The computation is delegated via the Service bus to pure Engines (Z-Score included).
     """
     try:
-        await assert_case_status(case_id=case_id, allowed_statuses=["DRAFT", "FINANCIAL_INPUT", "NORMALIZATION", "IN_ANALYSIS", "SCORING"], db=db)
+        await assert_case_status(case_id=case_id, allowed_statuses=["FINANCIAL_INPUT", "NORMALIZATION_DONE", "RATIOS_COMPUTED"], db=db)
         ratio_sets = await process_ratios(case_id=case_id, db=db)
         return ratio_sets
         

@@ -42,6 +42,6 @@ async def api_compute_scoring(
         path=request.url.path,
         case_id=str(case_id),
     )
-    await assert_case_status(case_id=case_id, allowed_statuses=["DRAFT", "IN_ANALYSIS", "SCORING"], db=db)
+    await assert_case_status(case_id=case_id, allowed_statuses=["RATIOS_COMPUTED"], db=db)
     scorecard_result = await process_scoring(case_id=case_id, db=db)
     return scorecard_result
