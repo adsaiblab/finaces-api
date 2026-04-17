@@ -248,14 +248,14 @@ class NormalizedStatementUIResponse(NormalizedStatementDBInsert):
     backlog_value_original: Optional[float] = None
     
     # Currency context for UI
-    currency_original: str = "MAD"
+    currency_original: Optional[str] = None
     
     # Assets (USD vs ORIGINAL)
-    total_assets_original: float = 0.0
-    current_assets_original: float = 0.0
+    total_assets_original: Optional[float] = None
+    current_assets_original: Optional[float] = None
     liquid_assets_original: float = 0.0
-    inventory_original: float = 0.0
-    accounts_receivable_original: float = 0.0
+    inventory_original: Optional[float] = None
+    accounts_receivable_original: Optional[float] = None
     other_current_assets_original: float = 0.0
     non_current_assets_original: float = 0.0
     intangible_assets_original: float = 0.0
@@ -280,7 +280,7 @@ class NormalizedStatementUIResponse(NormalizedStatementDBInsert):
     other_current_liabilities_original: float = 0.0
     
     # Income Statement (USD vs ORIGINAL)
-    revenue_original: float = 0.0
+    revenue_original: Optional[float] = None
     sold_production_original: float = 0.0
     extraordinary_expenses_original: float = 0.0
     dividends_original: float = 0.0
@@ -292,15 +292,15 @@ class NormalizedStatementUIResponse(NormalizedStatementDBInsert):
     taxes_and_duties_original: float = 0.0
     depreciation_and_amortization_original: float = 0.0
     other_operating_expenses_original: float = 0.0
-    operating_income_original: float = 0.0
+    operating_income_original: Optional[float] = None
     financial_revenue_original: float = 0.0
     financial_expenses_original: float = 0.0
     financial_income_original: float = 0.0
     income_before_tax_original: float = 0.0
     extraordinary_income_original: float = 0.0
     income_tax_original: float = 0.0
-    net_income_original: float = 0.0
-    ebitda_original: float = 0.0
+    net_income_original: Optional[float] = None
+    ebitda_original: Optional[float] = None
     
     # Cash Flows (USD vs ORIGINAL)
     operating_cash_flow_original: float = 0.0
