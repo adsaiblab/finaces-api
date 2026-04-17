@@ -53,6 +53,26 @@ class IATrainingService:
             await db.refresh(dataset)
             return dataset
 
+        if source_type == "CSV":
+            # Loading data from a local CSV file (Bootstrap)
+            file_path = (query_filter or {}).get("file_path")
+            if not file_path:
+                raise ValueError("file_path is required for CSV source")
+            
+            # Note: Features list might be unknown until training, 
+            # but we can try a quick peek if the file is local
+            dataset = IATrainingDataset(
+                dataset_name=dataset_name,
+                sample_size=(query_filter or {}).get("n_samples", 5000),
+                features_list=[], # Will be populated by the trainer
+                target_column=target_column,
+                query_filter=query_filter
+            )
+            db.add(dataset)
+            await db.commit()
+            await db.refresh(dataset)
+            return dataset
+
         # 1. Identity cases with both features and valid outcomes (scorecards)
         stmt = (
             select(IAFeatures, Scorecard)
@@ -153,14 +173,19 @@ class IATrainingService:
                 trainer = ModelTrainer(output_dir="ml/models")
                 
                 # 3. Run Pipeline
-                # If source is synthetic, we pass n_samples. If REAL, it's already using DB.
+                # Determine data source configuration
                 data_kwargs = {}
                 if source == "SYNTHETIC":
                     data_kwargs["n_samples"] = n_samples
                     data_source_id = "synthetic"
+                elif source == "CSV":
+                    file_path = (run.dataset.query_filter or {}).get("file_path")
+                    if not file_path:
+                        raise ValueError("No file_path provided for CSV training.")
+                    data_source_id = "csv"
+                    data_kwargs["file_path"] = file_path
                 else:
-                    # For real data, we might need a db_session inside prepare_data
-                    # but DataLoader.load_dataset currently handles finaces_db
+                    # For real data
                     data_source_id = "finaces_db"
                     data_kwargs["db_session"] = db
                 

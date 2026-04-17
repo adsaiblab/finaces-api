@@ -490,6 +490,51 @@ class DataLoader:
         df = df.fillna(df.median())
         
         return df
+
+    def load_from_csv(
+        self, 
+        file_path: str, 
+        target_column: str = "default"
+    ) -> Tuple[pd.DataFrame, pd.Series]:
+        """
+        Load a dataset from a local CSV file.
+        
+        Args:
+            file_path: Path to CSV file
+            target_column: Name of the target variable
+            
+        Returns:
+            (features_df, target_series)
+        """
+        logger.info(f"Loading data from CSV: {file_path}")
+        
+        path = Path(file_path)
+        if not path.exists():
+            # Try relative to raw_dir if not absolute
+            path = self.raw_dir / file_path
+            if not path.exists():
+                raise FileNotFoundError(f"CSV file not found: {file_path}")
+        
+        df = pd.read_csv(path)
+        
+        if target_column not in df.columns:
+            # Fallback check for common target names
+            common_targets = ['default', 'target', 'y', 'label']
+            for t in common_targets:
+                if t in df.columns:
+                    target_column = t
+                    break
+            else:
+                raise ValueError(f"Target column '{target_column}' not found in {df.columns}")
+        
+        target = df[target_column]
+        features = df.drop(columns=[target_column])
+        
+        # Ensure only numeric features are used
+        features = features.select_dtypes(include=[np.number])
+        
+        logger.info(f"✓ CSV loaded: {len(df)} samples, {len(features.columns)} features")
+        return features, target
     
     # ========================================================================
     # FINACES DATABASE EXPORT
@@ -626,6 +671,11 @@ class DataLoader:
                 raise ValueError("db_session required for finaces_db source")
             # Async method - caller must await
             return self.load_from_finaces_database(**kwargs)
+        
+        elif source == "csv":
+            if 'file_path' not in kwargs:
+                raise ValueError("file_path required for csv source")
+            return self.load_from_csv(**kwargs)
         
         else:
             raise ValueError(
