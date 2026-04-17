@@ -1,86 +1,149 @@
-"""
-Admin IA routes — drift monitoring and model management.
-
-Routes (prefix /admin/ia):
-    GET  /drift-report     → generate and return Evidently drift report
-"""
-
+import uuid
 import logging
-from typing import Annotated
-
-import sentry_sdk
-from fastapi import APIRouter, Depends, Query
+from typing import List, Dict, Any, Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func
 
 from app.db.database import get_db
 from app.core.security import get_current_user
-from app.db.models import User
-from app.engines.ia.drift_report import generate_drift_report
+from app.services.ia_training_service import IATrainingService
+from app.schemas.ia_schema import (
+    IATrainingDatasetSchema,
+    IATrainingRunSchema,
+    IADeployedModelSchema,
+    IAAdminStats
+)
+from app.db.models import IATrainingRun, IADeployedModel, IAAdminEvent, IATrainingDataset
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin/ia", tags=["Admin — IA"])
-
-
-def _require_admin(current_user: User = Depends(get_current_user)) -> User:
-    """Dependency that restricts access to admin users only."""
-    if not getattr(current_user, "is_admin", False):
-        from fastapi import HTTPException, status
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin role required.",
-        )
-    return current_user
-
+router = APIRouter(prefix="/admin-ia", tags=["AI Administration"])
 
 @router.get(
-    "/drift-report",
-    summary="Generate IA feature drift report (admin only)",
-    description=(
-        "Runs an Evidently DataDriftPreset report comparing a reference window "
-        "to the most recent production predictions. See RETRAINING_RULES.md for "
-        "threshold definitions and escalation procedure. "
-        "Triggered manually or by a weekly cron — no embedded scheduler."
-    ),
+    "/stats",
+    response_model=IAAdminStats,
+    summary="Get Admin IA dashboard stats"
 )
-async def get_drift_report(
-    reference_period_days: Annotated[int, Query(ge=7, le=180, description="Reference window in days")] = 30,
-    current_period_days: Annotated[int, Query(ge=1, le=30, description="Current production window in days")] = 7,
+async def get_admin_stats(
     db: AsyncSession = Depends(get_db),
-    _admin: User = Depends(_require_admin),
-) -> dict:
+    current_user: Dict = Depends(get_current_user)
+):
     """
-    Generate IA feature drift report.
-
-    Returns drift_detected, drifted_features, drift_score, and per-feature details.
-    Emits Sentry warning/error events if thresholds defined in RETRAINING_RULES.md are exceeded.
+    Returns high-level stats for the Admin IA dashboard.
     """
-    report = await generate_drift_report(
-        db=db,
-        reference_period_days=reference_period_days,
-        current_period_days=current_period_days,
+    # 1. Total runs
+    total_runs = await db.scalar(select(func.count(IATrainingRun.id)))
+    
+    # 2. Active model
+    active_stmt = select(IADeployedModel).where(IADeployedModel.is_active == True).limit(1)
+    active_model = await db.scalar(active_stmt)
+    
+    # 3. Latest metrics (from the active model's run)
+    latest_metrics = None
+    if active_model:
+        run_stmt = select(IATrainingRun).where(IATrainingRun.id == active_model.training_run_id)
+        active_run = await db.scalar(run_stmt)
+        if active_run:
+            latest_metrics = active_run.metrics
+            
+    # 4. Pending alerts
+    alerts_count = await db.scalar(
+        select(func.count(IAAdminEvent.id)).where(IAAdminEvent.is_resolved == False)
+    )
+    
+    return IAAdminStats(
+        active_model=active_model,
+        total_training_runs=total_runs or 0,
+        latest_metrics=latest_metrics,
+        pending_alerts_count=alerts_count or 0
     )
 
-    # ── Sentry alerts per RETRAINING_RULES.md thresholds ─────────────────────
-    drift_score = report.get("drift_score", 0.0)
-    drifted_features = report.get("drifted_features", [])
+@router.get(
+    "/runs",
+    response_model=List[IATrainingRunSchema],
+    summary="List training runs"
+)
+async def list_training_runs(
+    limit: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict = Depends(get_current_user)
+):
+    stmt = select(IATrainingRun).order_by(IATrainingRun.created_at.desc()).limit(limit)
+    result = await db.execute(stmt)
+    return result.scalars().all()
 
-    CRITICAL_FEATURES = {"debt_to_equity", "net_margin", "current_ratio", "operating_cash_flow", "z_score_altman"}
-    critical_drifted = [f for f in drifted_features if f in CRITICAL_FEATURES]
-
-    if drift_score > 0.30:
-        logger.error(f"IA drift CRITICAL — score {drift_score}, features: {drifted_features}")
-        sentry_sdk.capture_message(
-            f"[FinaCES IA] Drift CRITICAL — score={drift_score:.4f} — {drifted_features}",
-            level="error",
-            extras={"report": report},
+@router.post(
+    "/datasets",
+    response_model=IATrainingDatasetSchema,
+    summary="Build a new training dataset"
+)
+async def build_dataset(
+    dataset_name: str,
+    target_column: str = "mcc_score",
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict = Depends(get_current_user)
+):
+    try:
+        return await IATrainingService.build_training_dataset(
+            db, dataset_name, target_column
         )
-    elif drift_score > 0.15 and len(critical_drifted) >= 2:
-        logger.warning(f"IA drift WARNING — score {drift_score}, critical features: {critical_drifted}")
-        sentry_sdk.capture_message(
-            f"[FinaCES IA] Drift WARNING — score={drift_score:.4f} — critical={critical_drifted}",
-            level="warning",
-            extras={"report": report},
-        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-    return report
+@router.post(
+    "/train/{dataset_id}",
+    response_model=IATrainingRunSchema,
+    summary="Launch a training run"
+)
+async def launch_training(
+    dataset_id: uuid.UUID,
+    model_type: str = "xgboost",
+    hyperparameters: Optional[Dict] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict = Depends(get_current_user)
+):
+    return await IATrainingService.launch_training(
+        db, dataset_id, model_type, hyperparameters
+    )
+
+@router.post(
+    "/deploy/{run_id}",
+    response_model=IADeployedModelSchema,
+    summary="Deploy a trained model"
+)
+async def deploy_model(
+    run_id: uuid.UUID,
+    version: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict = Depends(get_current_user)
+):
+    try:
+        return await IATrainingService.deploy_model(
+            db, run_id, version, deployed_by=current_user.get("sub", "SYSTEM")
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get(
+    "/events",
+    response_model=List[Dict[str, Any]],
+    summary="List admin events/alerts"
+)
+async def list_admin_events(
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict = Depends(get_current_user)
+):
+    stmt = select(IAAdminEvent).order_by(IAAdminEvent.created_at.desc()).limit(50)
+    result = await db.execute(stmt)
+    return [
+        {
+            "id": e.id,
+            "event_type": e.event_type,
+            "severity": e.severity,
+            "message": e.message,
+            "created_at": e.created_at,
+            "is_resolved": e.is_resolved
+        }
+        for e in result.scalars().all()
+    ]

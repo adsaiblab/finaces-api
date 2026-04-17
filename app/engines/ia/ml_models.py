@@ -348,7 +348,7 @@ class MLModelManager:
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
         
         # Save model
-        model_filename = f"{self.model_type}_{version}_{timestamp}.pkl"
+        model_filename = f"{self.model_type}_{version}_{timestamp}.joblib"
         model_path = self.model_dir / model_filename
         
         model_artifact = {
@@ -411,7 +411,7 @@ class MLModelManager:
     
     def load_latest(self) -> None:
         """Load the most recently saved model."""
-        model_files = list(self.model_dir.glob(f"{self.model_type}_*.pkl"))
+        model_files = list(self.model_dir.glob(f"{self.model_type}_*.joblib"))
         
         if not model_files:
             raise FileNotFoundError(

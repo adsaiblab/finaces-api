@@ -677,7 +677,17 @@ class ModelTrainer:
         version: Optional[str] = None
     ) -> Path:
         """
-        Save trained model to disk.
+        Save trained model with its preprocessing context to disk.
+        
+        Saves a structured dictionary artifact:
+        {
+            "model": self.model,
+            "scaler": self.preprocessor.scaler if self.preprocessor else None,
+            "feature_names": self.preprocessor.numeric_features if self.preprocessor else None,
+            "model_type": self.model_type,
+            "version": version,
+            "trained_at": timestamp
+        }
         
         Args:
             model_name: Custom model name (default: auto-generated)
@@ -693,18 +703,37 @@ class ModelTrainer:
         if model_name is None:
             model_name = f"{self.model_type}_model"
         
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         if version is None:
-            version = datetime.now().strftime('%Y%m%d_%H%M%S')
+            version = timestamp
         
         filename = f"{model_name}_{version}.joblib"
         model_path = self.output_dir / filename
         
-        # Save model
-        joblib.dump(self.model, model_path)
+        # ── Artifact Construction (Ensures compatibility with MLModelManager) ──
+        # We extract the scaler and numeric features from the fitted preprocessor
+        scaler = None
+        feature_names = None
+        if self.preprocessor:
+            scaler = self.preprocessor.scaler
+            # In FinancialDataPreprocessor, numeric_features stores the list of columns
+            feature_names = self.preprocessor.numeric_features
+            
+        model_artifact = {
+            "model": self.model,
+            "scaler": scaler,
+            "feature_names": feature_names,
+            "model_type": self.model_type,
+            "version": version,
+            "trained_at": timestamp
+        }
         
-        logger.info(f"✓ Model saved to: {model_path}")
+        # Save structured artifact
+        joblib.dump(model_artifact, model_path)
         
-        # Save metadata
+        logger.info(f"✓ Structured model artifact saved to: {model_path}")
+        
+        # Save metadata (JSON only, for humans/dashboard)
         metadata_path = self.output_dir / f"{model_name}_{version}_metadata.json"
         
         metadata = {
@@ -714,6 +743,8 @@ class ModelTrainer:
             'training_date': datetime.now().isoformat(),
             'training_history': self.training_history,
             'threshold': float(self.best_threshold),
+            'feature_count': len(feature_names) if feature_names else 0,
+            'metrics': self.training_history.get('metrics', {}),
             'preprocessor': 'FinancialDataPreprocessor'
         }
         

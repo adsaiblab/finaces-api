@@ -517,6 +517,20 @@ class FinancialStatementNormalized(Base):
 
     adjustments_count: Mapped[int | None] = mapped_column(Integer, nullable=True, default=0)
     normalized_json: Mapped[list | dict | None] = mapped_column(JSONB, nullable=True, default=lambda: {}) # <-- FIX P2-07
+
+    # ── Localized values (Technical Debt) ───────────────
+    currency_original: Mapped[str | None] = mapped_column(String, nullable=True)
+    exchange_rate_used: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    
+    total_assets_original: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    current_assets_original: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    inventory_original: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    accounts_receivable_original: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    revenue_original: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    operating_income_original: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    net_income_original: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+    ebitda_original: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
 
     raw_statement: Mapped["FinancialStatementRaw"] = relationship(back_populates="normalized_statements", lazy="selectin")
@@ -609,6 +623,18 @@ class RatioSet(Base):
 
     z_score_altman: Mapped[Decimal | None] = mapped_column(Numeric(18, 2), nullable=True)
     z_score_zone: Mapped[str | None] = mapped_column(String, nullable=True)
+    
+    # ── Z-Score components (Technical Debt) ─────────────
+    z_score_x1: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True) # WC/TA
+    z_score_x2: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True) # RE/TA
+    z_score_x3: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True) # EBIT/TA
+    z_score_x4: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True) # MVE/TL
+    
+    # ── YoY Variations (Technical Debt) ─────────────────
+    revenue_growth_yoy: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    ebitda_growth_yoy: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    net_income_growth_yoy: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    margin_variation_yoy: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
 
     coherence_alerts_json: Mapped[list | dict | None] = mapped_column(JSONB, nullable=True, default=[])
 
@@ -700,6 +726,7 @@ class Scorecard(Base):
 
     smart_recommendations_json: Mapped[list | dict | None] = mapped_column(JSONB, nullable=True, default=lambda: []) # <-- FIX P2-07
     expert_interpretations_json: Mapped[list | dict | None] = mapped_column(JSONB, nullable=True, default=lambda: {}) # <-- FIX P2-07
+    pillars_json: Mapped[list | dict | None] = mapped_column(JSONB, nullable=True, default=lambda: {}) # Detailed scores
 
     computed_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
 
@@ -1084,9 +1111,14 @@ class IATension(Base):
     case_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_cases.id"), index=True, nullable=False)
     mcc_risk_class: Mapped[str] = mapped_column(String(20), nullable=False)
     ia_risk_class: Mapped[str] = mapped_column(String(20), nullable=False)
-    tension_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    explanation: Mapped[str] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    model_version: Mapped[str] = mapped_column(String(50), nullable=False)
+    deployed_model_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("ia_deployed_models.id", ondelete="SET NULL"), nullable=True)
+    prediction_source: Mapped[str | None] = mapped_column(String(50), nullable=True, default="ML_ENGINE") # ML_ENGINE, RULE_ENGINE, MANUAL
+
+    input_features: Mapped[list | dict | None] = mapped_column(JSONB, nullable=True)
+    actual_outcome: Mapped[str | None] = mapped_column(String(50), nullable=True) # For drift detection
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
     
     case: Mapped["EvaluationCase"] = relationship("EvaluationCase", back_populates="ia_tensions")
 

@@ -6,6 +6,7 @@ All schemas for IA prediction requests, responses, and related data structures.
 Language: 100% English
 """
 
+import uuid
 from pydantic import BaseModel, Field, ConfigDict, model_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -128,3 +129,47 @@ class IAFeaturesResponse(BaseModel):
     missing_flags: Dict[str, bool]
     capped_flags: Dict[str, bool]
     metadata: Dict[str, Any]
+
+
+# ════════════════════════════════════════════════════════════════
+# IA ADMIN SCHEMAS (Training & Monitoring)
+# ════════════════════════════════════════════════════════════════
+
+class IATrainingDatasetSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    dataset_name: str
+    sample_size: int
+    features_list: List[str]
+    target_column: str
+    created_at: datetime
+
+class IATrainingRunSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    dataset_id: uuid.UUID
+    model_type: str
+    hyperparameters: Optional[Dict] = None
+    status: str
+    metrics: Optional[Dict] = None
+    model_artifact_path: Optional[str] = None
+    error_log: Optional[str] = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    created_at: datetime
+
+class IADeployedModelSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    training_run_id: uuid.UUID
+    version: str
+    is_active: bool
+    deployed_by: Optional[str] = None
+    deployed_at: datetime
+
+class IAAdminStats(BaseModel):
+    active_model: Optional[IADeployedModelSchema] = None
+    total_training_runs: int
+    latest_metrics: Optional[Dict] = None
+    system_health: str = "GREEN"
+    pending_alerts_count: int = 0
