@@ -278,6 +278,7 @@ def create_app() -> FastAPI:
     api_v1_router.include_router(comparison.router)
     api_v1_router.include_router(report.router)
     api_v1_router.include_router(ia.router)
+    api_v1_router.include_router(admin_ia.router)
 
     # 4. Route Healthcheck — Dual support (root for smoke tests, /api/v1 for unified access)
     @app.get("/health", tags=["System"])
@@ -291,8 +292,6 @@ def create_app() -> FastAPI:
     # Master registration
     app.include_router(api_v1_router)
 
-    # Admin routes (separate prefix — not under /api/v1)
-    app.include_router(admin_ia.router)
 
     return app
 
