@@ -29,8 +29,11 @@ from app.db.models import (
 )
 from app.services.audit_service import log_event
 
-logger = logging.getLogger(__name__)
+# ════════════════════════════════════════════════════════════════
+# SYSTEM CONSTANTS
+# ════════════════════════════════════════════════════════════════
 
+SYSTEM_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000000")
 
 # ════════════════════════════════════════════════════════════════
 # STATE MACHINE — Constants (ADR-05)
@@ -124,7 +127,7 @@ async def transition_status(
     case_id:    uuid.UUID,
     new_status: str,
     db:         AsyncSession,
-    user_id:    str = "SYSTEM",
+    user_id:    uuid.UUID = SYSTEM_USER_ID,
 ) -> EvaluationCase:
     """
     Applies a status transition while validating business guards.
@@ -230,7 +233,7 @@ async def create_evaluation_case(
     jv_type: Optional[str] = None,
     members: Optional[list] = None,
     # Actor
-    user_id: str = "SYSTEM",
+    user_id: uuid.UUID = SYSTEM_USER_ID,
 ) -> str:
     """
     Pure Service — Creates an evaluation case (SINGLE or CONSORTIUM).
@@ -429,7 +432,7 @@ async def update_recommendation(
     case_id: uuid.UUID,
     recommendation: str,
     db: AsyncSession,
-    user_id: str = "SYSTEM"
+    user_id: uuid.UUID = SYSTEM_USER_ID
 ) -> EvaluationCase:
     result = await db.execute(select(EvaluationCase).where(EvaluationCase.id == case_id))
     case = result.scalars().first()
@@ -464,7 +467,7 @@ async def update_conclusion(
     case_id: uuid.UUID,
     conclusion: str,
     db: AsyncSession,
-    user_id: str = "SYSTEM"
+    user_id: uuid.UUID = SYSTEM_USER_ID
 ) -> EvaluationCase:
     result = await db.execute(select(EvaluationCase).where(EvaluationCase.id == case_id))
     case = result.scalars().first()
