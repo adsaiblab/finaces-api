@@ -11,6 +11,9 @@ from app.engines.ratio_engine import compute_ratios
 from app.exceptions.finaces_exceptions import MissingFinancialDataError
 from app.schemas.policy_schema import PolicyConfigurationSchema
 from app.services.audit_service import log_event
+from app.db.models import EvaluationCase
+from app.schemas.enums import CaseStatus
+from sqlalchemy import update
 
 logger = logging.getLogger(__name__)
 
@@ -128,5 +131,13 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
         for alert in cross_pillar_alerts:
             existing_alerts.append(alert.model_dump(exclude_none=True))
         latest.coherence_alerts_json = existing_alerts
+
+    # Finalize status transition (MCC-Grade Pipeline stability)
+    await db.execute(
+        update(EvaluationCase)
+        .where(EvaluationCase.id == case_id)
+        .values(status=CaseStatus.RATIOS_COMPUTED)
+    )
+    await db.commit()
 
     return ratio_sets_generated
