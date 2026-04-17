@@ -213,6 +213,28 @@ class IATrainingService:
                 run.model_artifact_path = str(results['model_path'])
                 
                 logger.info(f"✓ Training run {run.id} completed successfully")
+                
+                # 5. Persist to ia_models table
+                version = results.get('version') or datetime.now().strftime("%Y%m%d_%H%M%S")
+                
+                # Deactivate previous models
+                await db.execute(
+                    update(IAModel).values(is_active=False).where(IAModel.is_active == True)
+                )
+                
+                new_model = IAModel(
+                    id=uuid.uuid4(),
+                    model_name=f"xgboost_{version}",
+                    version=version,
+                    file_path=str(results['model_path']),
+                    metrics=results['metrics'],
+                    is_active=True,
+                    feature_names=results.get('feature_importance', []),
+                    hyperparameters=run.hyperparameters,
+                    trained_at=datetime.now(timezone.utc)
+                )
+                db.add(new_model)
+                logger.info(f"New model {new_model.model_name} registered and activated in ia_models.")
 
             except Exception as e:
                 logger.exception(f"Training failed for run {run.id}")
