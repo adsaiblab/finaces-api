@@ -84,6 +84,14 @@ def upgrade() -> None:
     op.execute("ALTER TABLE ia_predictions ADD COLUMN IF NOT EXISTS input_features JSONB")
     op.execute("ALTER TABLE ia_predictions ADD COLUMN IF NOT EXISTS actual_outcome VARCHAR(50)")
 
+    # ia_tensions
+    op.execute("ALTER TABLE ia_tensions ADD COLUMN IF NOT EXISTS tension_severity VARCHAR(20)")
+    op.execute("ALTER TABLE ia_tensions ADD COLUMN IF NOT EXISTS model_version VARCHAR(50)")
+    op.execute("ALTER TABLE ia_tensions ADD COLUMN IF NOT EXISTS deployed_model_id UUID REFERENCES ia_deployed_models(id) ON DELETE SET NULL")
+    op.execute("ALTER TABLE ia_tensions ADD COLUMN IF NOT EXISTS prediction_source VARCHAR(50) DEFAULT 'ML_ENGINE'")
+    op.execute("ALTER TABLE ia_tensions ADD COLUMN IF NOT EXISTS input_features JSONB")
+    op.execute("ALTER TABLE ia_tensions ADD COLUMN IF NOT EXISTS actual_outcome VARCHAR(50)")
+
     # ── 3. Technical Debt: Normalization (Local values) ───────────────────────
     
     op.execute("ALTER TABLE financial_statements_normalized ADD COLUMN IF NOT EXISTS currency_original VARCHAR")

@@ -1111,11 +1111,14 @@ class IATension(Base):
     case_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evaluation_cases.id"), index=True, nullable=False)
     mcc_risk_class: Mapped[str] = mapped_column(String(20), nullable=False)
     ia_risk_class: Mapped[str] = mapped_column(String(20), nullable=False)
+    tension_type: Mapped[str] = mapped_column(String(50), nullable=False) # Potential, High, Critical
+    tension_severity: Mapped[str] = mapped_column(String(20), nullable=False) # Low, Medium, High
+    explanation: Mapped[str | None] = mapped_column(Text, nullable=True) # Legacy support
     model_version: Mapped[str] = mapped_column(String(50), nullable=False)
     deployed_model_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("ia_deployed_models.id", ondelete="SET NULL"), nullable=True)
     prediction_source: Mapped[str | None] = mapped_column(String(50), nullable=True, default="ML_ENGINE") # ML_ENGINE, RULE_ENGINE, MANUAL
 
-    input_features: Mapped[list | dict | None] = mapped_column(JSONB, nullable=True)
+    input_features: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     actual_outcome: Mapped[str | None] = mapped_column(String(50), nullable=True) # For drift detection
     
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
