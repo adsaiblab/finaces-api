@@ -1141,3 +1141,78 @@ class IAModel(Base):
     trained_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
+
+# ════════════════════════════════════════════════════════════════
+# 23 — IA ADMIN: TRAINING DATASETS
+# ════════════════════════════════════════════════════════════════
+
+class IATrainingDataset(Base):
+    __tablename__ = "ia_training_datasets"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    dataset_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    sample_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    features_list: Mapped[list] = mapped_column(JSONB, nullable=False)
+    target_column: Mapped[str] = mapped_column(String(50), nullable=False)
+    query_filter: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    runs: Mapped[list["IATrainingRun"]] = relationship("IATrainingRun", back_populates="dataset")
+
+
+# ════════════════════════════════════════════════════════════════
+# 24 — IA ADMIN: TRAINING RUNS
+# ════════════════════════════════════════════════════════════════
+
+class IATrainingRun(Base):
+    __tablename__ = "ia_training_runs"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    dataset_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("ia_training_datasets.id"), nullable=False)
+    model_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    hyperparameters: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING")
+    metrics: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    model_artifact_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    error_log: Mapped[str | None] = mapped_column(Text, nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    dataset: Mapped["IATrainingDataset"] = relationship("IATrainingDataset", back_populates="runs")
+    deployment: Mapped["IADeployedModel | None"] = relationship("IADeployedModel", back_populates="training_run", uselist=False)
+
+
+# ════════════════════════════════════════════════════════════════
+# 25 — IA ADMIN: DEPLOYED MODELS
+# ════════════════════════════════════════════════════════════════
+
+class IADeployedModel(Base):
+    __tablename__ = "ia_deployed_models"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    training_run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("ia_training_runs.id"), nullable=False)
+    version: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    deployment_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    deployed_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    deployed_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    training_run: Mapped["IATrainingRun"] = relationship("IATrainingRun", back_populates="deployment")
+
+
+# ════════════════════════════════════════════════════════════════
+# 26 — IA ADMIN: EVENTS & ALERTS
+# ════════════════════════════════════════════════════════════════
+
+class IAAdminEvent(Base):
+    __tablename__ = "ia_admin_events"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    event_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    severity: Mapped[str] = mapped_column(String(20), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    metadata_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    is_resolved: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
