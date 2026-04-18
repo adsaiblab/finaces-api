@@ -58,14 +58,12 @@ DELETION_MAP = {
     ],
     "NORMALIZATION_DONE": [
         "RatioSet",
-        "GateResult",
         "Scorecard",
         "ExpertReview",
         "ConsortiumResult",
         "MCCGradeReport",
     ],
     "RATIOS_COMPUTED": [
-        "GateResult",
         "Scorecard",
         "ExpertReview",
         "ConsortiumResult",
@@ -211,7 +209,7 @@ async def rollback_case_to_status(
         description=f"Workflow rollback: {current_status} → {target_status}. Reason: {reason}",
         old_value={"status": current_status},
         new_value={"status": target_status, "deleted_tables": tables_to_delete},
-        user_id=str(user_id),
+        user_id=user_id,
     )
 
     logger.info(f"[ROLLBACK] Case {case_id} successfully reset to {target_status}.")
