@@ -83,6 +83,11 @@ class ConclusionUpdate(BaseModel):
     conclusion: str = Field(..., min_length=1, max_length=8000)
 
 
+class RollbackRequest(BaseModel):
+    target_status: str = Field(..., description="Target workflow status to roll back to")
+    reason: str = Field(..., min_length=10, max_length=1000, description="Mandatory justification")
+
+
 # ─────────────────────────────────────────────────────────────────
 # Response Schemas
 # ─────────────────────────────────────────────────────────────────
@@ -306,6 +311,38 @@ async def api_update_recommendation(
         user_id=current_user.get("sub", "SYSTEM")
     )
     return {"status": "ok"}
+
+
+# ─────────────────────────────────────────────────────────────────
+# ROLLBACK — Admin-only secure workflow reset
+# ─────────────────────────────────────────────────────────────────
+
+@router.post(
+    "/{case_id}/rollback",
+    summary="[ADMIN] Roll back workflow to a prior status",
+    description="Resets a case to a prior status and deletes all downstream computed data. CLOSED/ARCHIVED cases are immutable. Requires ADMIN or SENIOR_FIDUCIARY role.",
+)
+async def api_rollback_case(
+    case_id: uuid.UUID,
+    body: RollbackRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(RequireRole(["ADMIN", "SENIOR_FIDUCIARY"])),
+):
+    from app.services.rollback_service import rollback_case_to_status
+
+    case = await rollback_case_to_status(
+        case_id=case_id,
+        target_status=body.target_status,
+        reason=body.reason,
+        db=db,
+        user_id=current_user.get("sub", "SYSTEM"),
+    )
+    return {
+        "status": "ok",
+        "case_id": str(case_id),
+        "new_status": str(case.status),
+        "message": f"Case successfully rolled back to {case.status}.",
+    }
 
 
 @router.patch("/{case_id}/conclusion")
