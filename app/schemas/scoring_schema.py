@@ -11,9 +11,11 @@ class PillarDetailSchema(BaseModel):
     name: str
     score: Decimal = Field(..., ge=0, le=5)
     weight: Decimal
-    trend: List[Decimal]
-    signals: List[str]
-    detailText: str
+    trend: List[Decimal] = []
+    signals: List[str] = []
+    status: str = "GOOD"  # EXCELLENT | GOOD | FAIR | POOR | CRITICAL
+    key_drivers: List[str] = []
+    detailText: str = ""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -45,6 +47,7 @@ class ScorecardInputSchema(BaseModel):
     contract_value: Decimal = Decimal("0.0")
 
 class ScorecardOutputSchema(BaseModel):
+    case_id: str
     system_calculated_score: Decimal
     system_risk_class: RiskClass
     
@@ -69,5 +72,6 @@ class ScorecardOutputSchema(BaseModel):
     overrides_applied: List[Dict[str, str]] = []
     
     computed_at: datetime
+    calculation_date: Optional[str] = None # For frontend compatibility
     
     model_config = ConfigDict(from_attributes=True)

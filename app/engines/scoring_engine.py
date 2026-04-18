@@ -145,21 +145,82 @@ def compute_pure_scorecard(
             override_rationale = ov.get("rationale")
     
     # Pillar Details
+    def get_pillar_status(score: Decimal) -> str:
+        if score >= 4: return "EXCELLENT"
+        if score >= 3: return "GOOD"
+        if score >= 2: return "FAIR"
+        if score >= 1: return "POOR"
+        return "CRITICAL"
+
     pillars = [
-        PillarDetailSchema(id="liq", name="Liquidity & Cash", score=inputs.liquidity_score, weight=weights["liquidity"]*100, trend=[inputs.liquidity_score], signals=[], detailText=""),
-        PillarDetailSchema(id="solv", name="Solvency & Debt", score=inputs.solvency_score, weight=weights["solvency"]*100, trend=[inputs.solvency_score], signals=[], detailText=""),
-        PillarDetailSchema(id="rent", name="Profitability", score=inputs.profitability_score, weight=weights["profitability"]*100, trend=[inputs.profitability_score], signals=[], detailText=""),
-        PillarDetailSchema(id="cap", name="Repayment Capacity", score=inputs.capacity_score, weight=weights["capacity"]*100, trend=[inputs.capacity_score], signals=[], detailText=""),
-        PillarDetailSchema(id="qual", name="Document Quality", score=inputs.quality_score, weight=weights["quality"]*100, trend=[inputs.quality_score], signals=[], detailText=""),
+        PillarDetailSchema(
+            id="liq", 
+            name="Liquidity & Cash", 
+            score=inputs.liquidity_score, 
+            weight=weights["liquidity"]*100, 
+            status=get_pillar_status(inputs.liquidity_score),
+            key_drivers=["Current Ratio", "Quick Ratio"],
+            trend=[inputs.liquidity_score], 
+            signals=[], 
+            detailText=""
+        ),
+        PillarDetailSchema(
+            id="solv", 
+            name="Solvency & Debt", 
+            score=inputs.solvency_score, 
+            weight=weights["solvency"]*100, 
+            status=get_pillar_status(inputs.solvency_score),
+            key_drivers=["Debt to Equity", "Gearing"],
+            trend=[inputs.solvency_score], 
+            signals=[], 
+            detailText=""
+        ),
+        PillarDetailSchema(
+            id="rent", 
+            name="Profitability", 
+            score=inputs.profitability_score, 
+            weight=weights["profitability"]*100, 
+            status=get_pillar_status(inputs.profitability_score),
+            key_drivers=["ROE", "Operating Margin"],
+            trend=[inputs.profitability_score], 
+            signals=[], 
+            detailText=""
+        ),
+        PillarDetailSchema(
+            id="cap", 
+            name="Repayment Capacity", 
+            score=inputs.capacity_score, 
+            weight=weights["capacity"]*100, 
+            status=get_pillar_status(inputs.capacity_score),
+            key_drivers=["DSCR", "Cash Flow"],
+            trend=[inputs.capacity_score], 
+            signals=[], 
+            detailText=""
+        ),
+        PillarDetailSchema(
+            id="qual", 
+            name="Document Quality", 
+            score=inputs.quality_score, 
+            weight=weights["quality"]*100, 
+            status=get_pillar_status(inputs.quality_score),
+            key_drivers=["Auditor Opinion", "Statement Integrity"],
+            trend=[inputs.quality_score], 
+            signals=[], 
+            detailText=""
+        ),
     ]
     
     recos = []
     if final_risk_class == RiskClass.LOW:
-        recos.append("Low global risk: No specific financial conditions.")
+        recos.append("Faible risque global : Aucune condition financière spécifique n'est requise.")
+    elif final_risk_class == RiskClass.MODERATE:
+        recos.append("Risque modéré : Une surveillance trimestrielle du BFR est conseillée.")
     elif final_risk_class in [RiskClass.HIGH, RiskClass.CRITICAL]:
-        recos.append(f"Risk {final_risk_class.value}: Awarding is mathematically not recommended.")
+        recos.append(f"Risque {final_risk_class.value} : L'attribution est mathématiquement déconseillée sans garanties additionnelles.")
 
+    now = datetime.now(timezone.utc)
     return ScorecardOutputSchema(
+        case_id=str(case_id),
         system_calculated_score=system_calculated_score,
         system_risk_class=system_risk_class,
         global_score=global_score,
@@ -174,5 +235,6 @@ def compute_pure_scorecard(
         pillars=pillars,
         smart_recommendations=recos,
         overrides_applied=overrides_applied,
-        computed_at=datetime.now(timezone.utc)
+        computed_at=now,
+        calculation_date=now.strftime("%d/%m/%Y")
     )
