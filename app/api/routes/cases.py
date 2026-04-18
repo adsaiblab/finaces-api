@@ -320,13 +320,13 @@ async def api_update_recommendation(
 @router.post(
     "/{case_id}/rollback",
     summary="[ADMIN] Roll back workflow to a prior status",
-    description="Resets a case to a prior status and deletes all downstream computed data. CLOSED/ARCHIVED cases are immutable. Requires ADMIN or SENIOR_FIDUCIARY role.",
+    description="Resets a case to a prior status and deletes all downstream computed data. CLOSED/ARCHIVED cases are immutable. Open to all authenticated users for this project phase.",
 )
 async def api_rollback_case(
     case_id: uuid.UUID,
     body: RollbackRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(RequireRole(["ADMIN", "SENIOR_FIDUCIARY"])),
+    current_user: dict = Depends(get_current_user),
 ):
     from app.services.rollback_service import rollback_case_to_status
 
