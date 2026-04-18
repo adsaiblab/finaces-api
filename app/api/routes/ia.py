@@ -264,7 +264,7 @@ async def predict_risk(
         
         # Generate prediction
         result = await predictor.predict(
-            case_id=case_id,
+            case_id=str(case_id),
             db=db,
             use_cached_features=use_cached_features
         )
@@ -387,7 +387,7 @@ async def dual_scoring(
         
         ia_predictor = IAPredictor(enable_explanations=True)
         ia_result = await ia_predictor.predict(
-            case_id=case_id,
+            case_id=str(case_id),
             db=db,
             use_cached_features=not force_recompute_ia
         )

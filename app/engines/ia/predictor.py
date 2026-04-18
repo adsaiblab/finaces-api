@@ -122,7 +122,7 @@ class IAPredictor:
     
     async def predict(
         self,
-        case_id: uuid.UUID,
+        case_id: str,
         db: AsyncSession,
         use_cached_features: bool = True
     ) -> IAPredictionResult:
@@ -137,11 +137,12 @@ class IAPredictor:
         Returns:
             IAPredictionResult with score, risk class, and explanations
         """
+        case_uuid = uuid.UUID(str(case_id))
         logger.info(f"Starting AI prediction for case {case_id}")
         
         # 1. Load or compute features
         features_data = await self._get_or_compute_features(
-            case_id, db, use_cached_features
+            case_uuid, db, use_cached_features
         )
         
         features = features_data["features"]
@@ -163,7 +164,7 @@ class IAPredictor:
         
         # 6. Persist prediction
         await self._save_prediction(
-            case_id=case_id,
+            case_id=case_uuid,
             probability=probability,
             risk_class=risk_class,
             model_version=self.model_manager.version or "unknown",
@@ -172,7 +173,7 @@ class IAPredictor:
         
         # 7. Build result
         result = IAPredictionResult(
-            case_id=case_id,
+            case_id=str(case_id),
             ia_score=round(probability * 100, 2),  # Convert to 0-100 scale
             ia_probability_default=round(probability, 4),
             ia_risk_class=risk_class,
