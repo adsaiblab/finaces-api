@@ -40,6 +40,16 @@ async def api_compute_ratios(case_id: UUID, db: AsyncSession = Depends(get_db), 
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred during ratio computation."
         )
+    
+
+@router.get("/{case_id}/ratios", response_model=List[RatioSetSchema])
+async def api_get_ratios(case_id: UUID, db: AsyncSession = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    """
+    Retrieves existing analytical ratios for a case from the database.
+    Does not launch new computations.
+    """
+    from app.services.ratio_service import get_existing_ratios
+    return await get_existing_ratios(case_id, db)
 
 
 @router.get("/ratios/benchmarks")

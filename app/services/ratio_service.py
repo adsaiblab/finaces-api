@@ -140,3 +140,16 @@ async def process_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema
         latest.coherence_alerts_json = existing_alerts
 
     return ratio_sets_generated
+
+
+async def get_existing_ratios(case_id: UUID, db: AsyncSession) -> List[RatioSetSchema]:
+    """
+    Retrieves previously computed ratio sets for a given case from the database.
+    Does not trigger new computations. Order by fiscal year descending.
+    """
+    logger.info(f"Retrieving existing ratios for case {case_id}")
+    stmt = select(RatioSet).where(RatioSet.case_id == case_id).order_by(RatioSet.fiscal_year.desc())
+    result = await db.execute(stmt)
+    ratio_sets_orm = result.scalars().all()
+    
+    return [RatioSetSchema.model_validate(orm) for orm in ratio_sets_orm]
