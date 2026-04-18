@@ -45,3 +45,30 @@ async def api_compute_scoring(
     await assert_case_status(case_id=case_id, allowed_statuses=["RATIOS_COMPUTED"], db=db)
     scorecard_result = await process_scoring(case_id=case_id, db=db)
     return scorecard_result
+
+
+@router.get(
+    "/{case_id}/score",
+    response_model=ScorecardOutputSchema,
+    summary="Get existing scorecard",
+    description="Retrieves the latest calculated scorecard for a case without triggering a new calculation."
+)
+async def api_get_scoring(
+    case_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Fetch already computed results from database.
+    Returns 404 if no scorecard exists yet.
+    """
+    from app.services.scoring_service import get_existing_scorecard
+    from fastapi import HTTPException
+
+    scorecard = await get_existing_scorecard(case_id=case_id, db=db)
+    if not scorecard:
+        raise HTTPException(
+            status_code=404, 
+            detail="No scorecard found for this case. Please compute it first."
+        )
+    return scorecard

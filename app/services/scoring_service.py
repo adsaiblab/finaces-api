@@ -137,6 +137,15 @@ async def process_scoring(case_id: UUID, db: AsyncSession) -> ScorecardOutputSch
         existing_scorecard.score_global = scorecard_out.system_calculated_score
         existing_scorecard.risk_class = scorecard_out.system_risk_class
         existing_scorecard.overrides_applied_json = overrides_json
+        # Persist full analysis fields for retrieval
+        existing_scorecard.risk_profile = scorecard_out.risk_profile
+        existing_scorecard.risk_description = scorecard_out.risk_description
+        existing_scorecard.smart_recommendations_json = scorecard_out.smart_recommendations
+        existing_scorecard.pillars_json = [p.model_dump() for p in scorecard_out.pillars]
+        existing_scorecard.cross_analysis_alerts = scorecard_out.cross_analysis_alerts
+        existing_scorecard.trends_summary = scorecard_out.trends_summary
+        existing_scorecard.synergy_index = scorecard_out.synergy_index
+        existing_scorecard.synergy_bonus = scorecard_out.synergy_bonus
         target_scorecard = existing_scorecard
     else:
         new_scorecard = Scorecard(
@@ -150,6 +159,15 @@ async def process_scoring(case_id: UUID, db: AsyncSession) -> ScorecardOutputSch
             score_global=scorecard_out.system_calculated_score,
             risk_class=scorecard_out.system_risk_class,
             overrides_applied_json=overrides_json,  # P0-03: no double dump
+            # Persist full analysis fields
+            risk_profile=scorecard_out.risk_profile,
+            risk_description=scorecard_out.risk_description,
+            smart_recommendations_json=scorecard_out.smart_recommendations,
+            pillars_json=[p.model_dump() for p in scorecard_out.pillars],
+            cross_analysis_alerts=scorecard_out.cross_analysis_alerts,
+            trends_summary=scorecard_out.trends_summary,
+            synergy_index=scorecard_out.synergy_index,
+            synergy_bonus=scorecard_out.synergy_bonus,
         )
         db.add(new_scorecard)
         target_scorecard = new_scorecard
@@ -175,3 +193,62 @@ async def process_scoring(case_id: UUID, db: AsyncSession) -> ScorecardOutputSch
     )
 
     return scorecard_out
+
+
+async def get_existing_scorecard(case_id: UUID, db: AsyncSession) -> ScorecardOutputSchema:
+    """
+    Retrieves the most recent Scorecard for a case from the database.
+    Maps ORM fields to ScorecardOutputSchema.
+    """
+    logger.info(f"Retrieving existing scorecard for case {case_id}")
+    
+    stmt = (
+        select(Scorecard)
+        .where(Scorecard.case_id == case_id)
+        .order_by(desc(Scorecard.computed_at))
+    )
+    result = await db.execute(stmt)
+    sc = result.scalars().first()
+    
+    if not sc:
+        return None
+        
+    # Reconstruct pillars from JSON or falling back to scalar scores
+    pillars = []
+    if sc.pillars_json:
+        # Pydantic v2 validation from dict
+        pillars = [PillarDetailSchema(**p) for p in sc.pillars_json]
+    else:
+        # Fallback for legacy records or missing JSON
+        pillars = [
+            PillarDetailSchema(id="liq", name="Liquidity & Cash", score=sc.score_liquidity or Decimal("0"), weight=Decimal("0"), trend=[sc.score_liquidity or Decimal("0")], signals=[], detailText=""),
+            PillarDetailSchema(id="solv", name="Solvency & Debt", score=sc.score_solvency or Decimal("0"), weight=Decimal("0"), trend=[sc.score_solvency or Decimal("0")], signals=[], detailText=""),
+            PillarDetailSchema(id="rent", name="Profitability", score=sc.score_profitability or Decimal("0"), weight=Decimal("0"), trend=[sc.score_profitability or Decimal("0")], signals=[], detailText=""),
+            PillarDetailSchema(id="cap", name="Repayment Capacity", score=sc.score_capacity or Decimal("0"), weight=Decimal("0"), trend=[sc.score_capacity or Decimal("0")], signals=[], detailText=""),
+            PillarDetailSchema(id="qual", name="Document Quality", score=sc.score_quality or Decimal("0"), weight=Decimal("0"), trend=[sc.score_quality or Decimal("0")], signals=[], detailText=""),
+        ]
+
+    # Map overrides
+    overrides = sc.overrides_applied_json if sc.overrides_applied_json else []
+    is_overridden = any(o.get("type") == "MANUAL_RISK_OVERRIDE" for o in overrides if isinstance(o, dict))
+    override_rationale = next((o.get("rationale") for o in overrides if isinstance(o, dict) and o.get("type") == "MANUAL_RISK_OVERRIDE"), None)
+
+    return ScorecardOutputSchema(
+        system_calculated_score=sc.score_global or Decimal("0.0"),
+        system_risk_class=sc.risk_class or RiskClass.NOT_EVALUATED,
+        global_score=sc.score_global or Decimal("0.0"),
+        base_risk_class=sc.risk_class or RiskClass.NOT_EVALUATED,
+        is_overridden=is_overridden,
+        final_risk_class=sc.risk_class or RiskClass.NOT_EVALUATED,
+        override_rationale=override_rationale,
+        risk_profile=sc.risk_profile or "CLASSIC",
+        risk_description=sc.risk_description or "",
+        pillars=pillars,
+        smart_recommendations=sc.smart_recommendations_json or [],
+        overrides_applied=overrides,
+        computed_at=sc.computed_at,
+        synergy_index=sc.synergy_index,
+        synergy_bonus=sc.synergy_bonus,
+        cross_analysis_alerts=sc.cross_analysis_alerts if sc.cross_analysis_alerts else [],
+        trends_summary=sc.trends_summary if sc.trends_summary else {}
+    )
