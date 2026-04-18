@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
 from app.db.database import get_db
-from app.services.scoring_service import process_scoring
+from app.services.scoring_service import process_scoring, apply_score_override
 from app.services.case_service import assert_case_status
-from app.schemas.scoring_schema import ScorecardOutputSchema
+from app.schemas.scoring_schema import ScorecardOutputSchema, ScoreOverridePayload
 from app.core.audit import data_access_sensitive
 
 router = APIRouter(
@@ -70,5 +70,35 @@ async def api_get_scoring(
         raise HTTPException(
             status_code=404, 
             detail="No scorecard found for this case. Please compute it first."
+        )
+    return scorecard
+
+
+@router.post(
+    "/{case_id}/score/override",
+    response_model=ScorecardOutputSchema,
+    summary="Override risk score",
+    description="Manually override the calculated risk score with a new value and rationale."
+)
+async def api_override_scoring(
+    case_id: UUID,
+    payload: ScoreOverridePayload,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Apply manual override to the latest scorecard.
+    Returns 404 if no scorecard exists yet.
+    """
+    from fastapi import HTTPException
+    
+    # Verify case exists (implicitly handled in service if we want, but good to check status here)
+    # No specific status restriction for override, but case must be at least SCORING_DONE
+    
+    scorecard = await apply_score_override(case_id=case_id, payload=payload, db=db)
+    if not scorecard:
+        raise HTTPException(
+            status_code=404, 
+            detail="No scorecard found for this case. You cannot override a non-existent calculation."
         )
     return scorecard

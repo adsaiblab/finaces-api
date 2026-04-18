@@ -77,7 +77,7 @@ _IA_RATE_LIMIT = [Depends(RateLimiter(times=20, seconds=60))]
     dependencies=_IA_RATE_LIMIT,
 )
 async def compute_features(
-    case_id: str,
+    case_id: uuid.UUID,
     force_recompute: bool = Query(
         False,
         description="Force recomputation even if cached features exist"
@@ -110,9 +110,6 @@ async def compute_features(
         400: Insufficient data (less than 2 fiscal years)
         500: Feature computation error
     """
-    logger.info(
-        f"Feature computation requested for case {case_id} by user {current_user.get('sub')}"
-    )
     
     # Verify case exists
     case = await _get_case_or_404(case_id, db)
@@ -127,8 +124,8 @@ async def compute_features(
     # Compute features
     try:
         # Call the service that computes AND saves features
-        features_data = await generate_and_save_ia_features(uuid.UUID(case_id), db)
-
+        features_data = await generate_and_save_ia_features(str(case_id), db)
+        
         logger.info(
             f"Features computed successfully for case {case_id}. "
             f"Count: {features_data['metadata']['feature_count']}"
@@ -177,32 +174,22 @@ async def compute_features(
     description="Retrieve previously computed features from cache"
 )
 async def get_cached_features(
-    case_id: str,
+    case_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ) -> IAFeaturesResponse:
     """
     Retrieve cached features for a case.
-    
-    Args:
-        case_id: Case identifier
-        db: Database session
-        current_user: Authenticated user
-        
-    Returns:
-        Cached features if available
-        
-    Raises:
-        404: Case not found or no cached features
     """
-    cached_features = await _get_cached_features(case_id, db)
+    case_id_str = str(case_id)
+    cached_features = await _get_cached_features(case_id_str, db)
     
     if not cached_features:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={
                 "error": "no_cached_features",
-                "message": f"No cached features found for case {case_id}",
+                "message": f"No cached features found for case {case_id_str}",
                 "hint": "Use POST /ia/features/{case_id} to compute features"
             }
         )
@@ -226,7 +213,7 @@ async def get_cached_features(
     dependencies=_IA_RATE_LIMIT,
 )
 async def predict_risk(
-    case_id: str,
+    case_id: uuid.UUID,
     request: Request,
     use_cached_features: bool = Query(
         True,
@@ -245,29 +232,20 @@ async def predict_risk(
 ) -> IAPredictionResult:
     """
     Generate AI risk prediction for a case.
-    Emits data.access.sensitive audit event before processing (spec §8.6).
-    
-    The AI prediction:
-    - Uses XGBoost/LightGBM trained on historical data
-    - Outputs probability of default (0-1 scale)
-    - Classifies risk as LOW/MODERATE/HIGH/CRITICAL
-    - Provides SHAP-based feature importance explanations
-    
-    **Important**: This is a supplementary assessment only.
-    The official MCC scoring remains the decision basis.
     """
+    case_id_str = str(case_id)
     logger.info(
-        f"AI prediction requested for case {case_id} by user {current_user.get('sub')}"
+        f"AI prediction requested for case {case_id_str} by user {current_user.get('sub')}"
     )
 
     data_access_sensitive(
         user_email=current_user.get("sub", "unknown"),
         path=request.url.path,
-        case_id=case_id,
+        case_id=case_id_str,
     )
     
     # Verify case exists
-    case = await _get_case_or_404(case_id, db)
+    case = await _get_case_or_404(case_id_str, db)
     
     try:
         # Initialize predictor
@@ -288,13 +266,13 @@ async def predict_risk(
         
         # Generate prediction
         result = await predictor.predict(
-            case_id=case_id,
+            case_id=case_id_str,
             db=db,
             use_cached_features=use_cached_features
         )
         
         logger.info(
-            f"Prediction completed for case {case_id}. "
+            f"Prediction completed for case {case_id_str}. "
             f"Risk: {result.ia_risk_class}, Probability: {result.ia_probability_default:.4f}"
         )
         
@@ -308,27 +286,11 @@ async def predict_risk(
                 "message": str(e)
             }
         )
-    
-    except FileNotFoundError as e:
-        logger.error(f"Model file not found: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "error": "model_not_found",
-                "message": "No trained model available. Contact administrator.",
-                "hint": "Models must be trained and registered before use"
-            }
-        )
-    
     except Exception as e:
-        logger.exception(f"Prediction failed for case {case_id}")
+        logger.exception(f"Prediction failed for case {case_id_str}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "error": "prediction_failed",
-                "message": "An error occurred during AI prediction",
-                "details": str(e)
-            }
+            detail={"error": "prediction_failed", "message": str(e)}
         )
 
 
@@ -340,19 +302,19 @@ async def predict_risk(
     description="Retrieve the most recent AI prediction from database"
 )
 async def get_latest_prediction(
-    case_id: str,
+    case_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ) -> IAPredictionResult:
     """
     Retrieve the latest cached prediction for a case.
     """
+    case_id_str = str(case_id)
     stmt = (
         select(IAPrediction)
-        .where(IAPrediction.case_id == uuid.UUID(case_id))
+        .where(IAPrediction.case_id == case_id)
         .order_by(IAPrediction.created_at.desc())
     )
-    
     result = await db.execute(stmt)
     prediction = result.scalars().first()
     
@@ -361,15 +323,15 @@ async def get_latest_prediction(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={
                 "error": "no_prediction",
-                "message": f"No AI prediction found for case {case_id}",
+                "message": f"No AI prediction found for case {case_id_str}",
                 "hint": "Use POST /ia/predict/{case_id} to generate a prediction"
             }
         )
     
     return IAPredictionResult(
         case_id=str(prediction.case_id),
-        ia_score=float(prediction.ia_score),
-        ia_probability_default=float(prediction.ia_probability_default),
+        ia_score=float(prediction.ia_score or 0),
+        ia_probability_default=float(prediction.ia_probability_default or 0),
         ia_risk_class=IARiskClass(prediction.ia_risk_class),
         model_version=prediction.model_version,
         predicted_at=prediction.created_at,
@@ -680,7 +642,7 @@ async def get_prediction_stats(
     dependencies=_IA_RATE_LIMIT,
 )
 async def simulate_what_if(
-    case_id: str,
+    case_id: uuid.UUID,
     payload: WhatIfInput,
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)

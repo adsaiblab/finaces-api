@@ -13,8 +13,11 @@ from app.engines.scoring_engine import compute_pure_scorecard
 from app.engines.ratio_to_score_engine import convert_ratios_to_scores
 from app.exceptions.finaces_exceptions import MissingFinancialDataError
 from app.services.policy_service import get_active_policy
+from datetime import datetime, timezone
 from app.services.audit_service import log_event
 from app.schemas.policy_schema import PolicyConfigurationSchema
+from app.schemas.scoring_schema import ScorecardInputSchema, ScorecardOutputSchema, PillarDetailSchema, ScoreOverridePayload
+from app.engines._risk_utils import get_risk_band
 
 logger = logging.getLogger(__name__)
 
@@ -252,3 +255,70 @@ async def get_existing_scorecard(case_id: UUID, db: AsyncSession) -> ScorecardOu
         cross_analysis_alerts=sc.cross_analysis_alerts if sc.cross_analysis_alerts else [],
         trends_summary=sc.trends_summary if sc.trends_summary else {}
     )
+
+
+async def apply_score_override(
+    case_id: UUID, payload: ScoreOverridePayload, db: AsyncSession
+) -> ScorecardOutputSchema:
+    """
+    Applies a manual score override to the most recent scorecard.
+    - Recalculates risk class based on the new score and active policy.
+    - Persists the override trace in overrides_applied_json.
+    - Re-fetches the full scorecard to return updated state.
+    """
+    logger.info(f"Applying manual score override for case {case_id}: new_score={payload.new_score}")
+
+    # 1. Fetch latest scorecard
+    stmt = (
+        select(Scorecard)
+        .where(Scorecard.case_id == case_id)
+        .order_by(desc(Scorecard.computed_at))
+    )
+    result = await db.execute(stmt)
+    sc = result.scalars().first()
+
+    if not sc:
+        logger.error(f"Cannot override: No scorecard found for case {case_id}")
+        return None
+
+    # 2. Re-calculate risk class using active policy
+    policy_dict = await get_active_policy(db)
+    policy = PolicyConfigurationSchema(**policy_dict)
+    new_risk_class = get_risk_band(payload.new_score, policy)
+
+    # 3. Build override event (structured dict)
+    override_event = {
+        "type": "MANUAL_RISK_OVERRIDE",
+        "original_score": float(sc.score_global) if sc.score_global else 0.0,
+        "new_score": float(payload.new_score),
+        "new_val": new_risk_class.value,  # For backward compatibility with schema
+        "rationale": payload.reason,
+        "applied_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    # 4. Update ORM
+    sc.score_global = payload.new_score
+    sc.risk_class = new_risk_class
+    
+    # Initialize list if null
+    current_overrides = sc.overrides_applied_json or []
+    # Remove previous manual override if it exists to avoid duplication
+    current_overrides = [o for o in current_overrides if o.get("type") != "MANUAL_RISK_OVERRIDE"]
+    current_overrides.append(override_event)
+    sc.overrides_applied_json = current_overrides
+
+    await db.commit()
+    await db.refresh(sc)
+
+    # 5. Log audit event
+    await log_event(
+        db=db,
+        event_type="SCORECARD_OVERRIDDEN",
+        entity_type="Scorecard",
+        entity_id=str(sc.id),
+        case_id=str(case_id),
+        description=f"Manual override applied. New score: {payload.new_score}, Risk Class: {new_risk_class.value}",
+        user_id=None # Will be contextualized by caller if needed
+    )
+
+    return await get_existing_scorecard(case_id, db)

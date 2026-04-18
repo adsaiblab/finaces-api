@@ -75,3 +75,7 @@ class ScorecardOutputSchema(BaseModel):
     calculation_date: Optional[str] = None # For frontend compatibility
     
     model_config = ConfigDict(from_attributes=True)
+
+class ScoreOverridePayload(BaseModel):
+    new_score: Decimal = Field(..., ge=0, le=5)
+    reason: str = Field(..., min_length=5)
