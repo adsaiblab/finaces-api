@@ -6,8 +6,8 @@ from sqlalchemy.orm import selectinload
 from decimal import Decimal
 
 from app.db.models import RatioSet, Scorecard, GateResult, EvaluationCase
-from app.schemas.enums import CaseStatus
-from app.schemas.scoring_schema import ScorecardInputSchema, ScorecardOutputSchema
+from app.schemas.enums import CaseStatus, RiskClass
+from app.schemas.scoring_schema import ScorecardInputSchema, ScorecardOutputSchema, PillarDetailSchema
 from app.schemas.ratio_schema import RatioSetSchema
 from app.engines.scoring_engine import compute_pure_scorecard
 from app.engines.ratio_to_score_engine import convert_ratios_to_scores
