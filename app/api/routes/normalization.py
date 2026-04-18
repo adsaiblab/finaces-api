@@ -25,6 +25,9 @@ async def api_normalize_case(case_id: UUID, db: AsyncSession = Depends(get_db), 
     Starts the asynchronous normalization calculation for a given folder.
     The calculation is delegated to pure Engines without API I/O blocking.
     """
+    from app.services.workflow_guards import assert_gate_passed
+    await assert_gate_passed(case_id=case_id, db=db)
+
     try:
         normalized_statements = await process_normalization(case_id=case_id, db=db)
         return normalized_statements

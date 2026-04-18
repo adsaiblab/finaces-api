@@ -62,6 +62,9 @@ async def api_create_financial(
     current_user: dict = Depends(get_current_user)
 ):
     """Creates or updates a raw financial statement (upsert by case_id + fiscal_year)."""
+    from app.services.workflow_guards import assert_gate_passed
+    await assert_gate_passed(case_id=case_id, db=db)
+
     try:
         data = body.to_flat_dict()
 
