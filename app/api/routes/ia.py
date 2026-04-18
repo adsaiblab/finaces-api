@@ -181,15 +181,14 @@ async def get_cached_features(
     """
     Retrieve cached features for a case.
     """
-    case_id_str = str(case_id)
-    cached_features = await _get_cached_features(case_id_str, db)
+    cached_features = await _get_cached_features(case_id, db)
     
     if not cached_features:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={
                 "error": "no_cached_features",
-                "message": f"No cached features found for case {case_id_str}",
+                "message": f"No cached features found for case {case_id}",
                 "hint": "Use POST /ia/features/{case_id} to compute features"
             }
         )
@@ -233,19 +232,18 @@ async def predict_risk(
     """
     Generate AI risk prediction for a case.
     """
-    case_id_str = str(case_id)
     logger.info(
-        f"AI prediction requested for case {case_id_str} by user {current_user.get('sub')}"
+        f"AI prediction requested for case {case_id} by user {current_user.get('sub')}"
     )
 
     data_access_sensitive(
         user_email=current_user.get("sub", "unknown"),
         path=request.url.path,
-        case_id=case_id_str,
+        case_id=str(case_id),
     )
     
     # Verify case exists
-    case = await _get_case_or_404(case_id_str, db)
+    case = await _get_case_or_404(case_id, db)
     
     try:
         # Initialize predictor
@@ -266,13 +264,13 @@ async def predict_risk(
         
         # Generate prediction
         result = await predictor.predict(
-            case_id=case_id_str,
+            case_id=case_id,
             db=db,
             use_cached_features=use_cached_features
         )
         
         logger.info(
-            f"Prediction completed for case {case_id_str}. "
+            f"Prediction completed for case {case_id}. "
             f"Risk: {result.ia_risk_class}, Probability: {result.ia_probability_default:.4f}"
         )
         
@@ -287,7 +285,7 @@ async def predict_risk(
             }
         )
     except Exception as e:
-        logger.exception(f"Prediction failed for case {case_id_str}")
+        logger.exception(f"Prediction failed for case {case_id}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "prediction_failed", "message": str(e)}
@@ -309,7 +307,6 @@ async def get_latest_prediction(
     """
     Retrieve the latest cached prediction for a case.
     """
-    case_id_str = str(case_id)
     stmt = (
         select(IAPrediction)
         .where(IAPrediction.case_id == case_id)
@@ -323,7 +320,7 @@ async def get_latest_prediction(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={
                 "error": "no_prediction",
-                "message": f"No AI prediction found for case {case_id_str}",
+                "message": f"No AI prediction found for case {case_id}",
                 "hint": "Use POST /ia/predict/{case_id} to generate a prediction"
             }
         )
@@ -356,7 +353,7 @@ async def get_latest_prediction(
     dependencies=_IA_RATE_LIMIT,
 )
 async def dual_scoring(
-    case_id: str,
+    case_id: uuid.UUID,
     force_recompute_mcc: bool = Query(
         False,
         description="Force MCC scorecard recomputation"
@@ -458,13 +455,13 @@ async def dual_scoring(
     description="Retrieve the most recent MCC vs IA tension analysis"
 )
 async def get_tension_analysis(
-    case_id: str,
+    case_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ) -> Dict[str, Any]:
     stmt = (
         select(IATension)
-        .where(IATension.case_id == uuid.UUID(case_id))
+        .where(IATension.case_id == case_id)
         .order_by(IATension.created_at.desc())
     )
     
@@ -499,13 +496,13 @@ async def get_tension_analysis(
     description="Retrieve historical tension analyses for trend tracking"
 )
 async def get_tension_history(
-    case_id: str,
+    case_id: uuid.UUID,
     limit: int = Query(10, ge=1, le=100, description="Maximum records to return"),
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ) -> List[Dict[str, Any]]:
     detector = TensionDetector()
-    history = await detector.get_tension_history(case_id, db, limit)
+    history = await detector.get_tension_history(str(case_id), db, limit)
     return history
 
 
@@ -831,30 +828,36 @@ async def get_convergence_analytics(
 # PRIVATE HELPERS
 # ============================================================================
 
-async def _get_case_or_404(case_id: str, db: AsyncSession) -> EvaluationCase:
+async def _get_case_or_404(case_id: Any, db: AsyncSession) -> EvaluationCase:
     """Fetch case or raise 404."""
-    try:
-        stmt = select(EvaluationCase).where(EvaluationCase.id == uuid.UUID(case_id))
-        result = await db.execute(stmt)
-        case = result.scalars().first()
-        if not case:
+    if not isinstance(case_id, uuid.UUID):
+        try:
+            case_id = uuid.UUID(str(case_id))
+        except (ValueError, TypeError):
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"error": "case_not_found", "message": f"Case {case_id} not found"}
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail={"error": "invalid_uuid", "message": f"Invalid UUID format: {case_id}"}
             )
-        return case
-    except ValueError:
+
+    stmt = select(EvaluationCase).where(EvaluationCase.id == case_id)
+    result = await db.execute(stmt)
+    case = result.scalars().first()
+    if not case:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"error": "invalid_uuid", "message": f"Invalid UUID format: {case_id}"}
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "case_not_found", "message": f"Case {case_id} not found"}
         )
+    return case
 
 
-async def _get_cached_features(case_id: str, db: AsyncSession) -> Optional[IAFeatures]:
+async def _get_cached_features(case_id: Any, db: AsyncSession) -> Optional[IAFeatures]:
     """Retrieve cached features for a case."""
+    if not isinstance(case_id, uuid.UUID):
+        case_id = uuid.UUID(str(case_id))
+
     stmt = (
         select(IAFeatures)
-        .where(IAFeatures.case_id == uuid.UUID(case_id))
+        .where(IAFeatures.case_id == case_id)
         .order_by(IAFeatures.created_at.desc())
     )
     result = await db.execute(stmt)
@@ -868,8 +871,10 @@ async def _get_model_by_version(version: str, db: AsyncSession) -> Optional[IAMo
     return result.scalars().first()
 
 
-async def _get_or_compute_mcc_scorecard(case_id: str, db: AsyncSession, force_recompute: bool):
+async def _get_or_compute_mcc_scorecard(case_id: Any, db: AsyncSession, force_recompute: bool):
     """Get or compute MCC scorecard for dual scoring."""
     from app.services.scoring_service import process_scoring
     from uuid import UUID as PUUID
-    return await process_scoring(case_id=PUUID(case_id), db=db)
+    
+    uid = case_id if isinstance(case_id, uuid.UUID) else PUUID(str(case_id))
+    return await process_scoring(case_id=uid, db=db)

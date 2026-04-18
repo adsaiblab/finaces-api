@@ -122,7 +122,7 @@ class IAPredictor:
     
     async def predict(
         self,
-        case_id: str,
+        case_id: uuid.UUID,
         db: AsyncSession,
         use_cached_features: bool = True
     ) -> IAPredictionResult:
@@ -191,7 +191,7 @@ class IAPredictor:
     
     async def _get_or_compute_features(
         self,
-        case_id: str,
+        case_id: uuid.UUID,
         db: AsyncSession,
         use_cached: bool
     ) -> Dict[str, Any]:
@@ -206,7 +206,7 @@ class IAPredictor:
         Returns:
             Features dictionary
         """
-        case_uuid = uuid.UUID(case_id)
+        case_uuid = case_id if isinstance(case_id, uuid.UUID) else uuid.UUID(str(case_id))
         
         if use_cached:
             stmt = (
@@ -319,7 +319,7 @@ class IAPredictor:
     
     async def _save_prediction(
         self,
-        case_id: str,
+        case_id: uuid.UUID,
         probability: float,
         risk_class: str,
         model_version: str,
@@ -338,7 +338,7 @@ class IAPredictor:
             features:      Input feature snapshot for drift monitoring (C.6.2)
         """
         prediction = IAPrediction(
-            case_id=uuid.UUID(case_id),
+            case_id=case_id,
             ia_score=round(probability * 100, 2),
             ia_probability_default=round(probability, 4),
             ia_risk_class=risk_class,

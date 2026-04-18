@@ -58,7 +58,7 @@ class IAPredictionResult(BaseModel):
     """Complete AI prediction result."""
     model_config = ConfigDict(from_attributes=True)
     
-    case_id: str
+    case_id: uuid.UUID
     ia_score: float = Field(..., description="IA score on 0-100 scale")
     ia_probability_default: float = Field(..., description="Probability of default (0-1)")
     ia_risk_class: IARiskClass
@@ -123,7 +123,7 @@ class IAFeaturesResponse(BaseModel):
     """Response schema for computed features."""
     model_config = ConfigDict(from_attributes=True)
     
-    case_id: str
+    case_id: uuid.UUID
     computed_at: str
     features: Dict[str, Any]
     missing_flags: Dict[str, bool]
