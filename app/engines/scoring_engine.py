@@ -220,7 +220,7 @@ def compute_pure_scorecard(
 
     now = datetime.now(timezone.utc)
     return ScorecardOutputSchema(
-        case_id=str(case_id),
+        case_id=None,
         system_calculated_score=system_calculated_score,
         system_risk_class=system_risk_class,
         global_score=global_score,

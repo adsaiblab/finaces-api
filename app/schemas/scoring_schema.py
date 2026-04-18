@@ -47,7 +47,7 @@ class ScorecardInputSchema(BaseModel):
     contract_value: Decimal = Decimal("0.0")
 
 class ScorecardOutputSchema(BaseModel):
-    case_id: str
+    case_id: Optional[str] = None
     system_calculated_score: Decimal
     system_risk_class: RiskClass
     

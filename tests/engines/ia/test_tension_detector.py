@@ -80,6 +80,7 @@ async def test_case(
 def mcc_scorecard_moderate() -> ScorecardOutputSchema:
     """Mock MCC scorecard with MODERATE risk."""
     return ScorecardOutputSchema(
+        case_id=str(uuid4()),
         system_calculated_score=Decimal("3.5"),
         system_risk_class="MODERATE",
         global_score=Decimal("3.5"),
@@ -95,6 +96,7 @@ def mcc_scorecard_moderate() -> ScorecardOutputSchema:
 def mcc_scorecard_high() -> ScorecardOutputSchema:
     """Mock MCC scorecard with HIGH risk."""
     return ScorecardOutputSchema(
+        case_id=str(uuid4()),
         system_calculated_score=Decimal("2.4"),
         system_risk_class="HIGH",
         global_score=Decimal("2.4"),
@@ -257,8 +259,8 @@ class TestTensionTypeDetection:
     ):
         """Test MAJOR_DIVERGENCE when 2+ levels apart."""
         
-        # MCC: LOW, IA: HIGH (2 levels apart → MAJOR_DIVERGENCE, not CRITICAL_ALERT)
         mcc_low = ScorecardOutputSchema(
+            case_id=str(test_case.id),
             system_calculated_score=Decimal("4.5"),
             system_risk_class="LOW",
             global_score=Decimal("4.5"),
@@ -331,6 +333,7 @@ class TestTensionSeverity:
         """Test MODERATE severity for 1 level difference."""
         
         mcc = ScorecardOutputSchema(
+            case_id=str(test_case.id),
             system_calculated_score=Decimal("3.0"),
             system_risk_class="MODERATE",
             global_score=Decimal("3.0"),
@@ -446,14 +449,8 @@ class TestExplanationsAndRecommendations:
         actions_text = " ".join(analysis.recommended_actions).lower()
         assert "review" in actions_text or "feature" in actions_text or "shap" in actions_text
     
-    async def test_major_divergence_escalation(
-        self,
-        db_session: AsyncSession,
-        test_case: EvaluationCase
-    ):
-        """Test escalation requirements for major divergence."""
-        
         mcc_low = ScorecardOutputSchema(
+            case_id=str(test_case.id),
             system_calculated_score=Decimal("4.5"),
             system_risk_class="LOW",
             global_score=Decimal("4.5"),
@@ -578,6 +575,7 @@ class TestEdgeCases:
         
         # MCC with French risk class
         mcc_french = ScorecardOutputSchema(
+            case_id=str(test_case.id),
             system_calculated_score=Decimal("3.5"),
             system_risk_class="MODERATE",
             global_score=Decimal("3.5"),

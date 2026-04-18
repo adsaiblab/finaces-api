@@ -1,6 +1,7 @@
 import pytest
 from decimal import Decimal
 from typing import Dict
+from uuid import UUID
 
 from app.engines.scoring_engine import compute_pure_scorecard
 from app.schemas.scoring_schema import ScorecardInputSchema, ScorecardOutputSchema, RiskClass
@@ -12,6 +13,7 @@ def test_scoring_engine_pure_math_and_typing():
     l'intégralité du calcul en Decimal pur, en lisant la politique Pydantic
     sans provoquer de ValueError ni de NameError, et retourne une RiskClass Native.
     """
+    case_id = UUID('00000000-0000-0000-0000-000000000001')
     
     # Étape A: Instanciation PolicyConfigurationSchema strict (D-04, P-02)
     fake_policy = PolicyConfigurationSchema(
