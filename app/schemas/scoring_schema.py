@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
@@ -69,7 +69,7 @@ class ScorecardOutputSchema(BaseModel):
     
     pillars: List[PillarDetailSchema]
     smart_recommendations: List[str]
-    overrides_applied: List[Dict[str, str]] = []
+    overrides_applied: List[Dict[str, Any]] = []
     
     computed_at: datetime
     calculation_date: Optional[str] = None # For frontend compatibility
