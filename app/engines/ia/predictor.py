@@ -285,8 +285,11 @@ class IAPredictor:
             # Handle missing values
             feature_array = np.nan_to_num(feature_array, nan=0.0)
             
-            # Scale
-            feature_array_scaled = self.model_manager.scaler.transform(feature_array)
+            # Scale only if scaler exists (tree models don't need scaling)
+            if self.model_manager.scaler is not None:
+                feature_array_scaled = self.model_manager.scaler.transform(feature_array)
+            else:
+                feature_array_scaled = feature_array
             
             # Compute SHAP values
             shap_values = self.explainer.shap_values(feature_array_scaled)
