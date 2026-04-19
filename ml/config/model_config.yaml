@@ -24,7 +24,7 @@ model_training:
   # Class imbalance handling
   imbalance_handling:
     method: "smote"          # smote, class_weight, hybrid
-    smote_sampling_strategy: 0.5  # Minority class / Majority class ratio after SMOTE
+    smote_sampling_strategy: 1.0  # Minority class / Majority class ratio after SMOTE
     k_neighbors: 5
     random_state: 42
   

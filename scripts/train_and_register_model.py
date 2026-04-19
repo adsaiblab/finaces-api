@@ -139,7 +139,14 @@ async def async_main(args: argparse.Namespace) -> None:
     filename = f"{args.model_type}_{version}.joblib"
     model_path = models_dir / filename
 
-    joblib.dump(trainer.model, model_path)
+    joblib.dump({
+        "model": trainer.model,
+        "scaler": None,
+        "feature_names": trainer.preprocessor.numeric_features if trainer.preprocessor else None,
+        "model_type": args.model_type,
+        "version": version,
+        "trained_at": timestamp,
+    }, model_path)
 
     # 6) Récupérer infos hyperparams + features
     hyperparams = trainer.training_history.get("hyperparameters", {})
