@@ -306,7 +306,7 @@ class MLModelManager:
         Returns:
             Probability of default (0.0 - 1.0)
         """
-        if self.model is None or self.scaler is None or self.feature_names is None:
+        if self.model is None or self.feature_names is None:
             raise ValueError("Model not trained or loaded. Call train() or load() first.")
         
         # Convert features dict to array in correct order
@@ -318,8 +318,11 @@ class MLModelManager:
         # Handle missing values (impute with 0)
         X = np.nan_to_num(X, nan=0.0)
         
-        # Scale
-        X_scaled = self.scaler.transform(X)
+        # Scale only if scaler exists (tree-based models don't need it)
+        if self.scaler is not None:
+            X_scaled = self.scaler.transform(X)
+        else:
+            X_scaled = X
         
         # Predict
         proba = self.model.predict_proba(X_scaled)[0, 1]
