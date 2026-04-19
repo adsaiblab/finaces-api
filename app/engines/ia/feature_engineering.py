@@ -732,9 +732,9 @@ class FeatureEngineeringEngine:
             ]
             
             if len(current_ratios) >= 2:
-                if current_ratios[0] > current_ratios[-1] * 1.1:
+                if current_ratios[0] > current_ratios[-1] * Decimal("1.1"):
                     liquidity_trend = "IMPROVING"
-                elif current_ratios[0] < current_ratios[-1] * 0.9:
+                elif current_ratios[0] < current_ratios[-1] * Decimal("0.9"):
                     liquidity_trend = "DECLINING"
                 else:
                     liquidity_trend = "STABLE"
