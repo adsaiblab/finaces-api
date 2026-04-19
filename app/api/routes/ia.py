@@ -325,6 +325,11 @@ async def get_latest_prediction(
             }
         )
     
+    from app.schemas.ia_schema import IAExplanation
+
+    raw_expl = (prediction.input_features or {}).get("_explanations")
+    explanations = IAExplanation(**raw_expl) if raw_expl else None
+
     return IAPredictionResult(
         case_id=str(prediction.case_id),
         ia_score=float(prediction.ia_score or 0),
@@ -332,8 +337,8 @@ async def get_latest_prediction(
         ia_risk_class=IARiskClass(prediction.ia_risk_class),
         model_version=prediction.model_version,
         predicted_at=prediction.created_at,
-        explanations=None,
-        threshold_info={}
+        explanations=explanations,
+        threshold_info=IARiskClassifier.get_threshold_info(prediction.ia_risk_class)
     )
 
 

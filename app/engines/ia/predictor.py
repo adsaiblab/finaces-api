@@ -168,7 +168,9 @@ class IAPredictor:
             probability=probability,
             risk_class=risk_class,
             model_version=self.model_manager.version or "unknown",
-            db=db
+            db=db,
+            features=features,
+            explanations=explanations,
         )
         
         # 7. Build result
@@ -329,6 +331,7 @@ class IAPredictor:
         model_version: str,
         db: AsyncSession,
         features: dict | None = None,
+        explanations=None,
     ) -> None:
         """
         Persist prediction to database.
@@ -341,13 +344,17 @@ class IAPredictor:
             db:            Database session
             features:      Input feature snapshot for drift monitoring (C.6.2)
         """
+        snapshot = dict(features) if features else {}
+        if explanations is not None:
+            snapshot["_explanations"] = explanations.model_dump()
+
         prediction = IAPrediction(
             case_id=case_id,
             ia_score=round(probability * 100, 2),
             ia_probability_default=round(probability, 4),
             ia_risk_class=risk_class,
             model_version=model_version,
-            input_features=features,  # snapshot at inference time — used by drift_report.py
+            input_features=snapshot,
         )
 
         db.add(prediction)
