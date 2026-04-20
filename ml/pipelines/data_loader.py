@@ -61,7 +61,7 @@ class DataLoader:
     def generate_synthetic_financial_data(
         self,
         n_samples: int = 1000,
-        n_features: int = 40,
+        n_features: int = 46,
         default_rate: float = 0.15,
         random_state: int = 42
     ) -> Tuple[pd.DataFrame, pd.Series]:
@@ -202,6 +202,32 @@ class DataLoader:
         audit_quality_score = rng.beta(a=8, b=2, size=n_samples) * 5
         data_completeness_score = rng.beta(a=9, b=1, size=n_samples) * 5
 
+        # --- Trend features (6) ---
+        # Simulated as statistically correlated scalars (single-year dataset)
+        revenue_growth_rate = rng.normal(loc=0.05, scale=0.15, size=n_samples)
+        revenue_growth_rate = np.where(net_margin < -0.05, revenue_growth_rate - 0.10, revenue_growth_rate)
+        revenue_growth_rate = np.clip(revenue_growth_rate, -0.60, 0.80)
+
+        equity_growth_rate = rng.normal(loc=0.03, scale=0.12, size=n_samples)
+        equity_growth_rate = np.where(roe < 0, equity_growth_rate - 0.08, equity_growth_rate)
+        equity_growth_rate = np.clip(equity_growth_rate, -0.70, 0.80)
+
+        debt_growth_rate = rng.normal(loc=0.04, scale=0.18, size=n_samples)
+        debt_growth_rate = np.where(debt_to_equity > 3.0, debt_growth_rate + 0.10, debt_growth_rate)
+        debt_growth_rate = np.clip(debt_growth_rate, -0.50, 1.00)
+
+        profitability_trend = rng.normal(loc=0.0, scale=0.05, size=n_samples)
+        profitability_trend = np.where(net_margin < 0, profitability_trend - 0.03, profitability_trend)
+        profitability_trend = np.clip(profitability_trend, -0.30, 0.30)
+
+        liquidity_trend = rng.normal(loc=0.0, scale=0.10, size=n_samples)
+        liquidity_trend = np.where(current_ratio < 1.0, liquidity_trend - 0.05, liquidity_trend)
+        liquidity_trend = np.clip(liquidity_trend, -0.50, 0.50)
+
+        cashflow_trend = rng.normal(loc=0.0, scale=0.08, size=n_samples)
+        cashflow_trend = np.where(cashflow_operations < 0, cashflow_trend - 0.05, cashflow_trend)
+        cashflow_trend = np.clip(cashflow_trend, -0.40, 0.40)
+
         # ============================================================
         # STEP 3: Assemble feature DataFrame
         # ============================================================
@@ -252,17 +278,19 @@ class DataLoader:
             "balance_sheet_balance_check": balance_sheet_balance_check,
             "audit_quality_score": audit_quality_score,
             "data_completeness_score": data_completeness_score,
+            # Trends
+            "revenue_growth_rate": revenue_growth_rate,
+            "equity_growth_rate": equity_growth_rate,
+            "debt_growth_rate": debt_growth_rate,
+            "profitability_trend": profitability_trend,
+            "liquidity_trend": liquidity_trend,
+            "cashflow_trend": cashflow_trend,
         }
 
         df = pd.DataFrame(feature_arrays)
 
-        # If more features requested, pad with noise features derived from base items
-        if n_features > len(df.columns):
-            for i in range(n_features - len(df.columns)):
-                df[f"feature_{i+1}"] = rng.normal(0, 1, size=n_samples)
-
-        # Trim to requested number of features
-        df = df.iloc[:, :n_features]
+        # Log feature count
+        logger.info(f"Feature count: {len(df.columns)} (expected 46)")
 
         # ============================================================
         # STEP 4: Define target via logical rule over ratios
