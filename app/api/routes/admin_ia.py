@@ -41,11 +41,11 @@ async def get_admin_stats(
 
     active_model = IADeployedModelSchema(
         id=ia_model.id,
-        training_run_id=ia_model.id,   # ← champ requis, mappé depuis ia_model.id
+        training_run_id=ia_model.id,
         version=ia_model.version,
         is_active=ia_model.is_active,
         deployed_by=None,
-        deployed_at=ia_model.trained_at,  # ← champ requis, mappé depuis trained_at
+        deployed_at=ia_model.trained_at,
     ) if ia_model else None
 
     # 3. Latest metrics
@@ -55,11 +55,11 @@ async def get_admin_stats(
         latest_metrics = {
             "accuracy":  raw.get("accuracy", 0),
             "f1_score":  raw.get("f1_score", 0),
-            "auc":       raw.get("roc_auc", 0),   # ← roc_auc → auc (attendu par le frontend)
+            "auc":       raw.get("roc_auc", 0),
             "recall":    raw.get("recall", 0),
             "precision": raw.get("precision", 0),
             "threshold": raw.get("threshold", 0.5),
-            "feature_importance": raw.get("feature_importance", []),
+            "feature_importance": raw.get("feature_importance", []),  # ✅ FIX
         }
             
     # 4. Pending alerts
@@ -89,7 +89,7 @@ async def list_training_runs(
     return [
         IATrainingRunSchema(
             id=m.id,
-            dataset_id=m.id,          # ← requis par schema, pas de vraie table dataset
+            dataset_id=m.id,
             model_type=m.model_name,
             status="COMPLETED",
             hyperparameters=m.hyperparameters or {},
@@ -98,7 +98,7 @@ async def list_training_runs(
                 "f1_score":  (m.metrics or {}).get("f1_score", 0),
                 "auc":       (m.metrics or {}).get("roc_auc", 0),
                 "threshold": (m.metrics or {}).get("threshold", 0.5),
-                "feature_importance": (m.metrics or {}).get("feature_importance", []),
+                "feature_importance": (m.metrics or {}).get("feature_importance", []),  # ✅ FIX
             },
             model_artifact_path=m.file_path,
             error_log=None,
@@ -144,7 +144,6 @@ async def launch_training(
     run = await IATrainingService.launch_training(
         db, dataset_id, model_type, hyperparameters
     )
-    # Trigger actual training in background
     background_tasks.add_task(IATrainingService.run_training_background, run.id)
     return run
 
@@ -159,31 +158,32 @@ async def get_run_convergence(
 ):
     """
     Returns the convergence history (LogLoss per iteration) for a run.
-    # Data is extracted from run.metrics['convergence'].
+    Data is extracted from ia_models.metrics['convergence'].
+    """
     # ✅ FIX — chercher dans IAModel, pas IATrainingRun
     stmt = select(IAModel.metrics).where(IAModel.id == run_id)
     metrics = await db.scalar(stmt)
-    
-    if not metrics or 'convergence' not in metrics:
+
+    if not metrics or "convergence" not in metrics:
         return []
-        
-    convergence_raw = metrics['convergence']
-    # Convergence in XGBoost/LightGBM is like: {'validation_0': {'logloss': [...]}}
-    # Frontend expects: [{iteration: 0, train: 0.5, val: 0.6}, ...]
-    
+
+    convergence_raw = metrics["convergence"]
+    # XGBoost evals_result: {'validation_0': {'logloss': [...]}, 'validation_1': {'logloss': [...]}}
+    # Frontend expects: [{"epoch": 0, "train_loss": 0.75, "val_loss": 0.76}, ...]
+
     formatted_data = []
-    
-    # Heuristic mapping for standard XGB/LGB evals_result
-    # validation_0 is usually train, validation_1 is usually val
-    train_key = 'validation_0'
-    val_key = 'validation_1'
-    
-    metric_name = 'logloss' if 'logloss' in convergence_raw.get(train_key, {}) else \
-                  'binary_logloss' if 'binary_logloss' in convergence_raw.get(train_key, {}) else \
-                  'rmse' if 'rmse' in convergence_raw.get(train_key, {}) else None
-                  
+
+    train_key = "validation_0"
+    val_key = "validation_1"
+
+    metric_name = (
+        "logloss" if "logloss" in convergence_raw.get(train_key, {}) else
+        "binary_logloss" if "binary_logloss" in convergence_raw.get(train_key, {}) else
+        "rmse" if "rmse" in convergence_raw.get(train_key, {}) else
+        None
+    )
+
     if not metric_name and convergence_raw:
-        # Fallback to first available metric name
         first_group = list(convergence_raw.values())[0]
         if first_group:
             metric_name = list(first_group.keys())[0]
@@ -191,13 +191,13 @@ async def get_run_convergence(
     if metric_name:
         train_vals = convergence_raw.get(train_key, {}).get(metric_name, [])
         val_vals = convergence_raw.get(val_key, {}).get(metric_name, [])
-        
+
         for i, t_val in enumerate(train_vals):
             point = {"epoch": i, "train_loss": float(t_val)}
             if i < len(val_vals):
                 point["val_loss"] = float(val_vals[i])
             formatted_data.append(point)
-            
+
     return formatted_data
 
 @router.post(
