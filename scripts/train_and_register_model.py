@@ -162,6 +162,23 @@ async def async_main(args: argparse.Namespace) -> None:
     else:
         metrics = trainer.evaluate_model(X_val, y_val)
 
+    # ✅ FIX — enrichir metrics avec feature_importance depuis le modèle entraîné
+    try:
+        fi_raw = trainer.model.get_booster().get_fscore()  # XGBoost
+        total = sum(fi_raw.values()) or 1
+        metrics["feature_importance"] = [
+            {"feature": k, "importance": round(v / total, 6)}
+            for k, v in sorted(fi_raw.items(), key=lambda x: -x[1])
+        ]
+    except Exception:
+        metrics["feature_importance"] = []
+
+    # ✅ FIX — sauvegarder l'historique de convergence (evals_result XGBoost)
+    try:
+        metrics["convergence"] = trainer.model.evals_result()  # XGBoost natif
+    except Exception:
+        metrics["convergence"] = {}
+
     # 5) Récupérer infos hyperparams + features
     hyperparams   = trainer.training_history.get("hyperparameters", {})
     feature_names = trainer.training_history.get("data_info", {}).get(
