@@ -130,7 +130,13 @@ async def async_main(args: argparse.Namespace) -> None:
     else:
         metrics = trainer.evaluate_model(X_val, y_val)
 
-    # 5) Sauvegarder le modèle sur disque (joblib)
+    # 5) Récupérer infos hyperparams + features
+    hyperparams = trainer.training_history.get("hyperparameters", {})
+    feature_names = trainer.training_history.get("data_info", {}).get(
+        "feature_names", []
+    )
+
+    # 6) Sauvegarder le modèle sur disque (joblib)
     models_dir = Path(args.models_dir)
     models_dir.mkdir(parents=True, exist_ok=True)
 
@@ -142,17 +148,11 @@ async def async_main(args: argparse.Namespace) -> None:
     joblib.dump({
         "model": trainer.model,
         "scaler": None,
-        "feature_names": trainer.preprocessor.numeric_features if trainer.preprocessor else None,
+        "feature_names": feature_names,
         "model_type": args.model_type,
         "version": version,
         "trained_at": timestamp,
     }, model_path)
-
-    # 6) Récupérer infos hyperparams + features
-    hyperparams = trainer.training_history.get("hyperparameters", {})
-    feature_names = trainer.training_history.get("data_info", {}).get(
-        "feature_names", []
-    )
 
     # 7) Enregistrer dans ia_models via SQLAlchemy async
     session_factory = create_async_session_factory()

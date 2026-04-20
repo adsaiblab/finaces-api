@@ -441,7 +441,7 @@ class FeatureEngineeringEngine:
         # Extract source variables
         equity_total = self._safe_get_nested(balance_sheet, ["EQUITY", "total"])
         total_assets = self._safe_get_nested(balance_sheet, ["TOTAL_ASSETS", "total"])
-        long_term_debt = self._safe_get_nested(balance_sheet, ["LIABILITIES", "LONG_TERM_DEBT"])
+        long_term_debt = self._safe_get_nested(balance_sheet, ["NON_CURRENT_LIABILITIES", "LONG_TERM_DEBT"])
         short_term_debt = self._safe_get_nested(balance_sheet, ["CURRENT_LIABILITIES", "SHORT_TERM_DEBT"])
         
         # Total Debt
