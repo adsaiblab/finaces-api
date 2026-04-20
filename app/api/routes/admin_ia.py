@@ -35,18 +35,27 @@ async def get_admin_stats(
     # 1. Total models/runs
     total_runs = await db.scalar(select(func.count(IAModel.id)))
     
-    # 2. Active model
-    active_stmt = select(IAModel).where(IAModel.is_active.is_(True)).limit(1)
-    active_model = await db.scalar(active_stmt)
-    
-    # 3. Latest metrics (from the active model)
+    # 2. Active model — lit IAModel (table réelle), construit un IADeployedModelSchema-compatible dict
+    ia_model_stmt = select(IAModel).where(IAModel.is_active.is_(True)).limit(1)
+    ia_model = await db.scalar(ia_model_stmt)
+
+    active_model = IADeployedModelSchema(
+        id=ia_model.id,
+        training_run_id=ia_model.id,   # ← champ requis, mappé depuis ia_model.id
+        version=ia_model.version,
+        is_active=ia_model.is_active,
+        deployed_by=None,
+        deployed_at=ia_model.trained_at,  # ← champ requis, mappé depuis trained_at
+    ) if ia_model else None
+
+    # 3. Latest metrics
     latest_metrics = None
-    if active_model:
-        raw = active_model.metrics or {}
+    if ia_model and ia_model.metrics:
+        raw = ia_model.metrics
         latest_metrics = {
             "accuracy":  raw.get("accuracy", 0),
             "f1_score":  raw.get("f1_score", 0),
-            "auc":       raw.get("roc_auc", 0),   # ← clé attendue par le frontend
+            "auc":       raw.get("roc_auc", 0),   # ← roc_auc → auc (attendu par le frontend)
             "recall":    raw.get("recall", 0),
             "precision": raw.get("precision", 0),
             "threshold": raw.get("threshold", 0.5),
@@ -77,25 +86,27 @@ async def list_training_runs(
 ):
     stmt = select(IAModel).order_by(IAModel.trained_at.desc()).limit(limit)
     result = await db.execute(stmt)
-    models = result.scalars().all()
     return [
-        {
-            "id": str(m.id),
-            "status": "COMPLETED",
-            "model_artifact_path": m.file_path,
-            "completed_at": m.trained_at.isoformat() if m.trained_at else None,
-            "created_at": m.created_at.isoformat() if m.created_at else None,
-            "model_type": m.model_name,
-            "hyperparameters": m.hyperparameters or {},
-            "metrics": {
+        IATrainingRunSchema(
+            id=m.id,
+            dataset_id=m.id,          # ← requis par schema, pas de vraie table dataset
+            model_type=m.model_name,
+            status="COMPLETED",
+            hyperparameters=m.hyperparameters or {},
+            metrics={
                 "accuracy":  (m.metrics or {}).get("accuracy", 0),
                 "f1_score":  (m.metrics or {}).get("f1_score", 0),
                 "auc":       (m.metrics or {}).get("roc_auc", 0),
                 "threshold": (m.metrics or {}).get("threshold", 0.5),
                 "feature_importance": [],
             },
-        }
-        for m in models
+            model_artifact_path=m.file_path,
+            error_log=None,
+            started_at=m.trained_at,
+            completed_at=m.trained_at,
+            created_at=m.created_at,
+        )
+        for m in result.scalars().all()
     ]
 
 @router.post(
