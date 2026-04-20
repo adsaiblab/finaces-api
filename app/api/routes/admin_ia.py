@@ -59,7 +59,7 @@ async def get_admin_stats(
             "recall":    raw.get("recall", 0),
             "precision": raw.get("precision", 0),
             "threshold": raw.get("threshold", 0.5),
-            "feature_importance": [],
+            "feature_importance": raw.get("feature_importance", []),
         }
             
     # 4. Pending alerts
@@ -98,7 +98,7 @@ async def list_training_runs(
                 "f1_score":  (m.metrics or {}).get("f1_score", 0),
                 "auc":       (m.metrics or {}).get("roc_auc", 0),
                 "threshold": (m.metrics or {}).get("threshold", 0.5),
-                "feature_importance": [],
+                "feature_importance": (m.metrics or {}).get("feature_importance", []),
             },
             model_artifact_path=m.file_path,
             error_log=None,
@@ -159,9 +159,9 @@ async def get_run_convergence(
 ):
     """
     Returns the convergence history (LogLoss per iteration) for a run.
-    Data is extracted from run.metrics['convergence'].
-    """
-    stmt = select(IATrainingRun.metrics).where(IATrainingRun.id == run_id)
+    # Data is extracted from run.metrics['convergence'].
+    # ✅ FIX — chercher dans IAModel, pas IATrainingRun
+    stmt = select(IAModel.metrics).where(IAModel.id == run_id)
     metrics = await db.scalar(stmt)
     
     if not metrics or 'convergence' not in metrics:
