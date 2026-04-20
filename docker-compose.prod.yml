@@ -51,7 +51,7 @@ services:
       - FINACES_UPLOAD_DIR=/app/uploads
     volumes:
       - /opt/finaces/finaces-api/uploads:/app/uploads
-      - /opt/finaces/finaces-api/ml_models:/app/ml/models
+      - /opt/finaces/ml-models:/app/ml/models
     # ports:
     #  - "8000:8000"  (Plus besoin d'exposer le port à l'hôte, Traefik s'en charge !)
     networks:
