@@ -615,10 +615,20 @@ class DataLoader:
         features_data = []
         case_ids = []
         
+        METADATA_KEYS = {
+            "case_id", "entity_id", "sector", "country", "size_class",
+            "fiscal_year", "exposure_level", "total_exposure"
+        }
+
         for record in features_records:
             features_dict = record.features
-            if isinstance(features_dict, dict) and 'features' in features_dict:
-                features_data.append(features_dict['features'])
+            if isinstance(features_dict, dict) and len(features_dict) > 0:
+                # Extraire uniquement les features numériques (exclure métadonnées)
+                numeric_features = {
+                    k: v for k, v in features_dict.items() 
+                    if k not in METADATA_KEYS and (isinstance(v, (int, float)) or v is None)
+                }
+                features_data.append(numeric_features)
                 case_ids.append(str(record.case_id))
         
         df = pd.DataFrame(features_data)
