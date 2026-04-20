@@ -30,6 +30,7 @@ from app.core.config import settings
 from app.db.database import Base
 from app.db.models import IAModel
 from ml.pipelines.training_pipeline import ModelTrainer
+from ml.pipelines.data_loader import DataLoader
 
 
 # ---------------------------------------------------------------------
@@ -94,6 +95,10 @@ async def register_model_in_db(
 # ---------------------------------------------------------------------
 
 async def async_main(args: argparse.Namespace) -> None:
+    # ✅ FIX : créer la session_factory UNE FOIS pour tout le script
+    # (réutilisée à la fois pour le chargement DB et pour l'enregistrement)
+    session_factory = create_async_session_factory()
+
     # 1) Instancier le pipeline de training
     trainer = ModelTrainer(
         model_config_path=args.model_config,
@@ -103,16 +108,43 @@ async def async_main(args: argparse.Namespace) -> None:
     )
 
     # 2) Préparer les données
-    data = trainer.prepare_data(
-        data_source=args.data_source,
-        # kwargs spécifiques si besoin: années, filtres, etc.
-    )
+    # ✅ FIX : pour finaces_db, on appelle directement la méthode async du
+    #          DataLoader avec une vraie db_session — au lieu de passer par
+    #          trainer.prepare_data() qui est synchrone et ne peut pas awaiter.
+    if args.data_source == "finaces_db":
+        loader = DataLoader()
+        async with session_factory() as db_session:
+            X, y = await loader.load_from_finaces_database(db_session=db_session)
+
+        # Preprocessing manuel (équivalent à ce que prepare_data() ferait)
+        from ml.pipelines.preprocessor import FinancialDataPreprocessor
+        trainer.preprocessor = FinancialDataPreprocessor(
+            features_config_path=args.features_config,
+            model_config_path=args.model_config,
+        )
+        data = trainer.preprocessor.fit_transform(X, y, apply_smote=True)
+
+        # Stocker les infos dans training_history (comme le ferait prepare_data)
+        trainer.training_history["data_info"] = {
+            "source": args.data_source,
+            "n_samples": len(X),
+            "n_features": X.shape[1],
+            "target_distribution": y.value_counts().to_dict(),
+            "default_rate": float(y.mean()),
+            "feature_names": X.columns.tolist(),
+        }
+    else:
+        # Toutes les autres sources (synthetic, german, csv…) sont synchrones
+        data = trainer.prepare_data(
+            data_source=args.data_source,
+        )
+
     X_train = data["X_train"]
     y_train = data["y_train"]
-    X_val = data.get("X_val")
-    y_val = data.get("y_val")
-    X_test = data.get("X_test")
-    y_test = data.get("y_test")
+    X_val   = data.get("X_val")
+    y_val   = data.get("y_val")
+    X_test  = data.get("X_test")
+    y_test  = data.get("y_test")
 
     # 3) Entraîner le modèle
     trainer.train_model(
@@ -131,7 +163,7 @@ async def async_main(args: argparse.Namespace) -> None:
         metrics = trainer.evaluate_model(X_val, y_val)
 
     # 5) Récupérer infos hyperparams + features
-    hyperparams = trainer.training_history.get("hyperparameters", {})
+    hyperparams   = trainer.training_history.get("hyperparameters", {})
     feature_names = trainer.training_history.get("data_info", {}).get(
         "feature_names", []
     )
@@ -141,21 +173,25 @@ async def async_main(args: argparse.Namespace) -> None:
     models_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    version = args.version or f"{args.model_type}_v{timestamp}"
-    filename = f"{args.model_type}_{version}.joblib"
+    version   = args.version or f"{args.model_type}_v{timestamp}"
+    filename  = f"{args.model_type}_{version}.joblib"
     model_path = models_dir / filename
 
-    joblib.dump({
-        "model": trainer.model,
-        "scaler": None,
-        "feature_names": feature_names,
-        "model_type": args.model_type,
-        "version": version,
-        "trained_at": timestamp,
-    }, model_path)
+    # ✅ FIX : on récupère le scaler depuis le preprocessor (était None avant)
+    joblib.dump(
+        {
+            "model":         trainer.model,
+            "scaler":        getattr(trainer.preprocessor, "scaler", None),
+            "feature_names": feature_names,
+            "model_type":    args.model_type,
+            "version":       version,
+            "trained_at":    timestamp,
+        },
+        model_path,
+    )
 
     # 7) Enregistrer dans ia_models via SQLAlchemy async
-    session_factory = create_async_session_factory()
+    # ✅ FIX : réutilise la session_factory déjà créée au début (pas de doublon)
     model_row = await register_model_in_db(
         session_factory=session_factory,
         model_name=args.model_name or args.model_type,
@@ -168,12 +204,12 @@ async def async_main(args: argparse.Namespace) -> None:
     )
 
     print("Model trained and registered:")
-    print(f"- id: {model_row.id}")
-    print(f"- name: {model_row.model_name}")
-    print(f"- version: {model_row.version}")
-    print(f"- file: {model_row.file_path}")
+    print(f"- id:        {model_row.id}")
+    print(f"- name:      {model_row.model_name}")
+    print(f"- version:   {model_row.version}")
+    print(f"- file:      {model_row.file_path}")
     print(f"- is_active: {model_row.is_active}")
-    print(f"- metrics: {json.dumps(model_row.metrics, indent=2)}")
+    print(f"- metrics:   {json.dumps(model_row.metrics, indent=2)}")
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -240,7 +276,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     parser = build_arg_parser()
-    args = parser.parse_args()
+    args   = parser.parse_args()
     asyncio.run(async_main(args))
 
 
