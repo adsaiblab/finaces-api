@@ -14,7 +14,7 @@ from app.schemas.ia_schema import (
     IADeployedModelSchema,
     IAAdminStats
 )
-from app.db.models import IATrainingRun, IADeployedModel, IAAdminEvent, IATrainingDataset
+from app.db.models import IAModel, IATrainingRun, IADeployedModel, IAAdminEvent, IATrainingDataset
 
 logger = logging.getLogger(__name__)
 
@@ -32,20 +32,26 @@ async def get_admin_stats(
     """
     Returns high-level stats for the Admin IA dashboard.
     """
-    # 1. Total runs
-    total_runs = await db.scalar(select(func.count(IATrainingRun.id)))
+    # 1. Total models/runs
+    total_runs = await db.scalar(select(func.count(IAModel.id)))
     
     # 2. Active model
-    active_stmt = select(IADeployedModel).where(IADeployedModel.is_active == True).limit(1)
+    active_stmt = select(IAModel).where(IAModel.is_active.is_(True)).limit(1)
     active_model = await db.scalar(active_stmt)
     
-    # 3. Latest metrics (from the active model's run)
+    # 3. Latest metrics (from the active model)
     latest_metrics = None
     if active_model:
-        run_stmt = select(IATrainingRun).where(IATrainingRun.id == active_model.training_run_id)
-        active_run = await db.scalar(run_stmt)
-        if active_run:
-            latest_metrics = active_run.metrics
+        raw = active_model.metrics or {}
+        latest_metrics = {
+            "accuracy":  raw.get("accuracy", 0),
+            "f1_score":  raw.get("f1_score", 0),
+            "auc":       raw.get("roc_auc", 0),   # ← clé attendue par le frontend
+            "recall":    raw.get("recall", 0),
+            "precision": raw.get("precision", 0),
+            "threshold": raw.get("threshold", 0.5),
+            "feature_importance": [],
+        }
             
     # 4. Pending alerts
     alerts_count = await db.scalar(
@@ -69,9 +75,28 @@ async def list_training_runs(
     db: AsyncSession = Depends(get_db),
     current_user: Dict = Depends(get_current_user)
 ):
-    stmt = select(IATrainingRun).order_by(IATrainingRun.created_at.desc()).limit(limit)
+    stmt = select(IAModel).order_by(IAModel.trained_at.desc()).limit(limit)
     result = await db.execute(stmt)
-    return result.scalars().all()
+    models = result.scalars().all()
+    return [
+        {
+            "id": str(m.id),
+            "status": "COMPLETED",
+            "model_artifact_path": m.file_path,
+            "completed_at": m.trained_at.isoformat() if m.trained_at else None,
+            "created_at": m.created_at.isoformat() if m.created_at else None,
+            "model_type": m.model_name,
+            "hyperparameters": m.hyperparameters or {},
+            "metrics": {
+                "accuracy":  (m.metrics or {}).get("accuracy", 0),
+                "f1_score":  (m.metrics or {}).get("f1_score", 0),
+                "auc":       (m.metrics or {}).get("roc_auc", 0),
+                "threshold": (m.metrics or {}).get("threshold", 0.5),
+                "feature_importance": [],
+            },
+        }
+        for m in models
+    ]
 
 @router.post(
     "/datasets",
