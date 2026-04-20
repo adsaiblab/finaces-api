@@ -447,6 +447,8 @@ class FeatureEngineeringEngine:
         # Total Debt
         total_debt = self._safe_add(long_term_debt, short_term_debt)
         self.computed_features["total_debt_amount"] = total_debt
+        self.computed_features["long_term_debt"] = long_term_debt
+        self.computed_features["short_term_debt"] = short_term_debt
         
         # Debt to Equity
         debt_to_equity = self._safe_divide(total_debt, equity_total)
